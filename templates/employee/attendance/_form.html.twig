@@ -1,0 +1,662 @@
+{{ form_start(form, {'attr': {'class': 'attendance-form', 'novalidate': 'novalidate'}}) }}
+
+<style>
+    .attendance-form {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    .form-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        margin: -1rem -1rem 2rem -1rem;
+    }
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #007bff;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.15);
+        transform: translateY(-1px);
+    }
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+    }
+    .form-label i {
+        margin-right: 0.5rem;
+        color: #007bff;
+    }
+    .input-group-text {
+        background: #007bff;
+        color: white;
+        border: 2px solid #007bff;
+        border-radius: 8px 0 0 8px;
+    }
+    .input-group .form-control {
+        border-left: 0;
+        border-radius: 0 8px 8px 0;
+    }
+    .time-calculator {
+        background: #e3f2fd;
+        border: 1px solid #bbdefb;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    .worked-hours-display {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin: 1rem 0;
+    }
+    .quick-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .quick-btn {
+        padding: 0.25rem 0.75rem;
+        border: 1px solid #dee2e6;
+        background: #f8f9fa;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        color: #6c757d;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .quick-btn:hover {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    .status-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+    }
+    .status-option {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    .status-option:hover {
+        border-color: #007bff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+    }
+    .status-option.selected {
+        border-color: #28a745;
+        background: #d4edda;
+    }
+    .status-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .status-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    .validation-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: #dc3545;
+    }
+    .form-actions {
+        background: #f8f9fa;
+        margin: 2rem -1rem -1rem -1rem;
+        padding: 1.5rem 2rem;
+        border-top: 1px solid #dee2e6;
+    }
+    .btn-primary-custom {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+    }
+    .alert-info-custom {
+        background: linear-gradient(45deg, #d1ecf1, #b8daff);
+        border: 1px solid #bee5eb;
+        border-radius: 8px;
+        color: #0c5460;
+    }
+    .progress-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    .progress-step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+    }
+    .progress-step::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        right: -50%;
+        height: 2px;
+        background: #dee2e6;
+        z-index: 1;
+    }
+    .progress-step:last-child::before {
+        display: none;
+    }
+    .progress-step.active::before {
+        background: #28a745;
+    }
+    .step-circle {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #dee2e6;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+        font-weight: bold;
+        color: #6c757d;
+    }
+    .progress-step.active .step-circle {
+        background: #28a745;
+        color: white;
+    }
+    .step-label {
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        color: #6c757d;
+    }
+    .progress-step.active .step-label {
+        color: #28a745;
+        font-weight: 600;
+    }
+</style>
+
+<div class="attendance-form p-4">
+    <!-- En-tête du formulaire -->
+    <div class="form-header text-center">
+        <h2 class="mb-2">
+            <i class="fas fa-clock me-2"></i>
+            {% if app.request.get('_route') == 'app_employee_attendance_edit' %}
+                Modifier la Présence
+            {% else %}
+                Enregistrer une Présence
+            {% endif %}
+        </h2>
+        <p class="mb-0 opacity-75">
+            <i class="fas fa-calendar me-1"></i>
+            {{ "now"|date("l d F Y") }}
+            <span class="mx-2">•</span>
+            <i class="fas fa-user me-1"></i>
+            {{ app.user.firstName }} {{ app.user.lastName }}
+        </p>
+    </div>
+
+    <!-- Indicateur de progression -->
+    <div class="progress-indicator">
+        <div class="progress-step active">
+            <div class="step-circle">1</div>
+            <div class="step-label">Date & Heures</div>
+        </div>
+        <div class="progress-step" id="step2">
+            <div class="step-circle">2</div>
+            <div class="step-label">Statut</div>
+        </div>
+        <div class="progress-step" id="step3">
+            <div class="step-circle">3</div>
+            <div class="step-label">Validation</div>
+        </div>
+    </div>
+
+    <!-- Alerte informative -->
+    <div class="alert alert-info-custom d-flex align-items-center mb-4" role="alert">
+        <i class="fas fa-info-circle me-3" style="font-size: 1.25rem;"></i>
+        <div>
+            <strong>Information importante :</strong> 
+            Assurez-vous de renseigner vos heures de présence avec précision. 
+            Ces données sont utilisées pour le calcul de votre temps de travail.
+        </div>
+    </div>
+
+    <!-- Section 1: Date et Heures -->
+    <div class="form-section">
+        <h5 class="mb-3">
+            <i class="fas fa-calendar-day text-primary me-2"></i>
+            Date et Horaires de Travail
+        </h5>
+
+        <div class="row">
+            <!-- Date de travail -->
+            <div class="col-md-12 mb-3">
+                <div class="form-group">
+                    {{ form_label(form.workDate, 'Date de Travail', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                        {{ form_widget(form.workDate, {
+                            'attr': {
+                                'class': 'form-control',
+                                'id': 'workDate',
+                                'max': 'now'|date('Y-m-d')
+                            }
+                        }) }}
+                    </div>
+                    {{ form_errors(form.workDate) }}
+                    <div class="quick-actions">
+                        <button type="button" class="quick-btn" onclick="setToday()">Aujourd'hui</button>
+                        <button type="button" class="quick-btn" onclick="setYesterday()">Hier</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heure d'arrivée -->
+            <div class="col-md-6 mb-3">
+                <div class="form-group">
+                    {{ form_label(form.checkIn, 'Heure d\'Arrivée', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </span>
+                        {{ form_widget(form.checkIn, {
+                            'attr': {
+                                'class': 'form-control',
+                                'id': 'checkIn',
+                                'step': '300'
+                            }
+                        }) }}
+                    </div>
+                    {{ form_errors(form.checkIn) }}
+                    <div class="quick-actions">
+                        <button type="button" class="quick-btn" onclick="setCurrentTime('checkIn')">Maintenant</button>
+                        <button type="button" class="quick-btn" onclick="setTime('checkIn', '08:00')">8h00</button>
+                        <button type="button" class="quick-btn" onclick="setTime('checkIn', '09:00')">9h00</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heure de départ -->
+            <div class="col-md-6 mb-3">
+                <div class="form-group">
+                    {{ form_label(form.checkOut, 'Heure de Départ', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </span>
+                        {{ form_widget(form.checkOut, {
+                            'attr': {
+                                'class': 'form-control',
+                                'id': 'checkOut',
+                                'step': '300'
+                            }
+                        }) }}
+                    </div>
+                    {{ form_errors(form.checkOut) }}
+                    <div class="quick-actions">
+                        <button type="button" class="quick-btn" onclick="setCurrentTime('checkOut')">Maintenant</button>
+                        <button type="button" class="quick-btn" onclick="setTime('checkOut', '17:00')">17h00</button>
+                        <button type="button" class="quick-btn" onclick="setTime('checkOut', '18:00')">18h00</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculateur automatique des heures -->
+        <div class="time-calculator">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h6 class="mb-1">
+                        <i class="fas fa-calculator text-info me-2"></i>
+                        Calcul automatique des heures travaillées
+                    </h6>
+                    <small class="text-muted">
+                        Les heures sont calculées automatiquement en fonction de vos heures d'arrivée et de départ
+                    </small>
+                </div>
+                <div class="col-md-4">
+                    <div class="worked-hours-display" id="workedHoursDisplay">
+                        <i class="fas fa-clock me-2"></i>
+                        <span id="workedHoursText">0h 00min</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Statut de la présence -->
+    <div class="form-section">
+        <h5 class="mb-3">
+            <i class="fas fa-user-check text-primary me-2"></i>
+            Statut de la Présence
+        </h5>
+
+        <div class="form-group">
+            {{ form_label(form.status, 'Sélectionnez votre statut', {'label_attr': {'class': 'form-label'}}) }}
+            
+            <div class="status-selector">
+                <div class="status-option" data-status="present">
+                    <input type="radio" name="{{ form.status.vars.full_name }}" value="present" id="status_present">
+                    <label for="status_present">
+                        <span class="status-icon text-success">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                        <div class="fw-bold">Présent</div>
+                        <small class="text-muted">Journée complète</small>
+                    </label>
+                </div>
+                
+                <div class="status-option" data-status="partial">
+                    <input type="radio" name="{{ form.status.vars.full_name }}" value="partial" id="status_partial">
+                    <label for="status_partial">
+                        <span class="status-icon text-warning">
+                            <i class="fas fa-clock"></i>
+                        </span>
+                        <div class="fw-bold">Partiel</div>
+                        <small class="text-muted">Demi-journée</small>
+                    </label>
+                </div>
+                
+                <div class="status-option" data-status="late">
+                    <input type="radio" name="{{ form.status.vars.full_name }}" value="late" id="status_late">
+                    <label for="status_late">
+                        <span class="status-icon text-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </span>
+                        <div class="fw-bold">Retard</div>
+                        <small class="text-muted">Arrivée tardive</small>
+                    </label>
+                </div>
+                
+                <div class="status-option" data-status="remote">
+                    <input type="radio" name="{{ form.status.vars.full_name }}" value="remote" id="status_remote">
+                    <label for="status_remote">
+                        <span class="status-icon text-info">
+                            <i class="fas fa-home"></i>
+                        </span>
+                        <div class="fw-bold">Télétravail</div>
+                        <small class="text-muted">À distance</small>
+                    </label>
+                </div>
+            </div>
+            {{ form_errors(form.status) }}
+        </div>
+    </div>
+
+    <!-- Section 3: Notes complémentaires -->
+    <div class="form-section">
+        <h5 class="mb-3">
+            <i class="fas fa-sticky-note text-primary me-2"></i>
+            Notes Complémentaires
+        </h5>
+
+        <div class="form-group">
+            {{ form_label(form.notes, 'Notes (optionnel)', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.notes, {
+                'attr': {
+                    'class': 'form-control',
+                    'rows': '4',
+                    'placeholder': 'Ajoutez des commentaires si nécessaire (réunion, mission externe, etc.)',
+                    'maxlength': '500'
+                }
+            }) }}
+            {{ form_errors(form.notes) }}
+            <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Maximum 500 caractères • <span id="notesCounter">0</span>/500
+            </div>
+        </div>
+    </div>
+
+    <!-- Récapitulatif avant validation -->
+    <div class="alert alert-light border" id="summarySection" style="display: none;">
+        <h6 class="alert-heading">
+            <i class="fas fa-clipboard-check me-2"></i>
+            Récapitulatif de votre présence
+        </h6>
+        <div id="summaryContent">
+            <!-- Contenu généré dynamiquement -->
+        </div>
+    </div>
+
+    <!-- Actions du formulaire -->
+    <div class="form-actions">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <a href="{{ path('app_employee_attendance_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Retour à la liste
+                </a>
+            </div>
+            <div>
+                <button type="button" class="btn btn-outline-primary me-2" onclick="previewSummary()">
+                    <i class="fas fa-eye me-2"></i>
+                    Aperçu
+                </button>
+                <button type="submit" class="btn btn-primary-custom">
+                    <i class="fas fa-save me-2"></i>
+                    {% if app.request.get('_route') == 'app_employee_attendance_edit' %}
+                        Modifier la Présence
+                    {% else %}
+                        Enregistrer la Présence
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion du sélecteur de statut
+    const statusOptions = document.querySelectorAll('.status-option');
+    const statusInputs = document.querySelectorAll('input[name*="status"]');
+    
+    statusOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const status = this.dataset.status;
+            const radioInput = this.querySelector('input[type="radio"]');
+            
+            // Désélectionner toutes les options
+            statusOptions.forEach(opt => opt.classList.remove('selected'));
+            statusInputs.forEach(input => input.checked = false);
+            
+            // Sélectionner l'option cliquée
+            this.classList.add('selected');
+            radioInput.checked = true;
+            
+            updateProgressStep(2);
+        });
+    });
+
+    // Calcul automatique des heures travaillées
+    const checkInInput = document.getElementById('checkIn');
+    const checkOutInput = document.getElementById('checkOut');
+    const workedHoursText = document.getElementById('workedHoursText');
+    
+    function calculateWorkedHours() {
+        const checkIn = checkInInput.value;
+        const checkOut = checkOutInput.value;
+        
+        if (checkIn && checkOut) {
+            const checkInTime = new Date('2000-01-01 ' + checkIn);
+            const checkOutTime = new Date('2000-01-01 ' + checkOut);
+            
+            if (checkOutTime > checkInTime) {
+                const diffMs = checkOutTime - checkInTime;
+                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                
+                workedHoursText.textContent = `${diffHours}h ${diffMinutes.toString().padStart(2, '0')}min`;
+                updateProgressStep(2);
+            } else {
+                workedHoursText.textContent = 'Erreur: Heure de fin antérieure';
+            }
+        } else {
+            workedHoursText.textContent = '0h 00min';
+        }
+    }
+    
+    checkInInput.addEventListener('change', calculateWorkedHours);
+    checkOutInput.addEventListener('change', calculateWorkedHours);
+    
+    // Compteur de caractères pour les notes
+    const notesTextarea = document.querySelector('textarea[name*="notes"]');
+    const notesCounter = document.getElementById('notesCounter');
+    
+    if (notesTextarea) {
+        notesTextarea.addEventListener('input', function() {
+            const length = this.value.length;
+            notesCounter.textContent = length;
+            
+            if (length > 450) {
+                notesCounter.style.color = '#dc3545';
+            } else if (length > 400) {
+                notesCounter.style.color = '#ffc107';
+            } else {
+                notesCounter.style.color = '#6c757d';
+            }
+        });
+    }
+    
+    // Calcul initial si les valeurs existent
+    calculateWorkedHours();
+});
+
+// Fonctions utilitaires pour les boutons rapides
+function setToday() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('workDate').value = today;
+    updateProgressStep(1);
+}
+
+function setYesterday() {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    document.getElementById('workDate').value = yesterday.toISOString().split('T')[0];
+    updateProgressStep(1);
+}
+
+function setCurrentTime(inputId) {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    document.getElementById(inputId).value = `${hours}:${minutes}`;
+    
+    // Recalculer les heures travaillées
+    const event = new Event('change');
+    document.getElementById(inputId).dispatchEvent(event);
+}
+
+function setTime(inputId, time) {
+    document.getElementById(inputId).value = time;
+    
+    // Recalculer les heures travaillées
+    const event = new Event('change');
+    document.getElementById(inputId).dispatchEvent(event);
+}
+
+// Gestion de l'indicateur de progression
+function updateProgressStep(stepNumber) {
+    const steps = document.querySelectorAll('.progress-step');
+    
+    for (let i = 0; i < stepNumber; i++) {
+        steps[i].classList.add('active');
+    }
+    
+    if (stepNumber === 3) {
+        document.getElementById('summarySection').style.display = 'block';
+        generateSummary();
+    }
+}
+
+// Aperçu du récapitulatif
+function previewSummary() {
+    updateProgressStep(3);
+    document.getElementById('summarySection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function generateSummary() {
+    const workDate = document.getElementById('workDate').value;
+    const checkIn = document.getElementById('checkIn').value;
+    const checkOut = document.getElementById('checkOut').value;
+    const selectedStatus = document.querySelector('input[name*="status"]:checked');
+    const notes = document.querySelector('textarea[name*="notes"]').value;
+    
+    let summaryHtml = '<div class="row">';
+    
+    if (workDate) {
+        const dateFormatted = new Date(workDate).toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        summaryHtml += `<div class="col-md-6 mb-2"><strong>Date:</strong> ${dateFormatted}</div>`;
+    }
+    
+    if (checkIn && checkOut) {
+        summaryHtml += `<div class="col-md-6 mb-2"><strong>Horaires:</strong> ${checkIn} - ${checkOut}</div>`;
+        summaryHtml += `<div class="col-md-6 mb-2"><strong>Durée:</strong> ${document.getElementById('workedHoursText').textContent}</div>`;
+    }
+    
+    if (selectedStatus) {
+        const statusLabel = selectedStatus.parentElement.querySelector('.fw-bold').textContent;
+        summaryHtml += `<div class="col-md-6 mb-2"><strong>Statut:</strong> ${statusLabel}</div>`;
+    }
+    
+    summaryHtml += '</div>';
+    
+    if (notes.trim()) {
+        summaryHtml += `<div class="mt-2"><strong>Notes:</strong><br>${notes}</div>`;
+    }
+    
+    document.getElementById('summaryContent').innerHTML = summaryHtml;
+}
+</script>

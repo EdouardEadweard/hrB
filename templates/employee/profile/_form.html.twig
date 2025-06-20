@@ -1,0 +1,756 @@
+{{ form_start(form, {'attr': {'class': 'profile-form', 'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+
+<style>
+    .profile-form-container {
+        display: grid;
+        gap: 2rem;
+    }
+
+    .form-section {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .section-header h3 {
+        margin: 0;
+        color: #1f2937;
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-header .icon {
+        font-size: 1.2rem;
+    }
+
+    .section-body {
+        padding: 1.5rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-row.single {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group {
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.9rem;
+    }
+
+    .form-label.required::after {
+        content: ' *';
+        color: #dc3545;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        background-color: #fff;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        background-color: #fef2f2;
+    }
+
+    .form-control:disabled,
+    .form-control[readonly] {
+        background-color: #f9fafb;
+        color: #6b7280;
+        cursor: not-allowed;
+    }
+
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .form-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+
+    .input-group {
+        position: relative;
+    }
+
+    .input-group-prepend {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6b7280;
+        z-index: 2;
+        pointer-events: none;
+    }
+
+    .input-group .form-control {
+        padding-left: 2.5rem;
+    }
+
+    .profile-avatar-section {
+        text-align: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    }
+
+    .avatar-container {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+
+    .avatar-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        font-weight: bold;
+    }
+
+    .avatar-upload {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #667eea;
+        border: 3px solid #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .avatar-upload:hover {
+        background: #5a67d8;
+        transform: scale(1.1);
+    }
+
+    .avatar-upload input[type="file"] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .department-info {
+        background: #f8fafc;
+        border: 2px dashed #cbd5e1;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .department-info .dept-name {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 1.1rem;
+    }
+
+    .department-info .dept-code {
+        color: #6b7280;
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+
+    .manager-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: #f8fafc;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .manager-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    .manager-details .name {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 0.95rem;
+    }
+
+    .manager-details .position {
+        color: #6b7280;
+        font-size: 0.85rem;
+    }
+
+    .role-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .role-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: #dbeafe;
+        color: #1e40af;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .role-badge.admin { background: #fef3c7; color: #92400e; }
+    .role-badge.manager { background: #d1fae5; color: #065f46; }
+    .role-badge.employee { background: #e0e7ff; color: #3730a3; }
+
+    .password-strength {
+        margin-top: 0.5rem;
+    }
+
+    .strength-bar {
+        height: 4px;
+        background: #e5e7eb;
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 0.25rem;
+    }
+
+    .strength-fill {
+        height: 100%;
+        transition: all 0.3s ease;
+        border-radius: 2px;
+    }
+
+    .strength-text {
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .strength-weak { background: #dc3545; }
+    .strength-medium { background: #ffc107; }
+    .strength-strong { background: #28a745; }
+
+    .contact-method {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background: #f8fafc;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        margin-top: 0.5rem;
+    }
+
+    .contact-icon {
+        color: #667eea;
+        font-size: 1.1rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        padding: 1.5rem 0;
+        border-top: 1px solid #e5e7eb;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .section-body {
+            padding: 1rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+        }
+    }
+</style>
+
+<div class="profile-form-container">
+    <!-- Section Photo de Profil -->
+    <div class="form-section">
+        <div class="section-header">
+            <h3><span class="icon">👤</span> Photo de profil</h3>
+        </div>
+        <div class="profile-avatar-section">
+            <div class="avatar-container">
+                <div class="avatar-preview" id="avatarPreview">
+                    {% if form.vars.data.firstName and form.vars.data.lastName %}
+                        {{ form.vars.data.firstName|first|upper }}{{ form.vars.data.lastName|first|upper }}
+                    {% else %}
+                        👤
+                    {% endif %}
+                </div>
+                <div class="avatar-upload">
+                    <span style="color: white; font-size: 1rem;">📷</span>
+                    {{ form_widget(form.avatar, {'attr': {'accept': 'image/*'}}) }}
+                </div>
+            </div>
+            <div class="form-text">
+                Cliquez sur l'icône pour changer votre photo de profil<br>
+                <small>Formats acceptés : JPG, PNG, GIF (max 2MB)</small>
+            </div>
+            {{ form_errors(form.avatar) }}
+        </div>
+    </div>
+
+    <!-- Section Informations Personnelles -->
+    <div class="form-section">
+        <div class="section-header">
+            <h3><span class="icon">ℹ️</span> Informations personnelles</h3>
+        </div>
+        <div class="section-body">
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.firstName, 'Prénom', {'attr': {'class': 'form-label required'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-prepend">👤</span>
+                        {{ form_widget(form.firstName, {'attr': {'class': 'form-control' ~ (form.firstName.vars.errors|length > 0 ? ' is-invalid' : ''), 'placeholder': 'Votre prénom'}}) }}
+                    </div>
+                    {{ form_errors(form.firstName, {'attr': {'class': 'invalid-feedback'}}) }}
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.lastName, 'Nom de famille', {'attr': {'class': 'form-label required'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-prepend">👤</span>
+                        {{ form_widget(form.lastName, {'attr': {'class': 'form-control' ~ (form.lastName.vars.errors|length > 0 ? ' is-invalid' : ''), 'placeholder': 'Votre nom'}}) }}
+                    </div>
+                    {{ form_errors(form.lastName, {'attr': {'class': 'invalid-feedback'}}) }}
+                </div>
+            </div>
+
+            <div class="form-row single">
+                <div class="form-group">
+                    {{ form_label(form.email, 'Adresse email', {'attr': {'class': 'form-label required'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-prepend">✉️</span>
+                        {{ form_widget(form.email, {'attr': {'class': 'form-control' ~ (form.email.vars.errors|length > 0 ? ' is-invalid' : ''), 'placeholder': 'votre.email@entreprise.com'}}) }}
+                    </div>
+                    {{ form_errors(form.email, {'attr': {'class': 'invalid-feedback'}}) }}
+                    <div class="form-text">Cette adresse sera utilisée pour les notifications importantes</div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.phone, 'Téléphone', {'attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-prepend">📞</span>
+                        {{ form_widget(form.phone, {'attr': {'class': 'form-control' ~ (form.phone.vars.errors|length > 0 ? ' is-invalid' : ''), 'placeholder': '+229 XX XX XX XX'}}) }}
+                    </div>
+                    {{ form_errors(form.phone, {'attr': {'class': 'invalid-feedback'}}) }}
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.position, 'Poste', {'attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-prepend">💼</span>
+                        {{ form_widget(form.position, {'attr': {'class': 'form-control', 'readonly': true}}) }}
+                    </div>
+                    <div class="form-text">Contactez les RH pour modifier cette information</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Informations Professionnelles -->
+    <div class="form-section">
+        <div class="section-header">
+            <h3><span class="icon">🏢</span> Informations professionnelles</h3>
+        </div>
+        <div class="section-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Département</label>
+                    <div class="department-info">
+                        <div class="dept-name">
+                            {% if form.vars.data.department %}
+                                {{ form.vars.data.department.name }}
+                            {% else %}
+                                Non assigné
+                            {% endif %}
+                        </div>
+                        <div class="dept-code">
+                            {% if form.vars.data.department %}
+                                Code: {{ form.vars.data.department.code }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Manager</label>
+                    {% if form.vars.data.manager %}
+                        <div class="manager-info">
+                            <div class="manager-avatar">
+                                {{ form.vars.data.manager.firstName|first|upper }}{{ form.vars.data.manager.lastName|first|upper }}
+                            </div>
+                            <div class="manager-details">
+                                <div class="name">{{ form.vars.data.manager.firstName }} {{ form.vars.data.manager.lastName }}</div>
+                                <div class="position">{{ form.vars.data.manager.position }}</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="manager-info">
+                            <div class="manager-avatar">--</div>
+                            <div class="manager-details">
+                                <div class="name">Aucun manager assigné</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.hireDate, 'Date d\'embauche', {'attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.hireDate, {'attr': {'class': 'form-control', 'readonly': true}}) }}
+                    <div class="form-text">
+                        {% if form.vars.data.hireDate %}
+                            Ancienneté: {{ date().diff(form.vars.data.hireDate).y }} an(s) {{ date().diff(form.vars.data.hireDate).m }} mois
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Rôles</label>
+                    <div class="role-badges">
+                        {% if form.vars.data.roles %}
+                            {% for role in form.vars.data.roles %}
+                                <span class="role-badge {{ role|lower|replace({'role_': ''}) }}">
+                                    {{ role|replace({'ROLE_': ''})|lower|title }}
+                                </span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="role-badge employee">Employee</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Sécurité -->
+    <div class="form-section">
+        <div class="section-header">
+            <h3><span class="icon">🔒</span> Sécurité du compte</h3>
+        </div>
+        <div class="section-body">
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.currentPassword, 'Mot de passe actuel', {'attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-prepend">🔑</span>
+                        {{ form_widget(form.currentPassword, {'attr': {'class': 'form-control' ~ (form.currentPassword.vars.errors|length > 0 ? ' is-invalid' : ''), 'placeholder': 'Mot de passe actuel'}}) }}
+                    </div>
+                    {{ form_errors(form.currentPassword, {'attr': {'class': 'invalid-feedback'}}) }}
+                    <div class="form-text">Requis seulement si vous changez le mot de passe</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.newPassword, 'Nouveau mot de passe', {'attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-prepend">🔒</span>
+                        {{ form_widget(form.newPassword, {'attr': {'class': 'form-control' ~ (form.newPassword.vars.errors|length > 0 ? ' is-invalid' : ''), 'placeholder': 'Nouveau mot de passe'}}) }}
+                    </div>
+                    {{ form_errors(form.newPassword, {'attr': {'class': 'invalid-feedback'}}) }}
+                    
+                    <!-- Indicateur de force du mot de passe -->
+                    <div class="password-strength" id="passwordStrength" style="display: none;">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <div class="strength-text" id="strengthText"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row single">
+                <div class="form-group">
+                    {{ form_label(form.confirmPassword, 'Confirmer le nouveau mot de passe', {'attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-prepend">🔒</span>
+                        {{ form_widget(form.confirmPassword, {'attr': {'class': 'form-control' ~ (form.confirmPassword.vars.errors|length > 0 ? ' is-invalid' : ''), 'placeholder': 'Confirmer le mot de passe'}}) }}
+                    </div>
+                    {{ form_errors(form.confirmPassword, {'attr': {'class': 'invalid-feedback'}}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions du formulaire -->
+    <div class="form-actions">
+        <a href="{{ path('employee_profile_show') }}" class="btn btn-secondary">
+            Annuler
+        </a>
+        <button type="submit" class="btn btn-primary">
+            Enregistrer les modifications
+        </button>
+    </div>
+</div>
+
+{{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion de l'aperçu de l'avatar
+    const avatarInput = document.querySelector('input[type="file"]');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const firstNameInput = document.querySelector('input[name*="[firstName]"]');
+    const lastNameInput = document.querySelector('input[name*="[lastName]"]');
+
+    if (avatarInput && avatarPreview) {
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarPreview.innerHTML = `<img src="${e.target.result}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Mise à jour de l'avatar basé sur les initiales
+    function updateAvatarInitials() {
+        if (firstNameInput && lastNameInput && avatarPreview) {
+            const firstName = firstNameInput.value.trim();
+            const lastName = lastNameInput.value.trim();
+            
+            if (firstName && lastName && !avatarPreview.querySelector('img')) {
+                avatarPreview.textContent = firstName.charAt(0).toUpperCase() + lastName.charAt(0).toUpperCase();
+            }
+        }
+    }
+
+    if (firstNameInput) firstNameInput.addEventListener('input', updateAvatarInitials);
+    if (lastNameInput) lastNameInput.addEventListener('input', updateAvatarInitials);
+
+    // Validation de la force du mot de passe
+    const newPasswordInput = document.querySelector('input[name*="[newPassword]"]');
+    const confirmPasswordInput = document.querySelector('input[name*="[confirmPassword]"]');
+    const strengthContainer = document.getElementById('passwordStrength');
+    const strengthFill = document.getElementById('strengthFill');
+    const strengthText = document.getElementById('strengthText');
+
+    if (newPasswordInput && strengthContainer) {
+        newPasswordInput.addEventListener('input', function() {
+            const password = this.value;
+            
+            if (password.length === 0) {
+                strengthContainer.style.display = 'none';
+                return;
+            }
+
+            strengthContainer.style.display = 'block';
+            
+            let strength = 0;
+            let text = '';
+            let className = '';
+
+            // Critères de force
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+            // Détermination du niveau
+            if (strength < 3) {
+                text = 'Faible';
+                className = 'strength-weak';
+                strengthFill.style.width = '33%';
+            } else if (strength < 4) {
+                text = 'Moyen';
+                className = 'strength-medium';
+                strengthFill.style.width = '66%';
+            } else {
+                text = 'Fort';
+                className = 'strength-strong';
+                strengthFill.style.width = '100%';
+            }
+
+            strengthFill.className = 'strength-fill ' + className;
+            strengthText.textContent = text;
+            strengthText.className = 'strength-text ' + className;
+        });
+    }
+
+    // Validation de la confirmation du mot de passe
+    if (confirmPasswordInput && newPasswordInput) {
+        function validatePasswordMatch() {
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (confirmPassword && newPassword !== confirmPassword) {
+                confirmPasswordInput.classList.add('is-invalid');
+                // Ajouter un message d'erreur si nécessaire
+                let errorDiv = confirmPasswordInput.parentNode.parentNode.querySelector('.password-mismatch-error');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'invalid-feedback password-mismatch-error';
+                    errorDiv.textContent = 'Les mots de passe ne correspondent pas';
+                    confirmPasswordInput.parentNode.parentNode.appendChild(errorDiv);
+                }
+            } else {
+                confirmPasswordInput.classList.remove('is-invalid');
+                const errorDiv = confirmPasswordInput.parentNode.parentNode.querySelector('.password-mismatch-error');
+                if (errorDiv) {
+                    errorDiv.remove();
+                }
+            }
+        }
+
+        confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+        newPasswordInput.addEventListener('input', validatePasswordMatch);
+    }
+
+    // Validation du formulaire avant soumission
+    const form = document.querySelector('.profile-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            // Vérification des champs requis
+            const requiredFields = form.querySelectorAll('input[required], select[required]');
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            // Vérification de la correspondance des mots de passe
+            if (newPasswordInput && confirmPasswordInput) {
+                if (newPasswordInput.value && newPasswordInput.value !== confirmPasswordInput.value) {
+                    confirmPasswordInput.classList.add('is-invalid');
+                    isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                // Faire défiler vers le premier champ avec erreur
+                const firstError = form.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+            }
+        });
+    }
+
+    // Animation des champs au focus
+    const formControls = document.querySelectorAll('.form-control');
+    formControls.forEach(control => {
+        control.addEventListener('focus', function() {
+            this.parentNode.style.transform = 'scale(1.02)';
+        });
+        
+        control.addEventListener('blur', function() {
+            this.parentNode.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>

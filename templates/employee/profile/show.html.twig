@@ -1,0 +1,813 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Profil - {{ user.firstName }} {{ user.lastName }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --card-shadow-hover: 0 15px 40px rgba(0,0,0,0.15);
+            --border-radius: 15px;
+        }
+
+        .profile-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 3rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateX(-100px) translateY(-100px); }
+            100% { transform: translateX(100px) translateY(100px); }
+        }
+
+        .profile-avatar {
+            position: relative;
+            display: inline-block;
+        }
+
+        .avatar-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--success-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-circle::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #fff, transparent, #fff);
+            border-radius: 50%;
+            z-index: -1;
+            animation: rotate 3s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .profile-info h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .profile-info .position {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .status-inactive {
+            background: rgba(255,255,255,0.1);
+            color: #ffcccb;
+            border: 2px solid rgba(255,204,203,0.3);
+        }
+
+        .profile-cards {
+            margin-top: -50px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.4s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .profile-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-right: 1rem;
+        }
+
+        .card-icon.personal { background: var(--primary-gradient); }
+        .card-icon.professional { background: var(--secondary-gradient); }
+        .card-icon.contact { background: var(--success-gradient); }
+        .card-icon.stats { background: var(--warning-gradient); }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2d3436;
+            margin: 0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            background: #f8f9ff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #6c5ce7;
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            background: #f1f2ff;
+            transform: translateX(5px);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #636e72;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            color: #2d3436;
+            font-weight: 500;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .action-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .btn-custom {
+            padding: 1rem 2.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+
+        .btn-light-custom {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-light-custom:hover {
+            background: white;
+            color: #f5576c;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-decoration: none;
+        }
+
+        .team-members {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .team-member {
+            background: #e8f4f8;
+            padding: 0.8rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #2d3436;
+            border: 2px solid #b3e0f2;
+            transition: all 0.3s ease;
+        }
+
+        .team-member:hover {
+            background: #d1ecf1;
+            transform: scale(1.05);
+        }
+
+        .alert-custom {
+            border: none;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .alert-info-custom {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+        }
+
+        @media (max-width: 768px) {
+            .profile-header {
+                padding: 2rem 0;
+            }
+
+            .avatar-circle {
+                width: 120px;
+                height: 120px;
+                font-size: 3rem;
+            }
+
+            .profile-info h1 {
+                font-size: 2rem;
+            }
+
+            .profile-cards {
+                margin-top: -30px;
+            }
+
+            .profile-card {
+                padding: 1.5rem;
+            }
+
+            .info-grid,
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="profile-wrapper">
+    <!-- Header du profil -->
+    <div class="profile-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    <div class="profile-avatar fade-in">
+                        <div class="avatar-circle">
+                            {{ user.firstName|first|upper }}{{ user.lastName|first|upper }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div class="profile-info fade-in">
+                        <h1>{{ user.firstName }} {{ user.lastName }}</h1>
+                        <p class="position">
+                            <i class="fas fa-briefcase me-2"></i>
+                            {{ user.position }}
+                        </p>
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <span class="status-badge {% if user.isActive %}status-active{% else %}status-inactive{% endif %}">
+                                <i class="fas {% if user.isActive %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                                {% if user.isActive %}Actif{% else %}Inactif{% endif %}
+                            </span>
+                            <span class="text-white-50">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                Depuis le {{ user.hireDate|date('d/m/Y') }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="profile-cards">
+            <!-- Informations personnelles -->
+            <div class="profile-card fade-in">
+                <div class="card-header">
+                    <div class="card-icon personal">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="card-title">Informations personnelles</h3>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-signature"></i>
+                            Prénom
+                        </div>
+                        <div class="info-value">{{ user.firstName }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-user-tag"></i>
+                            Nom
+                        </div>
+                        <div class="info-value">{{ user.lastName }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-envelope"></i>
+                            Email
+                        </div>
+                        <div class="info-value">{{ user.email }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-phone"></i>
+                            Téléphone
+                        </div>
+                        <div class="info-value">
+                            {{ user.phone|default('Non renseigné') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations professionnelles -->
+            <div class="profile-card fade-in">
+                <div class="card-header">
+                    <div class="card-icon professional">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3 class="card-title">Informations professionnelles</h3>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-briefcase"></i>
+                            Poste
+                        </div>
+                        <div class="info-value">{{ user.position }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-sitemap"></i>
+                            Département
+                        </div>
+                        <div class="info-value">
+                            {% if user.department %}
+                                {{ user.department.name }}
+                                <small class="text-muted d-block">({{ user.department.code }})</small>
+                            {% else %}
+                                <span class="text-muted">Non assigné</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-user-tie"></i>
+                            Manager
+                        </div>
+                        <div class="info-value">
+                            {% if user.manager %}
+                                {{ user.manager.firstName }} {{ user.manager.lastName }}
+                                <small class="text-muted d-block">{{ user.manager.position }}</small>
+                            {% else %}
+                                <span class="text-muted">Aucun manager assigné</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-calendar-check"></i>
+                            Date d'embauche
+                        </div>
+                        <div class="info-value">
+                            {{ user.hireDate|date('d/m/Y') }}
+                            <small class="text-muted d-block">
+                                Il y a {{ 'now'|date('U') - user.hireDate|date('U') | round / (365*24*3600) | round }} an(s)
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rôles et permissions -->
+            <div class="profile-card fade-in">
+                <div class="card-header">
+                    <div class="card-icon contact">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="card-title">Rôles et permissions</h3>
+                </div>
+                
+                <div class="team-members">
+                    {% if user.roles %}
+                        {% for role in user.roles %}
+                            <span class="team-member">
+                                <i class="fas fa-key me-2"></i>
+                                {% if role == 'ROLE_ADMIN' %}
+                                    Administrateur
+                                {% elseif role == 'ROLE_MANAGER' %}
+                                    Manager
+                                {% elseif role == 'ROLE_EMPLOYEE' %}
+                                    Employé
+                                {% else %}
+                                    {{ role }}
+                                {% endif %}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">Aucun rôle assigné</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Statistiques (simulées) -->
+            <div class="profile-card fade-in">
+                <div class="card-header">
+                    <div class="card-icon stats">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3 class="card-title">Statistiques</h3>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ random(15, 25) }}</div>
+                        <div class="stat-label">Jours de congés pris</div>
+                    </div>
+                    
+                    <div class="stat-card" style="background: var(--secondary-gradient);">
+                        <div class="stat-number">{{ random(5, 15) }}</div>
+                        <div class="stat-label">Jours restants</div>
+                    </div>
+                    
+                    <div class="stat-card" style="background: var(--success-gradient);">
+                        <div class="stat-number">{{ random(95, 100) }}%</div>
+                        <div class="stat-label">Taux de présence</div>
+                    </div>
+                    
+                    <div class="stat-card" style="background: var(--warning-gradient);">
+                        <div class="stat-number">{{ random(0, 5) }}</div>
+                        <div class="stat-label">Demandes en attente</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Équipes -->
+            {% if user.teamMemberships is defined and user.teamMemberships|length > 0 %}
+            <div class="profile-card fade-in">
+                <div class="card-header">
+                    <div class="card-icon contact">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="card-title">Mes équipes</h3>
+                </div>
+                
+                <div class="team-members">
+                    {% for membership in user.teamMemberships %}
+                        {% if membership.isActive %}
+                            <span class="team-member">
+                                <i class="fas fa-users me-2"></i>
+                                {{ membership.team.name }}
+                            </span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="action-section fade-in">
+                <h3 class="mb-3">
+                    <i class="fas fa-cogs me-2"></i>
+                    Actions disponibles
+                </h3>
+                <p class="mb-4">Gérez votre profil et vos informations personnelles</p>
+                
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{{ path('employee_profile_edit') }}" class="btn-custom btn-light-custom">
+                        <i class="fas fa-edit"></i>
+                        Modifier mon profil
+                    </a>
+                    
+                    <a href="{{ path('app_employee_leave_request_index') }}" class="btn-custom btn-light-custom">
+                        <i class="fas fa-calendar-alt"></i>
+                        Mes demandes de congés
+                    </a>
+                    
+                    <a href="{{ path('app_employee_attendance_index') }}" class="btn-custom btn-light-custom">
+                        <i class="fas fa-clock"></i>
+                        Mes présences
+                    </a>
+                </div>
+            </div>
+
+            <!-- Information contextuelle -->
+            <div class="alert-custom alert-info-custom fade-in">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Information :</strong> 
+                Ces informations sont synchronisées avec le système RH. 
+                Pour toute modification majeure, veuillez contacter votre manager ou le service RH.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation d'entrée échelonnée
+            const cards = document.querySelectorAll('.profile-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 150);
+            });
+
+            // Effet parallax sur le header
+            window.addEventListener('scroll', function() {
+                const scrolled = window.pageYOffset;
+                const header = document.querySelector('.profile-header');
+                if (header) {
+                    header.style.transform = `translateY(${scrolled * 0.5}px)`;
+                }
+            });
+
+            // Animation des statistiques au scroll
+            const observerOptions = {
+                threshold: 0.5,
+                rootMargin: '0px 0px -100px 0px'
+            };
+
+            const statsObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const statNumbers = entry.target.querySelectorAll('.stat-number');
+                        statNumbers.forEach(stat => {
+                            const finalValue = parseInt(stat.textContent);
+                            animateNumber(stat, 0, finalValue, 2000);
+                        });
+                        statsObserver.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            const statsSection = document.querySelector('.stats-grid');
+            if (statsSection) {
+                statsObserver.observe(statsSection);
+            }
+
+            // Fonction d'animation des nombres
+            function animateNumber(element, start, end, duration) {
+                const startTime = performance.now();
+                const isPercentage = element.textContent.includes('%');
+                
+                function updateNumber(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    const currentValue = Math.floor(start + (end - start) * easeOutQuart(progress));
+                    element.textContent = currentValue + (isPercentage ? '%' : '');
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(updateNumber);
+                    }
+                }
+                
+                requestAnimationFrame(updateNumber);
+            }
+
+            function easeOutQuart(t) {
+                return 1 - Math.pow(1 - t, 4);
+            }
+
+            // Effet de hover amélioré pour les cartes
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px) scale(1.02)';
+                    this.style.boxShadow = '0 20px 50px rgba(0,0,0,0.15)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
+                });
+            });
+
+            // Animation de l'avatar
+            const avatar = document.querySelector('.avatar-circle');
+            if (avatar) {
+                avatar.addEventListener('click', function() {
+                    this.style.transform = 'scale(1.1) rotate(360deg)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1) rotate(0deg)';
+                    }, 600);
+                });
+            }
+
+            // Toast notification pour les actions
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `alert alert-${type} position-fixed`;
+                toast.style.cssText = `
+                    top: 20px;
+                    right: 20px;
+                    z-index: 9999;
+                    min-width: 300px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                    border-radius: 10px;
+                    animation: slideInRight 0.3s ease-out;
+                `;
+                toast.innerHTML = `
+                    <i class="fas fa-info-circle me-2"></i>
+                    ${message}
+                `;
+                
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.animation = 'slideOutRight 0.3s ease-in forwards';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // Gestion des erreurs de chargement d'images
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                img.addEventListener('error', function() {
+                    this.style.display = 'none';
+                });
+            });
+        });
+
+        // Styles CSS pour les animations toast
+        const toastStyles = document.createElement('style');
+        toastStyles.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(toastStyles);
+    </script>
+{% endblock %}

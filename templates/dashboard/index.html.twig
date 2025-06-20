@@ -1,0 +1,514 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .dashboard-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .welcome-text {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .quick-actions {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .recent-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        .recent-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .recent-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f7fafc;
+        }
+        
+        .recent-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .recent-item {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .recent-item:hover {
+            background: #f7fafc;
+            border-left-color: #667eea;
+        }
+        
+        .item-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.25rem;
+        }
+        
+        .item-meta {
+            font-size: 0.875rem;
+            color: #718096;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending {
+            background: #fed7d7;
+            color: #c53030;
+        }
+        
+        .status-approved {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .status-rejected {
+            background: #fed7d7;
+            color: #c53030;
+        }
+        
+        .calendar-widget {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calendar-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .calendar-day.today {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .calendar-day.holiday {
+            background: #fed7d7;
+            color: #c53030;
+        }
+        
+        .calendar-day:hover:not(.today) {
+            background: #edf2f7;
+        }
+        
+        @media (max-width: 768px) {
+            .recent-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .welcome-text {
+                font-size: 2rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="dashboard-container">
+    <div class="container">
+        <!-- Header Section -->
+        <div class="dashboard-header">
+            <h1 class="welcome-text">
+                Bonjour, {{ app.user.firstName ?? 'Utilisateur' }} !
+            </h1>
+            <p class="text-muted mb-0">
+                <i class="fas fa-calendar-alt me-2"></i>
+                {{ "now"|date("l j F Y") }}
+            </p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fas fa-calendar-check text-white"></i>
+                </div>
+                <div class="stat-value">{{ leaveRequestsCount ?? 0 }}</div>
+                <div class="stat-label">Demandes de congés</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                    <i class="fas fa-clock text-white"></i>
+                </div>
+                <div class="stat-value">{{ pendingRequestsCount ?? 0 }}</div>
+                <div class="stat-label">En attente</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                    <i class="fas fa-users text-white"></i>
+                </div>
+                <div class="stat-value">{{ teamMembersCount ?? 0 }}</div>
+                <div class="stat-label">Membres équipe</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #96fbc4 0%, #f9f586 100%);">
+                    <i class="fas fa-chart-line text-white"></i>
+                </div>
+                <div class="stat-value">{{ remainingLeaveDays ?? 0 }}</div>
+                <div class="stat-label">Jours restants</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3 class="mb-4">
+                <i class="fas fa-bolt me-2"></i>
+                Actions rapides
+            </h3>
+            <div class="action-grid">
+                {% if is_granted('ROLE_EMPLOYEE') %}
+                    <a href="{{ path('employee_leave_request_new') }}" class="action-btn">
+                        <i class="fas fa-plus"></i>
+                        Nouvelle demande
+                    </a>
+                    <a href="{{ path('employee_attendance_new') }}" class="action-btn">
+                        <i class="fas fa-clock"></i>
+                        Pointer
+                    </a>
+                {% endif %}
+                
+                {% if is_granted('ROLE_MANAGER') %}
+                    <a href="{{ path('manager_approval_index') }}" class="action-btn">
+                        <i class="fas fa-check-circle"></i>
+                        Approuver demandes
+                    </a>
+                    <a href="{{ path('manager_report_index') }}" class="action-btn">
+                        <i class="fas fa-chart-bar"></i>
+                        Voir rapports
+                    </a>
+                {% endif %}
+                
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('admin_user_index') }}" class="action-btn">
+                        <i class="fas fa-users-cog"></i>
+                        Gérer utilisateurs
+                    </a>
+                    <a href="{{ path('admin_department_index') }}" class="action-btn">
+                        <i class="fas fa-building"></i>
+                        Départements
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Activities Section -->
+        <div class="recent-section">
+            <!-- Recent Leave Requests -->
+            <div class="recent-card">
+                <div class="recent-header">
+                    <h4 class="recent-title">
+                        <i class="fas fa-history me-2"></i>
+                        Demandes récentes
+                    </h4>
+                    <a href="{{ path('employee_leave_request_index') }}" class="btn btn-sm btn-outline-primary">
+                        Voir tout
+                    </a>
+                </div>
+                
+                {% if recentLeaveRequests is defined and recentLeaveRequests|length > 0 %}
+                    {% for request in recentLeaveRequests|slice(0, 5) %}
+                        <div class="recent-item">
+                            <div class="item-title">
+                                {{ request.leaveType.name }}
+                            </div>
+                            <div class="item-meta">
+                                Du {{ request.startDate|date('d/m/Y') }} au {{ request.endDate|date('d/m/Y') }}
+                                <span class="status-badge status-{{ request.status|lower }}">
+                                    {{ request.status }}
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-inbox fa-2x mb-3"></i>
+                        <p>Aucune demande récente</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="recent-card">
+                <div class="recent-header">
+                    <h4 class="recent-title">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Événements à venir
+                    </h4>
+                    <a href="{{ path('admin_holiday_index') }}" class="btn btn-sm btn-outline-primary">
+                        Calendrier
+                    </a>
+                </div>
+                
+                {% if upcomingEvents is defined and upcomingEvents|length > 0 %}
+                    {% for event in upcomingEvents|slice(0, 5) %}
+                        <div class="recent-item">
+                            <div class="item-title">
+                                {{ event.name }}
+                            </div>
+                            <div class="item-meta">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ event.date|date('d/m/Y') }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-calendar-times fa-2x mb-3"></i>
+                        <p>Aucun événement prévu</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Mini Calendar Widget -->
+        <div class="calendar-widget">
+            <div class="calendar-header">
+                <h4 class="recent-title">
+                    <i class="fas fa-calendar me-2"></i>
+                    {{ "now"|date("F Y") }}
+                </h4>
+            </div>
+            
+            <div class="calendar-grid">
+                <!-- Days of week headers -->
+                <div class="calendar-day fw-bold text-muted">Lun</div>
+                <div class="calendar-day fw-bold text-muted">Mar</div>
+                <div class="calendar-day fw-bold text-muted">Mer</div>
+                <div class="calendar-day fw-bold text-muted">Jeu</div>
+                <div class="calendar-day fw-bold text-muted">Ven</div>
+                <div class="calendar-day fw-bold text-muted">Sam</div>
+                <div class="calendar-day fw-bold text-muted">Dim</div>
+                
+                <!-- Calendar days (example for current month) -->
+                {% for i in 1..31 %}
+                    <div class="calendar-day {% if i == "now"|date("j") %}today{% endif %}">
+                        {{ i }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Notifications Panel -->
+        {% if notifications is defined and notifications|length > 0 %}
+            <div class="recent-card mt-4">
+                <div class="recent-header">
+                    <h4 class="recent-title">
+                        <i class="fas fa-bell me-2"></i>
+                        Notifications 
+                        <span class="badge bg-danger">{{ notifications|length }}</span>
+                    </h4>
+                    <a href="{{ path('employee_notification_index') }}" class="btn btn-sm btn-outline-primary">
+                        Tout voir
+                    </a>
+                </div>
+                
+                {% for notification in notifications|slice(0, 3) %}
+                    <div class="recent-item {% if not notification.isRead %}bg-light{% endif %}">
+                        <div class="item-title">
+                            {{ notification.title }}
+                        </div>
+                        <div class="item-meta">
+                            {{ notification.message|slice(0, 80) }}...
+                            <small class="text-muted ms-2">
+                                {{ notification.createdAt|date('d/m/Y H:i') }}
+                            </small>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Animation d'entrée pour les cartes
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.stat-card, .recent-card, .quick-actions');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+            
+            // Mise à jour de l'heure en temps réel
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('fr-FR');
+                const dateElement = document.querySelector('.dashboard-header p');
+                if (dateElement) {
+                    const dateText = dateElement.textContent.split(' - ')[0];
+                    dateElement.innerHTML = `<i class="fas fa-calendar-alt me-2"></i>${dateText} - ${timeString}`;
+                }
+            }
+            
+            // Mettre à jour l'heure chaque seconde
+            setInterval(updateTime, 1000);
+        });
+    </script>
+{% endblock %}

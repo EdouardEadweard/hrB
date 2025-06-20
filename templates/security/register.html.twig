@@ -1,0 +1,503 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .register-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .register-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .register-title {
+            color: #2d3748;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .register-subtitle {
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group.row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-group.row .col {
+            flex: 1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: #e53e3e;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: #f7fafc;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-control.is-invalid {
+            border-color: #e53e3e;
+            background-color: #fed7d7;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        .invalid-feedback {
+            display: block;
+            color: #e53e3e;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .strength-bar {
+            height: 4px;
+            background-color: #e2e8f0;
+            border-radius: 2px;
+            margin-bottom: 5px;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .strength-weak .strength-fill {
+            width: 33%;
+            background-color: #e53e3e;
+        }
+
+        .strength-medium .strength-fill {
+            width: 66%;
+            background-color: orange;
+        }
+
+        .strength-strong .strength-fill {
+            width: 100%;
+            background-color: #38a169;
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-register:active {
+            transform: translateY(0);
+        }
+
+        .btn-register:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .alert-danger {
+            background-color: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+
+        .alert-success {
+            background-color: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+
+        .form-text {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 480px) {
+            .register-card {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .form-group.row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="register-container">
+    <div class="register-card">
+        <div class="register-header">
+            <div class="register-logo">HR</div>
+            <h1 class="register-title">Créer un compte</h1>
+            <p class="register-subtitle">Rejoignez HR Flow pour gérer vos congés facilement</p>
+        </div>
+
+        {% for flash_error in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ flash_error }}
+            </div>
+        {% endfor %}
+
+        {% for flash_success in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ flash_success }}
+            </div>
+        {% endfor %}
+
+        {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate', 'id': 'registerForm'}}) }}
+            
+            <div class="form-group row">
+                <div class="col">
+                    {{ form_label(registrationForm.firstName, 'Prénom', {'label_attr': {'class': 'form-label required'}}) }}
+                    {{ form_widget(registrationForm.firstName, {'attr': {'class': 'form-control', 'placeholder': 'Votre prénom'}}) }}
+                    {{ form_errors(registrationForm.firstName) }}
+                </div>
+                <div class="col">
+                    {{ form_label(registrationForm.lastName, 'Nom', {'label_attr': {'class': 'form-label required'}}) }}
+                    {{ form_widget(registrationForm.lastName, {'attr': {'class': 'form-control', 'placeholder': 'Votre nom'}}) }}
+                    {{ form_errors(registrationForm.lastName) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.email, 'Adresse email', {'label_attr': {'class': 'form-label required'}}) }}
+                {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control', 'placeholder': 'votre.email@entreprise.com'}}) }}
+                {{ form_errors(registrationForm.email) }}
+                <div class="form-text">Utilisez votre adresse email professionnelle</div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.phone, 'Téléphone', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(registrationForm.phone, {'attr': {'class': 'form-control', 'placeholder': '+229 XX XX XX XX'}}) }}
+                {{ form_errors(registrationForm.phone) }}
+            </div>
+
+            <div class="form-group row">
+                <div class="col">
+                    {{ form_label(registrationForm.department, 'Département', {'label_attr': {'class': 'form-label required'}}) }}
+                    {{ form_widget(registrationForm.department, {'attr': {'class': 'form-control form-select'}}) }}
+                    {{ form_errors(registrationForm.department) }}
+                </div>
+                <div class="col">
+                    {{ form_label(registrationForm.position, 'Poste', {'label_attr': {'class': 'form-label required'}}) }}
+                    {{ form_widget(registrationForm.position, {'attr': {'class': 'form-control', 'placeholder': 'Votre poste'}}) }}
+                    {{ form_errors(registrationForm.position) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.hireDate, 'Date d\'embauche', {'label_attr': {'class': 'form-label required'}}) }}
+                {{ form_widget(registrationForm.hireDate, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(registrationForm.hireDate) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.password, 'Mot de passe', {'label_attr': {'class': 'form-label required'}}) }}
+                {{ form_widget(registrationForm.password, {'attr': {'class': 'form-control', 'placeholder': 'Choisissez un mot de passe sécurisé', 'id': 'password'}}) }}
+                {{ form_errors(registrationForm.password) }}
+                <div class="password-strength" id="passwordStrength" style="display: none;">
+                    <div class="strength-bar">
+                        <div class="strength-fill"></div>
+                    </div>
+                    <span class="strength-text"></span>
+                </div>
+                <div class="form-text">Minimum 8 caractères avec lettres, chiffres et caractères spéciaux</div>
+            </div>
+
+            
+
+            <button type="submit" class="btn-register" id="submitBtn">
+                Créer mon compte
+            </button>
+
+        {{ form_end(registrationForm) }}
+
+        <div class="login-link">
+            Vous avez déjà un compte ? <a href="{{ path('app_login') }}">Se connecter</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordField = document.getElementById('password');
+            const confirmPasswordField = document.getElementById('confirmPassword');
+            const passwordStrength = document.getElementById('passwordStrength');
+            const passwordMismatch = document.getElementById('passwordMismatch');
+            const submitBtn = document.getElementById('submitBtn');
+            const form = document.getElementById('registerForm');
+
+            // Validation du mot de passe en temps réel
+            if (passwordField) {
+                passwordField.addEventListener('input', function() {
+                    const password = this.value;
+                    
+                    if (password.length > 0) {
+                        passwordStrength.style.display = 'block';
+                        const strength = calculatePasswordStrength(password);
+                        updatePasswordStrength(strength);
+                    } else {
+                        passwordStrength.style.display = 'none';
+                    }
+                    
+                    checkPasswordMatch();
+                });
+            }
+
+            // Vérification de la correspondance des mots de passe
+            if (confirmPasswordField) {
+                confirmPasswordField.addEventListener('input', checkPasswordMatch);
+            }
+
+            function calculatePasswordStrength(password) {
+                let score = 0;
+                let feedback = [];
+
+                // Longueur
+                if (password.length >= 8) score += 1;
+                else feedback.push('8 caractères minimum');
+
+                // Lettres minuscules
+                if (/[a-z]/.test(password)) score += 1;
+                else feedback.push('lettres minuscules');
+
+                // Lettres majuscules
+                if (/[A-Z]/.test(password)) score += 1;
+                else feedback.push('lettres majuscules');
+
+                // Chiffres
+                if (/\d/.test(password)) score += 1;
+                else feedback.push('chiffres');
+
+                // Caractères spéciaux
+                if (/[^A-Za-z0-9]/.test(password)) score += 1;
+                else feedback.push('caractères spéciaux');
+
+                return {
+                    score: score,
+                    feedback: feedback
+                };
+            }
+
+            function updatePasswordStrength(strength) {
+                const strengthBar = passwordStrength.querySelector('.strength-bar');
+                const strengthText = passwordStrength.querySelector('.strength-text');
+
+                // Réinitialiser les classes
+                strengthBar.className = 'strength-bar';
+
+                if (strength.score <= 2) {
+                    strengthBar.classList.add('strength-weak');
+                    strengthText.textContent = 'Faible - Ajoutez: ' + strength.feedback.join(', ');
+                    strengthText.style.color = '#e53e3e';
+                } else if (strength.score <= 4) {
+                    strengthBar.classList.add('strength-medium');
+                    strengthText.textContent = 'Moyen - Ajoutez: ' + strength.feedback.join(', ');
+                    strengthText.style.color = 'orange';
+                } else {
+                    strengthBar.classList.add('strength-strong');
+                    strengthText.textContent = 'Fort - Excellent mot de passe !';
+                    strengthText.style.color = '#38a169';
+                }
+            }
+
+            function checkPasswordMatch() {
+                if (passwordField && confirmPasswordField) {
+                    const password = passwordField.value;
+                    const confirmPassword = confirmPasswordField.value;
+
+                    if (confirmPassword.length > 0) {
+                        if (password !== confirmPassword) {
+                            confirmPasswordField.classList.add('is-invalid');
+                            passwordMismatch.style.display = 'block';
+                        } else {
+                            confirmPasswordField.classList.remove('is-invalid');
+                            passwordMismatch.style.display = 'none';
+                        }
+                    } else {
+                        confirmPasswordField.classList.remove('is-invalid');
+                        passwordMismatch.style.display = 'none';
+                    }
+                }
+            }
+
+            // Validation du formulaire avant soumission
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    let isValid = true;
+                    const requiredFields = form.querySelectorAll('[required]');
+
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            field.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            field.classList.remove('is-invalid');
+                        }
+                    });
+
+                    // Vérifier la correspondance des mots de passe
+                    if (passwordField && confirmPasswordField) {
+                        if (passwordField.value !== confirmPasswordField.value) {
+                            confirmPasswordField.classList.add('is-invalid');
+                            passwordMismatch.style.display = 'block';
+                            isValid = false;
+                        }
+                    }
+
+                    if (!isValid) {
+                        e.preventDefault();
+                        // Scroll vers le premier champ invalide
+                        const firstInvalid = form.querySelector('.is-invalid');
+                        if (firstInvalid) {
+                            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            firstInvalid.focus();
+                        }
+                    } else {
+                        // Désactiver le bouton pour éviter les double soumissions
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = 'Création en cours...';
+                    }
+                });
+            }
+
+            // Animation d'apparition
+            setTimeout(() => {
+                document.querySelector('.register-card').style.opacity = '1';
+                document.querySelector('.register-card').style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+{% endblock %}

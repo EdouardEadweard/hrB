@@ -1,0 +1,647 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes notifications - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .notifications-container {
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        
+        .page-header {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .stats-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        
+        .stat-item {
+            flex: 1;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .filters-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e9ecef;
+            background: #fff;
+            border-radius: 20px;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+        
+        .notification-card {
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border-left: 4px solid #dee2e6;
+            cursor: pointer;
+        }
+        
+        .notification-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .notification-card.unread {
+            border-left-color: #007bff;
+            background: linear-gradient(90deg, #f8f9ff 0%, #fff 50%);
+        }
+        
+        .notification-card.read {
+            opacity: 0.8;
+        }
+        
+        .notification-content {
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .notification-icon {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        .notification-icon.info {
+            background: linear-gradient(135deg, #17a2b8, #20c997);
+        }
+        
+        .notification-icon.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .notification-icon.warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+        }
+        
+        .notification-icon.danger {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+        }
+        
+        .notification-body {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .notification-message {
+            color: #6c757d;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        
+        .notification-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .notification-date {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .notification-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .notification-status {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-unread {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status-read {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+        
+        .empty-title {
+            font-size: 1.5rem;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        
+        .empty-message {
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        
+        .pagination-wrapper {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .mark-all-read-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .mark-all-read-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .filter-buttons {
+                justify-content: center;
+            }
+            
+            .notification-content {
+                padding: 15px;
+                gap: 10px;
+            }
+            
+            .notification-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="notifications-container">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-10 offset-lg-1">
+                <!-- En-tête de page -->
+                <div class="page-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-2">
+                                <i class="fas fa-bell me-2"></i>
+                                Mes notifications
+                            </h1>
+                            <p class="text-muted mb-0">Restez informé de toutes vos activités RH</p>
+                        </div>
+                        
+                        {% if notifications|length > 0 %}
+                            <button class="mark-all-read-btn" onclick="markAllAsRead()">
+                                <i class="fas fa-check-double me-1"></i>
+                                Tout marquer comme lu
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Statistiques -->
+                {% set unreadCount = 0 %}
+                {% set readCount = 0 %}
+                {% for notification in notifications %}
+                    {% if notification.isRead %}
+                        {% set readCount = readCount + 1 %}
+                    {% else %}
+                        {% set unreadCount = unreadCount + 1 %}
+                    {% endif %}
+                {% endfor %}
+                
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ notifications|length }}</div>
+                        <div class="stat-label">Total notifications</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ unreadCount }}</div>
+                        <div class="stat-label">Non lues</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ readCount }}</div>
+                        <div class="stat-label">Lues</div>
+                    </div>
+                </div>
+
+                <!-- Filtres et recherche -->
+                <div class="filters-section">
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="searchNotifications" placeholder="Rechercher dans les notifications...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all">
+                            <i class="fas fa-list me-1"></i>
+                            Toutes
+                        </button>
+                        <button class="filter-btn" data-filter="unread">
+                            <i class="fas fa-envelope me-1"></i>
+                            Non lues ({{ unreadCount }})
+                        </button>
+                        <button class="filter-btn" data-filter="read">
+                            <i class="fas fa-envelope-open me-1"></i>
+                            Lues ({{ readCount }})
+                        </button>
+                        <button class="filter-btn" data-filter="leave">
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            Congés
+                        </button>
+                        <button class="filter-btn" data-filter="approval">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Approbations
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Liste des notifications -->
+                <div class="notifications-list" id="notificationsList">
+                    {% if notifications|length > 0 %}
+                        {% for notification in notifications %}
+                            <div class="notification-card fade-in {{ notification.isRead ? 'read' : 'unread' }}" 
+                                 data-type="{{ notification.type }}" 
+                                 data-read="{{ notification.isRead ? 'true' : 'false' }}"
+                                 onclick="toggleNotification({{ notification.id }})">
+                                
+                                <div class="notification-content">
+                                    <div class="notification-icon {{ notificationIconClasses[notification.type] ?? 'info' }}">
+                                        <i class="{{ notificationIcons[notification.type] ?? 'fas fa-bell' }}"></i>
+                                    </div>
+                                    
+                                    <div class="notification-body">
+                                        <div class="notification-title">
+                                            {{ notification.title }}
+                                            {% if not notification.isRead %}
+                                                <span class="badge bg-primary ms-2">Nouveau</span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="notification-message">
+                                            {{ notification.message }}
+                                        </div>
+                                        
+                                        <div class="notification-meta">
+                                            <div class="notification-date">
+                                                <i class="fas fa-clock me-1"></i>
+                                                {{ notification.createdAt|date('d/m/Y à H:i') }}
+                                                {% if notification.readAt %}
+                                                    <span class="ms-2">• Lu le {{ notification.readAt|date('d/m/Y à H:i') }}</span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="notification-actions">
+                                                {% if notification.leaveRequest %}
+                                                    <a href="{{ path('app_employee_leave_request_show', {'id': notification.leaveRequest.id}) }}" 
+                                                       class="btn btn-sm btn-outline-primary"
+                                                       onclick="event.stopPropagation()">
+                                                        <i class="fas fa-eye me-1"></i>
+                                                        Voir la demande
+                                                    </a>
+                                                {% endif %}
+                                                
+                                                <span class="notification-status {{ notification.isRead ? 'status-read' : 'status-unread' }}">
+                                                    {{ notification.isRead ? 'Lu' : 'Non lu' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-bell-slash"></i>
+                            </div>
+                            <h3 class="empty-title">Aucune notification</h3>
+                            <p class="empty-message">
+                                Vous n'avez pas encore de notifications.<br>
+                                Elles apparaîtront ici lorsque vous aurez des activités RH.
+                            </p>
+                            <a href="{{ path('employee_dashboard') }}" class="btn btn-primary">
+                                <i class="fas fa-tachometer-alt me-1"></i>
+                                Retour au tableau de bord
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Pagination -->
+                {% if notifications|length > 10 %}
+                    <div class="pagination-wrapper">
+                        <nav aria-label="Navigation des notifications">
+                            <ul class="pagination">
+                                <li class="page-item">
+                                    <a class="page-link" href="#" aria-label="Précédent">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" aria-label="Suivant">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Fonctions Twig pour les icônes #}
+{% set notificationIcons = {
+    'info': 'fas fa-info-circle',
+    'success': 'fas fa-check-circle',
+    'warning': 'fas fa-exclamation-triangle',
+    'danger': 'fas fa-times-circle',
+    'leave': 'fas fa-calendar-alt',
+    'approval': 'fas fa-user-check'
+} %}
+
+{% set notificationIconClasses = {
+    'info': 'info',
+    'success': 'success',
+    'warning': 'warning',
+    'danger': 'danger',
+    'leave': 'info',
+    'approval': 'success'
+} %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Filtrage des notifications
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Retirer la classe active de tous les boutons
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                // Ajouter la classe active au bouton cliqué
+                this.classList.add('active');
+                
+                const filter = this.dataset.filter;
+                filterNotifications(filter);
+            });
+        });
+        
+        function filterNotifications(filter) {
+            const notifications = document.querySelectorAll('.notification-card');
+            
+            notifications.forEach(notification => {
+                let show = false;
+                
+                switch(filter) {
+                    case 'all':
+                        show = true;
+                        break;
+                    case 'unread':
+                        show = notification.dataset.read === 'false';
+                        break;
+                    case 'read':
+                        show = notification.dataset.read === 'true';
+                        break;
+                    case 'leave':
+                        show = notification.dataset.type.includes('leave') || notification.dataset.type.includes('congé');
+                        break;
+                    case 'approval':
+                        show = notification.dataset.type.includes('approval') || notification.dataset.type.includes('approbation');
+                        break;
+                }
+                
+                if (show) {
+                    notification.style.display = 'block';
+                    notification.classList.add('fade-in');
+                } else {
+                    notification.style.display = 'none';
+                }
+            });
+        }
+        
+        // Recherche dans les notifications
+        document.getElementById('searchNotifications').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const notifications = document.querySelectorAll('.notification-card');
+            
+            notifications.forEach(notification => {
+                const title = notification.querySelector('.notification-title').textContent.toLowerCase();
+                const message = notification.querySelector('.notification-message').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || message.includes(searchTerm)) {
+                    notification.style.display = 'block';
+                } else {
+                    notification.style.display = 'none';
+                }
+            });
+        });
+        
+        // Marquer une notification comme lue/non lue
+        function toggleNotification(notificationId) {
+            // Simuler l'appel AJAX pour marquer comme lu
+            console.log('Marquer la notification ' + notificationId + ' comme lue');
+            
+            // Mettre à jour l'interface
+            const card = event.currentTarget;
+            card.classList.remove('unread');
+            card.classList.add('read');
+            card.dataset.read = 'true';
+            
+            // Mettre à jour le badge
+            const badge = card.querySelector('.badge');
+            if (badge) {
+                badge.remove();
+            }
+            
+            // Mettre à jour le statut
+            const status = card.querySelector('.notification-status');
+            status.textContent = 'Lu';
+            status.className = 'notification-status status-read';
+            
+            // Mettre à jour les statistiques
+            updateStats();
+        }
+        
+        // Marquer toutes les notifications comme lues
+        function markAllAsRead() {
+            if (confirm('Êtes-vous sûr de vouloir marquer toutes les notifications comme lues ?')) {
+                document.querySelectorAll('.notification-card.unread').forEach(card => {
+                    card.classList.remove('unread');
+                    card.classList.add('read');
+                    card.dataset.read = 'true';
+                    
+                    const badge = card.querySelector('.badge');
+                    if (badge) badge.remove();
+                    
+                    const status = card.querySelector('.notification-status');
+                    status.textContent = 'Lu';
+                    status.className = 'notification-status status-read';
+                });
+                
+                updateStats();
+                
+                // Animation de succès
+                const btn = document.querySelector('.mark-all-read-btn');
+                btn.innerHTML = '<i class="fas fa-check me-1"></i> Toutes marquées !';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-check-double me-1"></i> Tout marquer comme lu';
+                }, 2000);
+            }
+        }
+        
+        // Mettre à jour les statistiques
+        function updateStats() {
+            const unreadCards = document.querySelectorAll('.notification-card[data-read="false"]');
+            const readCards = document.querySelectorAll('.notification-card[data-read="true"]');
+            
+            document.querySelector('.stats-bar .stat-item:nth-child(2) .stat-number').textContent = unreadCards.length;
+            document.querySelector('.stats-bar .stat-item:nth-child(3) .stat-number').textContent = readCards.length;
+            
+            // Mettre à jour les boutons de filtre
+            document.querySelector('[data-filter="unread"]').innerHTML = `<i class="fas fa-envelope me-1"></i> Non lues (${unreadCards.length})`;
+            document.querySelector('[data-filter="read"]').innerHTML = `<i class="fas fa-envelope-open me-1"></i> Lues (${readCards.length})`;
+        }
+        
+        // Animation d'apparition au scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        });
+        
+        document.querySelectorAll('.notification-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+{% endblock %}

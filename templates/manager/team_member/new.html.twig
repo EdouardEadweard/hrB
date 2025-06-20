@@ -1,0 +1,695 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un membre d'équipe - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .page-header .container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #2196F3, #21CBF3, #4CAF50);
+        }
+        
+        .form-step {
+            margin-bottom: 2rem;
+        }
+        
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-right: 1rem;
+            box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
+        }
+        
+        .step-title {
+            margin: 0;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-label i {
+            margin-right: 0.5rem;
+            color: #2196F3;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #2196F3;
+            box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.25);
+            transform: translateY(-1px);
+        }
+        
+        .employee-card {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            background: white;
+        }
+        
+        .employee-card:hover {
+            border-color: #2196F3;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .employee-card.selected {
+            border-color: #4CAF50;
+            background: #f8fff8;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .employee-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        
+        .employee-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
+        }
+        
+        .employee-info h5 {
+            margin-bottom: 0.25rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .employee-info .text-muted {
+            font-size: 0.9rem;
+        }
+        
+        .department-badge {
+            background: linear-gradient(45deg, #17a2b8, #20c997);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            z-index: 2;
+        }
+        
+        .search-box input {
+            padding-left: 3rem;
+        }
+        
+        .action-buttons {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-info {
+            background: linear-gradient(45deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .role-option {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .role-option:hover {
+            border-color: #2196F3;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.2);
+        }
+        
+        .role-option.selected {
+            border-color: #4CAF50;
+            background: #f8fff8;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .role-option i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #2196F3;
+        }
+        
+        .role-option.selected i {
+            color: #4CAF50;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            .employee-card {
+                padding: 1rem;
+            }
+            
+            .employee-avatar {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2">
+                        <i class="fas fa-user-plus me-3"></i>
+                        Ajouter un membre d'équipe
+                    </h1>
+                    <p class="mb-0 opacity-75">
+                        Ajoutez de nouveaux membres à votre équipe {{ team.name|default('') }}
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{{ path('manager_team_member_index') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Formulaire principal -->
+                <div class="form-container">
+                    {{ form_start(form) }}
+                    
+                    <!-- Étape 1: Sélection de l'équipe -->
+                    <div class="form-step">
+                        <div class="step-header">
+                            <div class="step-number">1</div>
+                            <h3 class="step-title">Sélection de l'équipe</h3>
+                        </div>
+                        
+                            <div class="form-group">
+                                <label for="{{ form.team.vars.id }}" class="form-label">
+                                    <i class="fas fa-users"></i>
+                                    Équipe cible
+                                </label>
+                                {{ form_widget(form.team, {'attr': {'class': 'form-select'}}) }}
+                                <div class="form-text">
+                                    Sélectionnez l'équipe à laquelle vous souhaitez ajouter le membre
+                                </div>
+                                {{ form_errors(form.team) }}
+                            </div>
+                            
+                    </div>
+
+                    <!-- Étape 2: Sélection de l'employé -->
+                    <div class="form-step">
+                        <div class="step-header">
+                            <div class="step-number">2</div>
+                            <h3 class="step-title">Sélection de l'employé</h3>
+                        </div>
+                        
+                        <!-- Barre de recherche -->
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" class="form-control" id="employeeSearch" 
+                                   placeholder="Rechercher un employé par nom, prénom ou poste...">
+                        </div>
+                        
+                        <!-- Liste des employés disponibles -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user"></i>
+                                Employé à ajouter
+                            </label>
+                            
+                            {% if available_employees is defined and available_employees|length > 0 %}
+                                <div id="employeesList">
+                                    {% for employee in available_employees %}
+                                        <div class="employee-card" data-employee-id="{{ employee.id }}" 
+                                             data-search="{{ employee.firstName|lower }} {{ employee.lastName|lower }} {{ employee.position|lower }} {{ employee.department.name|lower }}">
+                                            <div class="d-flex align-items-center">
+                                                <div class="employee-avatar">
+                                                    {{ employee.firstName|slice(0,1)|upper }}{{ employee.lastName|slice(0,1)|upper }}
+                                                </div>
+                                                <div class="employee-info flex-grow-1">
+                                                    <h5>{{ employee.firstName }} {{ employee.lastName }}</h5>
+                                                    <div class="text-muted">
+                                                        <i class="fas fa-briefcase me-1"></i>{{ employee.position }}
+                                                    </div>
+                                                    <div class="mt-2">
+                                                        <span class="department-badge">{{ employee.department.name }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="employee-details text-end">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-envelope me-1"></i>{{ employee.email }}
+                                                    </small>
+                                                    {% if employee.phone %}
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-phone me-1"></i>{{ employee.phone }}
+                                                        </small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- Champ caché pour l'employé sélectionné -->
+                                {{ form_widget(form.user, {'attr': {'style': 'display: none;', 'id': 'selectedEmployee'}}) }}
+                                {{ form_errors(form.user) }}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-users-slash"></i>
+                                    <h5>Aucun employé disponible</h5>
+                                    <p class="text-muted">
+                                        Tous les employés de votre département sont déjà membres de cette équipe
+                                        ou aucun employé n'est disponible pour être ajouté.
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Étape 3: Configuration du rôle -->
+                    {% if form.role is defined %}
+                        <div class="form-step">
+                            <div class="step-header">
+                                <div class="step-number">3</div>
+                                <h3 class="step-title">Rôle dans l'équipe</h3>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-user-tag"></i>
+                                    Rôle du membre dans l'équipe
+                                </label>
+                                
+                                <div class="role-selector">
+                                    <div class="role-option" data-role="member">
+                                        <i class="fas fa-user"></i>
+                                        <h6>Membre</h6>
+                                        <small class="text-muted">Membre standard de l'équipe</small>
+                                    </div>
+                                    <div class="role-option" data-role="senior">
+                                        <i class="fas fa-user-tie"></i>
+                                        <h6>Membre Senior</h6>
+                                        <small class="text-muted">Membre expérimenté avec responsabilités</small>
+                                    </div>
+                                    <div class="role-option" data-role="lead">
+                                        <i class="fas fa-user-crown"></i>
+                                        <h6>Chef d'équipe adjoint</h6>
+                                        <small class="text-muted">Assiste le chef d'équipe</small>
+                                    </div>
+                                </div>
+                                
+                                {{ form_widget(form.role, {'attr': {'style': 'display: none;', 'id': 'selectedRole'}}) }}
+                                {{ form_errors(form.role) }}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Étape 4: Informations supplémentaires -->
+                    <div class="form-step">
+                        <div class="step-header">
+                            <div class="step-number">4</div>
+                            <h3 class="step-title">Informations supplémentaires</h3>
+                        </div>
+                        
+                        {% if form.joinedAt is defined %}
+                            <div class="form-group">
+                                <label for="{{ form.joinedAt.vars.id }}" class="form-label">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    Date d'intégration à l'équipe
+                                </label>
+                                {{ form_widget(form.joinedAt, {'attr': {'class': 'form-control', 'value': 'now'|date('Y-m-d')}}) }}
+                                <div class="form-text">
+                                    Date à laquelle le membre rejoint officiellement l'équipe
+                                </div>
+                                {{ form_errors(form.joinedAt) }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if form.notes is defined %}
+                            <div class="form-group">
+                                <label for="{{ form.notes.vars.id }}" class="form-label">
+                                    <i class="fas fa-sticky-note"></i>
+                                    Notes (optionnel)
+                                </label>
+                                {{ form_widget(form.notes, {'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'Notes concernant l\'ajout de ce membre à l\'équipe...'}}) }}
+                                {{ form_errors(form.notes) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-primary btn-lg me-3" id="submitBtn" disabled>
+                            <i class="fas fa-user-plus me-2"></i>
+                            Ajouter le membre
+                        </button>
+                        
+                        <a href="{{ path('manager_team_member_index') }}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times me-2"></i>
+                            Annuler
+                        </a>
+                    </div>
+                    
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Messages Flash -->
+{% for type, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div class="toast show align-items-center text-white bg-{{ type == 'success' ? 'success' : (type == 'error' ? 'danger' : 'info') }} border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-{{ type == 'success' ? 'check-circle' : (type == 'error' ? 'exclamation-circle' : 'info-circle') }} me-2"></i>
+                        {{ message }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endfor %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Éléments du DOM
+            const employeeCards = document.querySelectorAll('.employee-card');
+            const selectedEmployeeInput = document.getElementById('selectedEmployee');
+            const submitBtn = document.getElementById('submitBtn');
+            const searchInput = document.getElementById('employeeSearch');
+            const roleOptions = document.querySelectorAll('.role-option');
+            const selectedRoleInput = document.getElementById('selectedRole');
+            
+            // Gestion de la sélection d'employé
+            employeeCards.forEach(function(card) {
+                card.addEventListener('click', function() {
+                    // Désélectionner tous les autres
+                    employeeCards.forEach(function(otherCard) {
+                        otherCard.classList.remove('selected');
+                    });
+                    
+                    // Sélectionner la carte cliquée
+                    this.classList.add('selected');
+                    
+                    // Mettre à jour la valeur du champ caché
+                    const employeeId = this.getAttribute('data-employee-id');
+                    selectedEmployeeInput.value = employeeId;
+                    
+                    // Activer le bouton de soumission
+                    updateSubmitButton();
+                });
+            });
+            
+            // Gestion de la sélection de rôle
+            roleOptions.forEach(function(option) {
+                option.addEventListener('click', function() {
+                    // Désélectionner toutes les autres options
+                    roleOptions.forEach(function(otherOption) {
+                        otherOption.classList.remove('selected');
+                    });
+                    
+                    // Sélectionner l'option cliquée
+                    this.classList.add('selected');
+                    
+                    // Mettre à jour la valeur du champ caché
+                    const role = this.getAttribute('data-role');
+                    if (selectedRoleInput) {
+                        selectedRoleInput.value = role;
+                    }
+                });
+            });
+            
+            // Fonction pour mettre à jour l'état du bouton de soumission
+            function updateSubmitButton() {
+                const hasSelectedEmployee = selectedEmployeeInput && selectedEmployeeInput.value;
+                
+                if (hasSelectedEmployee) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('btn-secondary');
+                    submitBtn.classList.add('btn-primary');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.remove('btn-primary');
+                    submitBtn.classList.add('btn-secondary');
+                }
+            }
+            
+            // Fonction de recherche d'employés
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    
+                    employeeCards.forEach(function(card) {
+                        const searchData = card.getAttribute('data-search');
+                        
+                        if (searchData.includes(searchTerm)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+            
+            // Initialiser l'état du bouton
+            updateSubmitButton();
+            
+            // Sélectionner le premier rôle par défaut si disponible
+            if (roleOptions.length > 0) {
+                roleOptions[0].click();
+            }
+            
+            // Auto-hide toasts
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(function(toast) {
+                setTimeout(function() {
+                    toast.classList.remove('show');
+                }, 5000);
+            });
+            
+            // Animation des étapes au scroll
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.form-step').forEach(function(step) {
+                step.style.opacity = '0';
+                step.style.transform = 'translateY(20px)';
+                step.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(step);
+            });
+        });
+        
+        // Confirmation avant soumission
+        document.getElementById('submitBtn').addEventListener('click', function(e) {
+            const selectedCard = document.querySelector('.employee-card.selected');
+            if (selectedCard) {
+                const employeeName = selectedCard.querySelector('h5').textContent;
+                if (!confirm(`Êtes-vous sûr de vouloir ajouter ${employeeName} à l'équipe ?`)) {
+                    e.preventDefault();
+                }
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,494 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la présence - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .attendance-edit-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-bottom: none;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .card-header .subtitle {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background-color: #fff;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            background-color: #fef2f2;
+        }
+
+        .invalid-feedback {
+            display: block;
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .form-row-full {
+            grid-column: 1 / -1;
+        }
+
+        .time-input-group {
+            position: relative;
+        }
+
+        .time-input-group .form-control {
+            padding-right: 3rem;
+        }
+
+        .time-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            pointer-events: none;
+        }
+
+        .status-select {
+            position: relative;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-present { background-color: #d1fae5; color: #065f46; }
+        .status-absent { background-color: #fee2e2; color: #991b1b; }
+        .status-late { background-color: #fef3c7; color: #92400e; }
+        .status-partial { background-color: #dbeafe; color: #1e40af; }
+
+        .worked-hours-display {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        .worked-hours-display .hours {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .worked-hours-display .label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+            text-decoration: none;
+            color: #374151;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border: none;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb-item {
+            color: #6b7280;
+        }
+
+        .breadcrumb-item a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-item.active {
+            color: #374151;
+        }
+
+        @media (max-width: 768px) {
+            .attendance-edit-container {
+                padding: 1rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .card-body {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="attendance-edit-container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ path('employee_dashboard') }}">Tableau de bord</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ path('employee_attendance_index') }}">Mes présences</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    Modifier présence
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Alertes d'information -->
+        {% if attendance.workDate < date('-7 days') %}
+            <div class="alert alert-warning">
+                <strong>Attention :</strong> Vous modifiez une présence datant de plus de 7 jours. 
+                Assurez-vous que cette modification est justifiée.
+            </div>
+        {% endif %}
+
+        <!-- Carte principale -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Modifier la présence</h2>
+                <p class="subtitle">
+                    Date : {{ attendance.workDate|date('d/m/Y') }} ({{ attendance.workDate|date('l')|trans }})
+                </p>
+            </div>
+
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'class': 'attendance-form', 'novalidate': 'novalidate'}}) }}
+                
+                <div class="form-row">
+                    <!-- Date de travail -->
+                    <div class="form-group">
+                        {{ form_label(form.workDate, 'Date de travail', {'attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.workDate, {'attr': {'class': 'form-control' ~ (form.workDate.vars.errors|length > 0 ? ' is-invalid' : '')}}) }}
+                        {{ form_errors(form.workDate, {'attr': {'class': 'invalid-feedback'}}) }}
+                    </div>
+
+                    <!-- Status -->
+                    <div class="form-group">
+                        {{ form_label(form.status, 'Statut', {'attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.status, {'attr': {'class': 'form-control status-select' ~ (form.status.vars.errors|length > 0 ? ' is-invalid' : ''), 'data-current-status': attendance.status}}) }}
+                        {{ form_errors(form.status, {'attr': {'class': 'invalid-feedback'}}) }}
+                        
+                        <!-- Badge de statut actuel -->
+                        <div style="margin-top: 0.5rem;">
+                            <span class="status-badge status-{{ attendance.status|lower }}">
+                                {{ attendance.status|trans }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!-- Heure d'arrivée -->
+                    <div class="form-group">
+                        {{ form_label(form.checkIn, 'Heure d\'arrivée', {'attr': {'class': 'form-label'}}) }}
+                        <div class="time-input-group">
+                            {{ form_widget(form.checkIn, {'attr': {'class': 'form-control' ~ (form.checkIn.vars.errors|length > 0 ? ' is-invalid' : ''), 'step': '60'}}) }}
+                            <span class="time-icon">🕐</span>
+                        </div>
+                        {{ form_errors(form.checkIn, {'attr': {'class': 'invalid-feedback'}}) }}
+                    </div>
+
+                    <!-- Heure de départ -->
+                    <div class="form-group">
+                        {{ form_label(form.checkOut, 'Heure de départ', {'attr': {'class': 'form-label'}}) }}
+                        <div class="time-input-group">
+                            {{ form_widget(form.checkOut, {'attr': {'class': 'form-control' ~ (form.checkOut.vars.errors|length > 0 ? ' is-invalid' : ''), 'step': '60'}}) }}
+                            <span class="time-icon">🕐</span>
+                        </div>
+                        {{ form_errors(form.checkOut, {'attr': {'class': 'invalid-feedback'}}) }}
+                    </div>
+                </div>
+
+                <!-- Affichage des heures travaillées -->
+                <div class="form-group">
+                    <label class="form-label">Heures travaillées</label>
+                    <div class="worked-hours-display" id="workedHoursDisplay">
+                        <div class="hours" id="hoursValue">
+                            {% if attendance.workedHours %}
+                                {{ attendance.workedHours }}h
+                            {% else %}
+                                --h
+                            {% endif %}
+                        </div>
+                        <div class="label">Calculées automatiquement</div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group form-row-full">
+                    {{ form_label(form.notes, 'Notes et commentaires', {'attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.notes, {'attr': {'class': 'form-control' ~ (form.notes.vars.errors|length > 0 ? ' is-invalid' : ''), 'rows': '4', 'placeholder': 'Ajoutez des notes ou commentaires sur cette journée de travail...'}}) }}
+                    {{ form_errors(form.notes, {'attr': {'class': 'invalid-feedback'}}) }}
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="btn-group">
+                    <a href="{{ path('employee_attendance_index') }}" class="btn btn-secondary">
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        Enregistrer les modifications
+                    </button>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkInInput = document.querySelector('input[name*="[checkIn]"]');
+            const checkOutInput = document.querySelector('input[name*="[checkOut]"]');
+            const hoursDisplay = document.getElementById('hoursValue');
+            const statusSelect = document.querySelector('select[name*="[status]"]');
+
+            // Fonction pour calculer les heures travaillées
+            function calculateWorkedHours() {
+                if (checkInInput.value && checkOutInput.value) {
+                    const checkIn = new Date('1970-01-01T' + checkInInput.value + ':00');
+                    const checkOut = new Date('1970-01-01T' + checkOutInput.value + ':00');
+                    
+                    if (checkOut > checkIn) {
+                        const diffMs = checkOut - checkIn;
+                        const diffHours = Math.round(diffMs / (1000 * 60 * 60) * 10) / 10;
+                        hoursDisplay.textContent = diffHours + 'h';
+                        
+                        // Mise à jour automatique du statut basé sur les heures
+                        updateStatusBasedOnHours(diffHours);
+                    } else {
+                        hoursDisplay.textContent = '--h';
+                    }
+                } else {
+                    hoursDisplay.textContent = '--h';
+                }
+            }
+
+            // Fonction pour mettre à jour le statut basé sur les heures
+            function updateStatusBasedOnHours(hours) {
+                if (statusSelect && hours > 0) {
+                    if (hours >= 8) {
+                        statusSelect.value = 'present';
+                    } else if (hours >= 4) {
+                        statusSelect.value = 'partial';
+                    } else if (hours > 0) {
+                        statusSelect.value = 'late';
+                    }
+                }
+            }
+
+            // Écouteurs d'événements
+            if (checkInInput) {
+                checkInInput.addEventListener('change', calculateWorkedHours);
+                checkInInput.addEventListener('input', calculateWorkedHours);
+            }
+
+            if (checkOutInput) {
+                checkOutInput.addEventListener('change', calculateWorkedHours);
+                checkOutInput.addEventListener('input', calculateWorkedHours);
+            }
+
+            // Validation en temps réel
+            function validateTimeInputs() {
+                const checkInTime = checkInInput.value;
+                const checkOutTime = checkOutInput.value;
+
+                // Réinitialisation des styles d'erreur
+                checkInInput.classList.remove('is-invalid');
+                checkOutInput.classList.remove('is-invalid');
+
+                if (checkInTime && checkOutTime) {
+                    if (checkOutTime <= checkInTime) {
+                        checkOutInput.classList.add('is-invalid');
+                        // Ajouter un message d'erreur dynamique si nécessaire
+                    }
+                }
+            }
+
+            if (checkInInput && checkOutInput) {
+                checkInInput.addEventListener('blur', validateTimeInputs);
+                checkOutInput.addEventListener('blur', validateTimeInputs);
+            }
+
+            // Calcul initial des heures
+            calculateWorkedHours();
+
+            // Animation pour les changements de statut
+            if (statusSelect) {
+                statusSelect.addEventListener('change', function() {
+                    const badge = document.querySelector('.status-badge');
+                    if (badge) {
+                        badge.className = 'status-badge status-' + this.value.toLowerCase();
+                        badge.textContent = this.options[this.selectedIndex].text;
+                    }
+                });
+            }
+
+            // Confirmation avant soumission si les heures sont inhabituelles
+            const form = document.querySelector('.attendance-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const hoursText = hoursDisplay.textContent;
+                    const hours = parseFloat(hoursText.replace('h', ''));
+                    
+                    if (hours > 12) {
+                        if (!confirm('Attention : Vous avez saisi plus de 12 heures de travail. Êtes-vous sûr de vouloir continuer ?')) {
+                            e.preventDefault();
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,420 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail de la demande de congé - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .status-badge {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #00b894;
+        }
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #e17055;
+        }
+        .info-item {
+            border-left: 4px solid #667eea;
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+        .action-buttons {
+            position: sticky;
+            top: 20px;
+            z-index: 10;
+        }
+        .btn-approve {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-approve:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4);
+            color: white;
+        }
+        .btn-reject {
+            background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(225, 112, 85, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(225, 112, 85, 0.4);
+            color: white;
+        }
+        .employee-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #667eea;
+        }
+        .leave-calendar {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .date-range {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3436;
+        }
+        .comment-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <!-- En-tête avec navigation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('manager_dashboard') }}" class="text-decoration-none">
+                            <i class="fas fa-tachometer-alt me-1"></i>Tableau de bord
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('manager_approval_index') }}" class="text-decoration-none">
+                            <i class="fas fa-clipboard-check me-1"></i>Demandes à approuver
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        Demande #{{ leaveRequest.id }}
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Contenu principal -->
+        <div class="col-lg-8">
+            <!-- Carte principale de la demande -->
+            <div class="card shadow-sm mb-4 fade-in">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Demande de congé #{{ leaveRequest.id }}
+                    </h4>
+                    <span class="status-badge status-{{ leaveRequest.status|lower }}">
+                        {% if leaveRequest.status == 'PENDING' %}
+                            <i class="fas fa-clock me-1"></i>En attente
+                        {% elseif leaveRequest.status == 'APPROVED' %}
+                            <i class="fas fa-check me-1"></i>Approuvée
+                        {% elseif leaveRequest.status == 'REJECTED' %}
+                            <i class="fas fa-times me-1"></i>Rejetée
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <!-- Informations sur l'employé -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="employee-avatar me-3">
+                                    {{ leaveRequest.employee.firstName|first }}{{ leaveRequest.employee.lastName|first }}
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">{{ leaveRequest.employee.firstName }} {{ leaveRequest.employee.lastName }}</h5>
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-briefcase me-1"></i>{{ leaveRequest.employee.position }}
+                                    </p>
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-building me-1"></i>{{ leaveRequest.employee.department.name }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <small class="text-muted">Date de soumission</small>
+                                <p class="mb-0 fw-bold">
+                                    <i class="fas fa-paper-plane me-1"></i>
+                                    {{ leaveRequest.submittedAt|date('d/m/Y à H:i') }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Détails du congé -->
+                    <div class="leave-calendar">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-tag fs-2 text-primary mb-2"></i>
+                                    <h6 class="text-muted">Type de congé</h6>
+                                    <p class="fw-bold mb-0">{{ leaveRequest.leaveType.name }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-calendar-week fs-2 text-success mb-2"></i>
+                                    <h6 class="text-muted">Durée</h6>
+                                    <p class="fw-bold mb-0">{{ leaveRequest.numberOfDays }} jour{% if leaveRequest.numberOfDays > 1 %}s{% endif %}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-calendar-range fs-2 text-info mb-2"></i>
+                                    <h6 class="text-muted">Période</h6>
+                                    <p class="date-range mb-0">
+                                        {{ leaveRequest.startDate|date('d/m/Y') }}
+                                        {% if leaveRequest.startDate != leaveRequest.endDate %}
+                                            <br><small>au</small><br>
+                                            {{ leaveRequest.endDate|date('d/m/Y') }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Motif de la demande -->
+                    {% if leaveRequest.reason %}
+                        <div class="comment-section">
+                            <h6 class="text-muted mb-3">
+                                <i class="fas fa-comment-dots me-2"></i>Motif de la demande
+                            </h6>
+                            <p class="mb-0">{{ leaveRequest.reason|nl2br }}</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- Commentaire du manager (si déjà traité) -->
+                    {% if leaveRequest.managerComment and leaveRequest.status != 'PENDING' %}
+                        <div class="comment-section">
+                            <h6 class="text-muted mb-3">
+                                <i class="fas fa-user-tie me-2"></i>Commentaire du manager
+                            </h6>
+                            <p class="mb-2">{{ leaveRequest.managerComment|nl2br }}</p>
+                            {% if leaveRequest.processedAt %}
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Traité le {{ leaveRequest.processedAt|date('d/m/Y à H:i') }}
+                                    {% if leaveRequest.approvedBy %}
+                                        par {{ leaveRequest.approvedBy.firstName }} {{ leaveRequest.approvedBy.lastName }}
+                                    {% endif %}
+                                </small>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Historique des actions (Timeline) -->
+            <div class="card shadow-sm fade-in">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Historique de la demande
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline-item">
+                        <strong>Demande soumise</strong>
+                        <p class="text-muted mb-0">
+                            {{ leaveRequest.submittedAt|date('d/m/Y à H:i') }} par {{ leaveRequest.employee.firstName }} {{ leaveRequest.employee.lastName }}
+                        </p>
+                    </div>
+                    {% if leaveRequest.processedAt %}
+                        <div class="timeline-item">
+                            <strong>
+                                {% if leaveRequest.status == 'APPROVED' %}
+                                    Demande approuvée
+                                {% elseif leaveRequest.status == 'REJECTED' %}
+                                    Demande rejetée
+                                {% endif %}
+                            </strong>
+                            <p class="text-muted mb-0">
+                                {{ leaveRequest.processedAt|date('d/m/Y à H:i') }}
+                                {% if leaveRequest.approvedBy %}
+                                    par {{ leaveRequest.approvedBy.firstName }} {{ leaveRequest.approvedBy.lastName }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar avec actions -->
+        <div class="col-lg-4">
+            <div class="action-buttons">
+                <!-- Actions principales -->
+                {% if leaveRequest.status == 'PENDING' %}
+                    <div class="card shadow-sm mb-4 fade-in">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-gavel me-2"></i>Actions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ path('manager_approval_approve', {id: leaveRequest.id}) }}" 
+                                   class="btn btn-approve btn-lg">
+                                    <i class="fas fa-check me-2"></i>Approuver
+                                </a>
+                                <a href="{{ path('manager_approval_reject', {id: leaveRequest.id}) }}" 
+                                   class="btn btn-reject btn-lg">
+                                    <i class="fas fa-times me-2"></i>Rejeter
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Informations supplémentaires -->
+                <div class="card shadow-sm mb-4 fade-in">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Informations
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item mb-3">
+                            <small class="text-muted">Type de congé</small>
+                            <p class="mb-1 fw-bold">{{ leaveRequest.leaveType.name }}</p>
+                            {% if leaveRequest.leaveType.description %}
+                                <small class="text-muted">{{ leaveRequest.leaveType.description }}</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="info-item mb-3">
+                            <small class="text-muted">Congé payé</small>
+                            <p class="mb-0 fw-bold">
+                                {% if leaveRequest.leaveType.isPaid %}
+                                    <i class="fas fa-check text-success me-1"></i>Oui
+                                {% else %}
+                                    <i class="fas fa-times text-danger me-1"></i>Non
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class="info-item mb-3">
+                            <small class="text-muted">Jours maximum par an</small>
+                            <p class="mb-0 fw-bold">{{ leaveRequest.leaveType.maxDaysPerYear }} jours</p>
+                        </div>
+
+                        {% if leaveRequest.employee.phone %}
+                            <div class="info-item">
+                                <small class="text-muted">Contact employé</small>
+                                <p class="mb-0 fw-bold">
+                                    <i class="fas fa-phone me-1"></i>{{ leaveRequest.employee.phone }}
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Actions secondaires -->
+                <div class="card shadow-sm fade-in">
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{{ path('manager_approval_index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                            </a>
+                            <button onclick="window.print()" class="btn btn-outline-primary">
+                                <i class="fas fa-print me-2"></i>Imprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Animation des cartes au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.fade-in');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+
+        // Confirmation pour les actions d'approbation/rejet
+        document.querySelectorAll('.btn-approve, .btn-reject').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const action = this.classList.contains('btn-approve') ? 'approuver' : 'rejeter';
+                if (!confirm(`Êtes-vous sûr de vouloir ${action} cette demande de congé ?`)) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Style d'impression
+        window.addEventListener('beforeprint', function() {
+            document.querySelector('.action-buttons').style.display = 'none';
+        });
+
+        window.addEventListener('afterprint', function() {
+            document.querySelector('.action-buttons').style.display = 'block';
+        });
+    </script>
+{% endblock %}

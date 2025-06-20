@@ -1,0 +1,574 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier un membre d'équipe - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        .form-section {
+            border-left: 4px solid #667eea;
+            padding-left: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .form-section h5 {
+            color: #2d3436;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .form-floating > label {
+            color: #636e72;
+            font-weight: 500;
+        }
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            transform: translateY(-2px);
+        }
+        .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(225, 112, 85, 0.3);
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(225, 112, 85, 0.4);
+        }
+        .member-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .member-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+        .status-badge {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.4rem 0.8rem;
+            border-radius: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .form-help {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 0.5rem;
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .invalid-feedback {
+            display: block;
+            font-size: 0.875rem;
+            color: #e17055;
+            font-weight: 500;
+        }
+        .is-invalid {
+            border-color: #e17055 !important;
+            box-shadow: 0 0 0 0.2rem rgba(225, 112, 85, 0.25) !important;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <!-- En-tête de la page -->
+    <div class="page-header fade-in">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <nav aria-label="breadcrumb" class="mb-3">
+                    <ol class="breadcrumb mb-0" style="background: transparent;">
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('manager_dashboard') }}" class="text-white text-decoration-none opacity-75">
+                                <i class="fas fa-tachometer-alt me-1"></i>Tableau de bord
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('manager_team_member_index') }}" class="text-white text-decoration-none opacity-75">
+                                <i class="fas fa-users me-1"></i>Membres d'équipe
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active text-white">
+                            Modifier un membre
+                        </li>
+                    </ol>
+                </nav>
+                <h1 class="display-6 mb-0">
+                    <i class="fas fa-user-edit me-3"></i>
+                    Modifier un membre d'équipe
+                </h1>
+                <p class="lead mb-0 opacity-90">
+                    Modifiez les informations de participation à l'équipe
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <i class="fas fa-users-cog" style="font-size: 4rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Formulaire principal -->
+        <div class="col-lg-8">
+            <!-- Informations du membre -->
+            <div class="form-card member-info fade-in">
+                <div class="d-flex align-items-center">
+                    <div class="member-avatar">
+                        {{ teamMember.user.firstName|first }}{{ teamMember.user.lastName|first }}
+                    </div>
+                    <div class="flex-grow-1">
+                        <h4 class="mb-1">{{ teamMember.user.firstName }} {{ teamMember.user.lastName }}</h4>
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-briefcase me-1"></i>{{ teamMember.user.position }}
+                            <span class="mx-2">•</span>
+                            <i class="fas fa-building me-1"></i>{{ teamMember.user.department.name }}
+                        </p>
+                        <div class="d-flex align-items-center">
+                            <span class="status-badge {% if teamMember.isActive %}status-active{% else %}status-inactive{% endif %}">
+                                {% if teamMember.isActive %}
+                                    <i class="fas fa-check me-1"></i>Actif
+                                {% else %}
+                                    <i class="fas fa-times me-1"></i>Inactif
+                                {% endif %}
+                            </span>
+                            {% if teamMember.user.email %}
+                                <span class="text-muted ms-3">
+                                    <i class="fas fa-envelope me-1"></i>{{ teamMember.user.email }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire de modification -->
+            <div class="form-card fade-in">
+                <div class="card-header" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-bottom: 2px solid #667eea;">
+                    <h5 class="mb-0 text-dark">
+                        <i class="fas fa-edit me-2"></i>Modifier les informations
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'needs-validation'}}) }}
+                    
+                    <!-- Section Équipe -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-users me-2"></i>Affectation d'équipe</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    {{ form_widget(form.team, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_label(form.team, null, {'label_attr': {'class': 'form-label'}}) }}
+                                </div>
+                                {{ form_errors(form.team) }}
+                                <div class="form-help">
+                                    <small><i class="fas fa-info-circle me-1"></i>Sélectionnez l'équipe à laquelle appartient ce membre</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    {{ form_widget(form.user, {'attr': {'class': 'form-select', 'readonly': 'readonly'}}) }}
+                                    {{ form_label(form.user, null, {'label_attr': {'class': 'form-label'}}) }}
+                                </div>
+                                {{ form_errors(form.user) }}
+                                <div class="form-help">
+                                    <small><i class="fas fa-lock me-1"></i>L'utilisateur ne peut pas être modifié</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Dates -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-calendar me-2"></i>Période de participation</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    {{ form_widget(form.joinedAt, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_label(form.joinedAt, null, {'label_attr': {'class': 'form-label'}}) }}
+                                </div>
+                                {{ form_errors(form.joinedAt) }}
+                                <div class="form-help">
+                                    <small><i class="fas fa-info-circle me-1"></i>Date d'entrée dans l'équipe</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    {{ form_widget(form.leftAt, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_label(form.leftAt, null, {'label_attr': {'class': 'form-label'}}) }}
+                                </div>
+                                {{ form_errors(form.leftAt) }}
+                                <div class="form-help">
+                                    <small><i class="fas fa-info-circle me-1"></i>Date de sortie de l'équipe (optionnel)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Statut -->
+                    <div class="form-section">
+                        <h5><i class="fas fa-toggle-on me-2"></i>Statut d'activité</h5>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input', 'role': 'switch'}}) }}
+                                    {{ form_label(form.isActive, 'Membre actif dans l\'équipe', {'label_attr': {'class': 'form-check-label'}}) }}
+                                </div>
+                                {{ form_errors(form.isActive) }}
+                                <div class="form-help mt-2">
+                                    <small><i class="fas fa-info-circle me-1"></i>Décochez pour désactiver temporairement ce membre sans le supprimer de l'équipe</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Messages d'erreur globaux -->
+                    {% for flashError in app.flashes('error') %}
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>{{ flashError }}
+                        </div>
+                    {% endfor %}
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar d'informations -->
+        <div class="col-lg-4">
+            <!-- Actions -->
+            <div class="form-card fade-in mb-4">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" form="team_member" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                        </button>
+                        <a href="{{ path('manager_team_member_show', {id: teamMember.id}) }}" class="btn btn-secondary">
+                            <i class="fas fa-eye me-2"></i>Voir les détails
+                        </a>
+                        <a href="{{ path('manager_team_member_index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations sur l'équipe -->
+            <div class="form-card fade-in mb-4">
+                <div class="card-header" style="background: linear-gradient(135deg, #00b894 0%, #00a085 100%); color: white;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Équipe actuelle
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if teamMember.team %}
+                        <h6 class="fw-bold">{{ teamMember.team.name }}</h6>
+                        {% if teamMember.team.description %}
+                            <p class="text-muted mb-3">{{ teamMember.team.description }}</p>
+                        {% endif %}
+                        
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <h4 class="text-primary mb-1">{{ teamMember.team.teamMembers|length }}</h4>
+                                    <small class="text-muted">Membres</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-success mb-1">
+                                    {{ teamMember.team.teamMembers|filter(m => m.isActive)|length }}
+                                </h4>
+                                <small class="text-muted">Actifs</small>
+                            </div>
+                        </div>
+
+                        {% if teamMember.team.leader %}
+                            <hr>
+                            <div class="d-flex align-items-center">
+                                <div class="me-2" style="width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold;">
+                                    {{ teamMember.team.leader.firstName|first }}{{ teamMember.team.leader.lastName|first }}
+                                </div>
+                                <div>
+                                    <small class="text-muted">Chef d'équipe</small>
+                                    <p class="mb-0 fw-bold">{{ teamMember.team.leader.firstName }} {{ teamMember.team.leader.lastName }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-exclamation-circle me-1"></i>
+                            Aucune équipe assignée
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Historique -->
+            <div class="form-card fade-in">
+                <div class="card-header" style="background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%); color: white;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Historique
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="d-flex mb-3">
+                            <div class="me-2" style="width: 8px; height: 8px; border-radius: 50%; background: #667eea; margin-top: 6px;"></div>
+                            <div>
+                                <small class="text-muted">Rejoint l'équipe</small>
+                                <p class="mb-0 fw-bold">{{ teamMember.joinedAt|date('d/m/Y') }}</p>
+                            </div>
+                        </div>
+                        {% if teamMember.leftAt %}
+                            <div class="d-flex mb-3">
+                                <div class="me-2" style="width: 8px; height: 8px; border-radius: 50%; background: #e17055; margin-top: 6px;"></div>
+                                <div>
+                                    <small class="text-muted">Quitté l'équipe</small>
+                                    <p class="mb-0 fw-bold">{{ teamMember.leftAt|date('d/m/Y') }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone de danger -->
+            <div class="form-card fade-in mt-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Zone de danger
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        <small>Actions irréversibles nécessitant une confirmation</small>
+                    </p>
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="fas fa-trash me-2"></i>Supprimer le membre
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer <strong>{{ teamMember.user.firstName }} {{ teamMember.user.lastName }}</strong> de l'équipe ?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Attention :</strong> Cette action est irréversible et supprimera définitivement ce membre de l'équipe.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </button>
+                <a href="{{ path('manager_team_member_delete', {id: teamMember.id}) }}" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>Supprimer définitivement
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation des cartes au chargement
+            const cards = document.querySelectorAll('.fade-in');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 150);
+            });
+
+            // Validation du formulaire
+            const form = document.querySelector('.needs-validation');
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                });
+            }
+
+            // Gestion des dates
+            const joinedAtInput = document.querySelector('input[name*="joinedAt"]');
+            const leftAtInput = document.querySelector('input[name*="leftAt"]');
+            
+            if (joinedAtInput && leftAtInput) {
+                // Validation que la date de sortie est postérieure à la date d'entrée
+                function validateDates() {
+                    const joinedDate = new Date(joinedAtInput.value);
+                    const leftDate = new Date(leftAtInput.value);
+                    
+                    if (leftAtInput.value && joinedDate >= leftDate) {
+                        leftAtInput.setCustomValidity('La date de sortie doit être postérieure à la date d\'entrée');
+                    } else {
+                        leftAtInput.setCustomValidity('');
+                    }
+                }
+                
+                joinedAtInput.addEventListener('change', validateDates);
+                leftAtInput.addEventListener('change', validateDates);
+            }
+
+            // Gestion du switch "isActive"
+            const activeSwitch = document.querySelector('input[name*="isActive"]');
+            const leftAtField = document.querySelector('input[name*="leftAt"]').closest('.col-md-6');
+            
+            if (activeSwitch && leftAtField) {
+                function toggleLeftAtField() {
+                    if (!activeSwitch.checked) {
+                        leftAtField.style.opacity = '1';
+                        leftAtField.querySelector('input').removeAttribute('disabled');
+                    } else {
+                        leftAtField.style.opacity = '0.6';
+                        leftAtField.querySelector('input').value = '';
+                    }
+                }
+                
+                activeSwitch.addEventListener('change', toggleLeftAtField);
+                toggleLeftAtField(); // Initialisation
+            }
+
+            // Confirmation pour les actions sensibles
+            document.querySelectorAll('[data-confirm]').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const message = this.getAttribute('data-confirm');
+                    if (!confirm(message)) {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            // Auto-save draft (sauvegarde automatique)
+            let autoSaveTimer;
+            const formInputs = form.querySelectorAll('input, select, textarea');
+            
+            formInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    clearTimeout(autoSaveTimer);
+                    autoSaveTimer = setTimeout(() => {
+                        // Ici on pourrait implémenter une sauvegarde automatique
+                        console.log('Auto-save triggered');
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+{% endblock %}

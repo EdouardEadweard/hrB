@@ -1,0 +1,336 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ leaveType.name }} - Types de congés{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <!-- En-tête avec breadcrumb -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-2 text-gray-800">
+                <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                {{ leaveType.name }}
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('admin_dashboard') }}" class="text-decoration-none">
+                            <i class="fas fa-home me-1"></i>Administration
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('admin_leave_type_index') }}" class="text-decoration-none">
+                            Types de congés
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ leaveType.name }}</li>
+                </ol>
+            </nav>
+        </div>
+        
+        <!-- Actions rapides -->
+        <div class="btn-group" role="group" aria-label="Actions">
+            <a href="{{ path('admin_leave_type_edit', {'id': leaveType.id}) }}" 
+               class="btn btn-warning">
+                <i class="fas fa-edit me-1"></i>Modifier
+            </a>
+            <a href="{{ path('admin_leave_type_index') }}" 
+               class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informations principales -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Informations générales
+                    </h6>
+                    <!-- Badge de statut -->
+                    {% if leaveType.isActive %}
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-check-circle me-1"></i>Actif
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger fs-6">
+                            <i class="fas fa-times-circle me-1"></i>Inactif
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small text-uppercase fw-bold">
+                                Nom du type
+                            </label>
+                            <div class="fs-5 fw-semibold text-dark">
+                                {{ leaveType.name }}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small text-uppercase fw-bold">
+                                Code
+                            </label>
+                            <div class="fs-6">
+                                <span class="badge bg-light text-dark border fs-6 px-3 py-2">
+                                    {{ leaveType.code }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if leaveType.description %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">
+                            Description
+                        </label>
+                        <div class="p-3 bg-light rounded">
+                            {{ leaveType.description|nl2br }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Couleur d'affichage -->
+                    {% if leaveType.color %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted small text-uppercase fw-bold">
+                            Couleur d'affichage
+                        </label>
+                        <div class="d-flex align-items-center">
+                            <div class="color-preview me-3" 
+                                 style="width: 40px; height: 40px; background-color: {{ leaveType.color }}; border-radius: 8px; border: 2px solid #dee2e6;">
+                            </div>
+                            <code class="bg-light px-2 py-1 rounded">{{ leaveType.color }}</code>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Paramètres et règles -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cogs me-2"></i>
+                        Paramètres
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Jours maximum par an -->
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted">
+                            <i class="fas fa-calendar-day me-2"></i>
+                            Jours max/an
+                        </span>
+                        <span class="fw-bold text-primary fs-5">
+                            {% if leaveType.maxDaysPerYear %}
+                                {{ leaveType.maxDaysPerYear }}
+                            {% else %}
+                                <span class="text-muted">Illimité</span>
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <!-- Approbation requise -->
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted">
+                            <i class="fas fa-user-check me-2"></i>
+                            Approbation requise
+                        </span>
+                        {% if leaveType.requiresApproval %}
+                            <span class="badge bg-warning">
+                                <i class="fas fa-check me-1"></i>Oui
+                            </span>
+                        {% else %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-times me-1"></i>Non
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Congé payé -->
+                    <div class="d-flex justify-content-between align-items-center py-2">
+                        <span class="text-muted">
+                            <i class="fas fa-euro-sign me-2"></i>
+                            Congé payé
+                        </span>
+                        {% if leaveType.isPaid %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check me-1"></i>Oui
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-times me-1"></i>Non
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations système -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info me-2"></i>
+                        Informations système
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted d-block mb-2">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        <strong>Créé le :</strong> 
+                        {{ leaveType.createdAt|date('d/m/Y à H:i') }}
+                    </small>
+                    
+                    {% if leaveType.updatedAt %}
+                    <small class="text-muted d-block">
+                        <i class="fas fa-edit me-2"></i>
+                        <strong>Modifié le :</strong> 
+                        {{ leaveType.updatedAt|date('d/m/Y à H:i') }}
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques d'utilisation (optionnel si vous avez les données) -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Utilisation de ce type de congé
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="p-3">
+                                <div class="text-primary fs-2 fw-bold">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="text-muted small">Demandes actives</div>
+                                <div class="fs-4 fw-bold text-dark">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3">
+                                <div class="text-success fs-2 fw-bold">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="text-muted small">Demandes approuvées</div>
+                                <div class="fs-4 fw-bold text-dark">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3">
+                                <div class="text-warning fs-2 fw-bold">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="text-muted small">En attente</div>
+                                <div class="fs-4 fw-bold text-dark">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3">
+                                <div class="text-info fs-2 fw-bold">
+                                    <i class="fas fa-calendar-day"></i>
+                                </div>
+                                <div class="text-muted small">Jours consommés</div>
+                                <div class="fs-4 fw-bold text-dark">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center text-muted small mt-3">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Les statistiques détaillées seront disponibles prochainement
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions en bas de page -->
+    <div class="row mt-4 mb-5">
+        <div class="col-12">
+            <div class="d-flex justify-content-between">
+                <a href="{{ path('admin_leave_type_index') }}" 
+                   class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Retour à la liste
+                </a>
+                
+                <div class="btn-group">
+                    <a href="{{ path('admin_leave_type_new') }}" 
+                       class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>
+                        Nouveau type
+                    </a>
+                    <a href="{{ path('admin_leave_type_edit', {'id': leaveType.id}) }}" 
+                       class="btn btn-warning">
+                        <i class="fas fa-edit me-1"></i>
+                        Modifier
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles personnalisés pour améliorer l'UX -->
+<style>
+.color-preview {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.color-preview:hover {
+    transform: scale(1.1);
+}
+
+.card {
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.btn-group .btn {
+    transition: all 0.2s ease;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+{% endblock %}

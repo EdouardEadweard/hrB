@@ -1,0 +1,364 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rejeter la demande de congé - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .rejection-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .rejection-header {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .rejection-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .rejection-header .subtitle {
+            margin-top: 0.5rem;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        
+        .request-details {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .detail-value {
+            font-weight: 500;
+            color: #212529;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .form-section {
+            padding: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        }
+        
+        .form-text {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem 2rem;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffecb5;
+            color: #856404;
+        }
+        
+        .warning-icon {
+            display: inline-block;
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .breadcrumb {
+            background: transparent;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+        }
+        
+        .breadcrumb-item {
+            color: #6c757d;
+        }
+        
+        .breadcrumb-item a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-item.active {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .detail-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .detail-value {
+                margin-top: 0.25rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('manager_dashboard') }}">Tableau de bord</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('manager_approval_index') }}">Demandes d'approbation</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('manager_approval_show', {'id': leaveRequest.id}) }}">Demande #{{ leaveRequest.id }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Rejeter</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="rejection-card">
+                <!-- Header -->
+                <div class="rejection-header">
+                    <h1>🚫 Rejeter la demande de congé</h1>
+                    <p class="subtitle">Veuillez fournir une justification pour le rejet</p>
+                </div>
+
+                <!-- Détails de la demande -->
+                <div class="request-details">
+                    <h5 class="mb-3">📋 Détails de la demande</h5>
+                    <div class="detail-item">
+                        <span class="detail-label">Employé :</span>
+                        <span class="detail-value">{{ leaveRequest.employee.firstName }} {{ leaveRequest.employee.lastName }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Type de congé :</span>
+                        <span class="detail-value">{{ leaveRequest.leaveType.name }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Période :</span>
+                        <span class="detail-value">Du {{ leaveRequest.startDate|date('d/m/Y') }} au {{ leaveRequest.endDate|date('d/m/Y') }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Nombre de jours :</span>
+                        <span class="detail-value">{{ leaveRequest.numberOfDays }} jour(s)</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Statut actuel :</span>
+                        <span class="detail-value">
+                            <span class="status-badge status-pending">{{ leaveRequest.status|upper }}</span>
+                        </span>
+                    </div>
+                    {% if leaveRequest.reason %}
+                    <div class="detail-item">
+                        <span class="detail-label">Motif de l'employé :</span>
+                        <span class="detail-value">{{ leaveRequest.reason }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Formulaire de rejet -->
+                <div class="form-section">
+                    <!-- Avertissement -->
+                    <div class="alert alert-warning">
+                        <span class="warning-icon">⚠️</span>
+                        <strong>Attention :</strong> Cette action rejettera définitivement la demande de congé. 
+                        L'employé sera automatiquement notifié de votre décision et du motif du rejet.
+                    </div>
+
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                    
+                    <div class="form-group">
+                        {{ form_label(form.managerComment, 'Motif du rejet *', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.managerComment, {
+                            'attr': {
+                                'class': 'form-control',
+                                'rows': 5,
+                                'placeholder': 'Veuillez expliquer les raisons du rejet de cette demande de congé...',
+                                'required': true
+                            }
+                        }) }}
+                        <div class="form-text">
+                            Soyez précis et constructif dans votre commentaire. Cette information sera transmise à l'employé.
+                        </div>
+                        {{ form_errors(form.managerComment) }}
+                    </div>
+
+                    <!-- Champs cachés -->
+                    <!-- APRÈS (correct) : -->
+                    {{ form_rest(form) }}
+
+                    {{ form_end(form, {'render_rest': false}) }}
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="btn-group">
+                    <button type="submit" form="{{ form.vars.id }}" class="btn btn-danger">
+                        🚫 Confirmer le rejet
+                    </button>
+                    <a href="{{ path('manager_approval_show', {'id': leaveRequest.id}) }}" class="btn btn-secondary">
+                        ↩️ Annuler
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmation avant soumission
+    const form = document.querySelector('form');
+    const submitBtn = document.querySelector('.btn-danger');
+    
+    form.addEventListener('submit', function(e) {
+        const comment = document.querySelector('textarea[name*="managerComment"]').value.trim();
+        
+        if (comment.length < 10) {
+            e.preventDefault();
+            alert('⚠️ Veuillez fournir un commentaire d\'au moins 10 caractères pour justifier le rejet.');
+            return;
+        }
+        
+        if (!confirm('❌ Êtes-vous sûr de vouloir rejeter cette demande de congé ?\n\nCette action est irréversible et l\'employé sera immédiatement notifié.')) {
+            e.preventDefault();
+        }
+    });
+    
+    // Compteur de caractères pour le commentaire
+    const textarea = document.querySelector('textarea[name*="managerComment"]');
+    if (textarea) {
+        const counter = document.createElement('div');
+        counter.className = 'form-text text-end';
+        counter.style.fontSize = '0.8rem';
+        
+        function updateCounter() {
+            const length = textarea.value.length;
+            counter.textContent = `${length}/500 caractères`;
+            counter.style.color = length > 450 ? '#dc3545' : '#6c757d';
+        }
+        
+        textarea.addEventListener('input', updateCounter);
+        textarea.parentNode.appendChild(counter);
+        updateCounter();
+    }
+    
+    // Animation d'entrée
+    const card = document.querySelector('.rejection-card');
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+        card.style.transition = 'all 0.5s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+    }, 100);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,467 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Soldes de Congés - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .balance-card {
+            border-radius: 12px;
+            border: 1px solid #e3e6f0;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .balance-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .balance-progress {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .balance-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-optimal { background-color: #d4edda; color: #155724; }
+        .status-warning { background-color: #fff3cd; color: #856404; }
+        .status-critical { background-color: #f8d7da; color: #721c24; }
+        .alert-info-custom {
+            background: linear-gradient(45deg, #e3f2fd, #f3e5f5);
+            border-left: 4px solid #2196f3;
+            border-radius: 8px;
+        }
+        .summary-stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+        }
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .year-selector {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .btn-year {
+            border-radius: 20px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        .btn-year.active {
+            background: #007bff;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <!-- En-tête avec titre et actions -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="fas fa-calendar-check text-primary" style="font-size: 2rem;"></i>
+                </div>
+                <div>
+                    <h1 class="h3 mb-1 font-weight-bold">Mes Soldes de Congés</h1>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-user me-1"></i>
+                        {{ app.user.firstName }} {{ app.user.lastName }}
+                        <span class="mx-2">•</span>
+                        <i class="fas fa-building me-1"></i>
+                        {{ app.user.department.name }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 text-end">
+            <a href="{{ path('app_employee_leave_request_new') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus me-2"></i>
+                Nouvelle Demande
+            </a>
+        </div>
+    </div>
+
+    <!-- Sélecteur d'année -->
+    <div class="year-selector">
+        <div class="d-flex align-items-center justify-content-between flex-wrap">
+            <h5 class="mb-0">
+                <i class="fas fa-calendar-alt me-2"></i>
+                Année de référence
+            </h5>
+            <div class="btn-group" role="group">
+                {% for year in range(date().format('Y')|number_format(0, '', '') - 2, date().format('Y')|number_format(0, '', '') + 1) %}
+                    <button type="button" class="btn btn-outline-primary btn-year {% if year == selectedYear|default(date().format('Y')|number_format(0, '', '')) %}active{% endif %}" 
+                            onclick="changeYear({{ year }})">
+                        {{ year }}
+                    </button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques globales -->
+    {% if leaveBalances is not empty %}
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="summary-stats p-4">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <i class="fas fa-calendar-days" style="font-size: 2rem; opacity: 0.8;"></i>
+                        </div>
+                        <h3 class="mb-1">{{ totalDays }}</h3>
+                        <p class="mb-0 opacity-75">Jours Total Alloués</p>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <i class="fas fa-calendar-minus" style="font-size: 2rem; opacity: 0.8;"></i>
+                        </div>
+                        <h3 class="mb-1">{{ usedDays }}</h3>
+                        <p class="mb-0 opacity-75">Jours Utilisés</p>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <i class="fas fa-calendar-plus" style="font-size: 2rem; opacity: 0.8;"></i>
+                        </div>
+                        <h3 class="mb-1">{{ remainingDays }}</h3>
+                        <p class="mb-0 opacity-75">Jours Restants</p>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <i class="fas fa-percentage" style="font-size: 2rem; opacity: 0.8;"></i>
+                        </div>
+                        <h3 class="mb-1">{{ ((usedDays / totalDays) * 100)|round }}%</h3>
+                        <p class="mb-0 opacity-75">Taux d'Utilisation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Alerte informative -->
+    {% if leaveBalances is empty %}
+    <div class="alert alert-info-custom d-flex align-items-center" role="alert">
+        <i class="fas fa-info-circle me-3" style="font-size: 1.5rem;"></i>
+        <div>
+            <h5 class="alert-heading mb-2">Aucun solde de congés disponible</h5>
+            <p class="mb-0">
+                Il semble qu'aucun solde de congés n'ait encore été configuré pour votre compte. 
+                Veuillez contacter votre responsable RH pour plus d'informations.
+            </p>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Cartes des soldes par type de congé -->
+    <div class="row">
+        {% for balance in leaveBalances %}
+        {% set percentageUsed = balance.totalDays > 0 ? (balance.usedDays / balance.totalDays * 100) : 0 %}
+        {% set status = percentageUsed < 50 ? 'optimal' : (percentageUsed < 80 ? 'warning' : 'critical') %}
+        
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="balance-card card h-100">
+                <div class="card-body p-4">
+                    <!-- En-tête de la carte -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="balance-icon me-3" style="background-color: {{ balance.leaveType.color|default('#007bff') }};">
+                                {% if balance.leaveType.code == 'RTT' %}
+                                    <i class="fas fa-clock"></i>
+                                {% elseif balance.leaveType.code == 'SICK' %}
+                                    <i class="fas fa-heart-pulse"></i>
+                                {% elseif balance.leaveType.code == 'MAT' %}
+                                    <i class="fas fa-baby"></i>
+                                {% elseif balance.leaveType.code == 'FORMATION' %}
+                                    <i class="fas fa-graduation-cap"></i>
+                                {% else %}
+                                    <i class="fas fa-umbrella-beach"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-1 font-weight-bold">{{ balance.leaveType.name }}</h5>
+                                <span class="status-badge status-{{ status }}">
+                                    {% if status == 'optimal' %}
+                                        <i class="fas fa-check-circle me-1"></i>Optimal
+                                    {% elseif status == 'warning' %}
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Attention
+                                    {% else %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>Critique
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistiques détaillées -->
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="text-muted small">Total</div>
+                            <div class="h4 mb-0 text-primary">{{ balance.totalDays }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-muted small">Utilisés</div>
+                            <div class="h4 mb-0 text-danger">{{ balance.usedDays }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-muted small">Restants</div>
+                            <div class="h4 mb-0 text-success">{{ balance.remainingDays }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Barre de progression -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span>Progression</span>
+                            <span>{{ percentageUsed|round }}%</span>
+                        </div>
+                        <div class="balance-progress bg-light">
+                            <div class="progress-bar 
+                                {% if status == 'optimal' %}bg-success
+                                {% elseif status == 'warning' %}bg-warning
+                                {% else %}bg-danger{% endif %}" 
+                                role="progressbar" 
+                                style="width: {{ percentageUsed }}%"
+                                aria-valuenow="{{ percentageUsed }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations complémentaires -->
+                    <div class="border-top pt-3">
+                        <div class="row small text-muted">
+                            <div class="col-6">
+                                <i class="fas fa-calendar me-1"></i>
+                                Année {{ balance.year }}
+                            </div>
+                            <div class="col-6 text-end">
+                                <i class="fas fa-clock me-1"></i>
+                                MAJ {{ balance.lastUpdated|date('d/m/Y') }}
+                            </div>
+                        </div>
+                        
+                        {% if balance.leaveType.description %}
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {{ balance.leaveType.description }}
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Actions de la carte -->
+                <div class="card-footer bg-transparent border-top-0 pt-0">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ path('app_employee_leave_request_new', {'type': balance.leaveType.id}) }}" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>
+                            Demander
+                        </a>
+                        <a href="{{ path('app_employee_leave_balance_show', {'id': balance.id}) }}" 
+                           class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>
+                            Détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Conseils et informations utiles -->
+    <div class="row mt-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Conseils pour optimiser vos congés
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Planifiez vos congés à l'avance
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Vérifiez les périodes de forte activité
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Consultez le planning de votre équipe
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                    Attention aux dates limites d'utilisation
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-info text-info me-2"></i>
+                                    Certains congés nécessitent une approbation
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-phone text-primary me-2"></i>
+                                    Contactez RH pour toute question
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-phone me-2"></i>
+                        Contact RH
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-3">Besoin d'aide ou d'informations ?</p>
+                    <div class="d-grid gap-2">
+                        <a href="mailto:rh@company.com" class="btn btn-outline-primary">
+                            <i class="fas fa-envelope me-2"></i>
+                            Envoyer un email
+                        </a>
+                        <a href="tel:+33123456789" class="btn btn-outline-success">
+                            <i class="fas fa-phone me-2"></i>
+                            Appeler RH
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal pour les détails rapides -->
+<div class="modal fade" id="quickDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails du solde</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modalContent">
+                    <!-- Contenu chargé dynamiquement -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Fonction pour changer d'année
+        function changeYear(year) {
+            const url = new URL(window.location);
+            url.searchParams.set('year', year);
+            window.location.href = url.toString();
+        }
+
+        // Animation d'entrée des cartes
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.balance-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+
+        // Tooltip pour les badges de statut
+        document.addEventListener('DOMContentLoaded', function() {
+            const tooltips = [
+                { selector: '.status-optimal', message: 'Utilisation optimale de vos congés' },
+                { selector: '.status-warning', message: 'Attention : plus de 50% de vos congés sont utilisés' },
+                { selector: '.status-critical', message: 'Critique : plus de 80% de vos congés sont utilisés' }
+            ];
+
+            tooltips.forEach(tooltip => {
+                document.querySelectorAll(tooltip.selector).forEach(element => {
+                    element.setAttribute('title', tooltip.message);
+                    element.setAttribute('data-bs-toggle', 'tooltip');
+                });
+            });
+
+            // Initialiser les tooltips Bootstrap
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // Fonction pour actualiser les données
+        function refreshData() {
+            // Afficher un indicateur de chargement
+            document.querySelectorAll('.balance-card .card-body').forEach(body => {
+                body.style.opacity = '0.6';
+            });
+
+            // Simuler le rechargement (à remplacer par un appel AJAX réel)
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+
+        // Gestion du mode sombre (si implementé)
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        // Restaurer le mode sombre si activé
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+{% endblock %}

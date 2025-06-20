@@ -1,0 +1,520 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle demande de congé - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .leave-request-form {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .form-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .form-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .form-body {
+            padding: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-group .required {
+            color: #dc2626;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        .invalid-feedback {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: block;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-row-full {
+            grid-column: 1 / -1;
+        }
+
+        .date-info {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .date-info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .date-info-item:last-child {
+            margin-bottom: 0;
+            font-weight: 600;
+            color: #1f2937;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 0.5rem;
+        }
+
+        .balance-info {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .balance-info h4 {
+            margin: 0 0 0.5rem 0;
+            color: #92400e;
+            font-size: 1rem;
+        }
+
+        .balance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+
+        .form-help {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-help h4 {
+            margin: 0 0 0.5rem 0;
+            color: #1e40af;
+            font-size: 0.9rem;
+        }
+
+        .form-help ul {
+            margin: 0;
+            padding-left: 1.2rem;
+            color: #1e40af;
+            font-size: 0.875rem;
+        }
+
+        .form-help ul li {
+            margin-bottom: 0.25rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        @media (max-width: 768px) {
+            .leave-request-form {
+                margin: 0 1rem;
+            }
+
+            .form-header {
+                padding: 1.5rem;
+            }
+
+            .form-body {
+                padding: 1.5rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="leave-request-form">
+        <div class="form-header">
+            <h1>Nouvelle demande de congé</h1>
+            <p>Remplissez le formulaire ci-dessous pour soumettre votre demande</p>
+        </div>
+
+        <div class="form-body">
+            {# Informations sur les soldes de congés #}
+            <div class="balance-info">
+                <h4>📊 Vos soldes de congés</h4>
+                <div class="balance-item">
+                    <span>Congés payés restants :</span>
+                    <strong>{{ app.user.leaveBalances|length > 0 ? app.user.leaveBalances[0].remainingDays : 'N/A' }} jours</strong>
+                </div>
+                <div class="balance-item">
+                    <span>RTT restants :</span>
+                    <strong>{{ app.user.leaveBalances|length > 1 ? app.user.leaveBalances[1].remainingDays : 'N/A' }} jours</strong>
+                </div>
+            </div>
+
+            {# Aide pour remplir le formulaire #}
+            <div class="form-help">
+                <h4>💡 Conseils pour votre demande</h4>
+                <ul>
+                    <li>Soumettez votre demande au moins 15 jours à l'avance</li>
+                    <li>Vérifiez que vous avez suffisamment de jours disponibles</li>
+                    <li>Précisez le motif si nécessaire pour faciliter l'approbation</li>
+                    <li>Les demandes de congés payés de plus de 2 semaines nécessitent une approbation spéciale</li>
+                </ul>
+            </div>
+
+            {# Affichage des erreurs globales #}
+            {% if form.vars.errors|length > 0 %}
+                <div class="alert alert-danger">
+                    <strong>Erreurs dans le formulaire :</strong>
+                    {% for error in form.vars.errors %}
+                        <div>{{ error.message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'leave-request-form'}}) }}
+
+            <div class="form-section">
+                <div class="form-section-title">📅 Informations de la demande</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form_label(form.leaveType, 'Type de congé', {'label_attr': {'class': 'required'}}) }}
+                        {{ form_widget(form.leaveType, {'attr': {'class': 'form-control' ~ (form.leaveType.vars.errors|length > 0 ? ' is-invalid' : ''), 'id': 'leave-type-select'}}) }}
+                        {{ form_errors(form.leaveType, {'attr': {'class': 'invalid-feedback'}}) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.status, 'Statut') }}
+                        {{ form_widget(form.status, {'attr': {'class': 'form-control', 'readonly': true}}) }}
+                        <small class="text-muted">Le statut sera automatiquement défini sur "En attente"</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form_label(form.startDate, 'Date de début', {'label_attr': {'class': 'required'}}) }}
+                        {{ form_widget(form.startDate, {'attr': {'class': 'form-control' ~ (form.startDate.vars.errors|length > 0 ? ' is-invalid' : ''), 'id': 'start-date'}}) }}
+                        {{ form_errors(form.startDate, {'attr': {'class': 'invalid-feedback'}}) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.endDate, 'Date de fin', {'label_attr': {'class': 'required'}}) }}
+                        {{ form_widget(form.endDate, {'attr': {'class': 'form-control' ~ (form.endDate.vars.errors|length > 0 ? ' is-invalid' : ''), 'id': 'end-date'}}) }}
+                        {{ form_errors(form.endDate, {'attr': {'class': 'invalid-feedback'}}) }}
+                    </div>
+                </div>
+
+                {# Calcul automatique du nombre de jours #}
+                <div class="date-info" id="date-info" style="display: none;">
+                    <div class="date-info-item">
+                        <span>Date de début :</span>
+                        <span id="display-start-date">-</span>
+                    </div>
+                    <div class="date-info-item">
+                        <span>Date de fin :</span>
+                        <span id="display-end-date">-</span>
+                    </div>
+                    <div class="date-info-item">
+                        <span>Nombre de jours ouvrés :</span>
+                        <span id="calculated-days">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">📝 Détails de la demande</div>
+                
+                <div class="form-group">
+                    {{ form_label(form.reason, 'Motif de la demande') }}
+                    {{ form_widget(form.reason, {'attr': {'class': 'form-control' ~ (form.reason.vars.errors|length > 0 ? ' is-invalid' : ''), 'rows': 4, 'placeholder': 'Décrivez brièvement le motif de votre demande de congé...'}}) }}
+                    {{ form_errors(form.reason, {'attr': {'class': 'invalid-feedback'}}) }}
+                    <small class="text-muted">Ce champ est optionnel mais recommandé pour faciliter le traitement de votre demande</small>
+                </div>
+
+                {# Champ caché pour le nombre de jours calculé automatiquement #}
+                {{ form_widget(form.numberOfDays, {'attr': {'id': 'number-of-days-hidden'}}) }}
+            </div>
+
+            <div class="btn-group">
+                <a href="{{ path('app_employee_leave_request_index') }}" class="btn btn-secondary">
+                    ← Annuler
+                </a>
+                <button type="submit" class="btn btn-primary" id="submit-btn">
+                    📤 Soumettre la demande
+                </button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            const dateInfo = document.getElementById('date-info');
+            const displayStartDate = document.getElementById('display-start-date');
+            const displayEndDate = document.getElementById('display-end-date');
+            const calculatedDays = document.getElementById('calculated-days');
+            const numberOfDaysHidden = document.getElementById('number-of-days-hidden');
+            const submitBtn = document.getElementById('submit-btn');
+
+            // Fonction pour calculer les jours ouvrés entre deux dates
+            function calculateWorkingDays(startDate, endDate) {
+                if (!startDate || !endDate) return 0;
+                
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                
+                if (start > end) return 0;
+                
+                let workingDays = 0;
+                const currentDate = new Date(start);
+                
+                while (currentDate <= end) {
+                    const dayOfWeek = currentDate.getDay();
+                    // 0 = Dimanche, 6 = Samedi
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                        workingDays++;
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                
+                return workingDays;
+            }
+
+            // Fonction pour formater une date en français
+            function formatDateFR(dateString) {
+                if (!dateString) return '-';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+
+            // Fonction pour mettre à jour l'affichage des informations de dates
+            function updateDateInfo() {
+                const startDate = startDateInput.value;
+                const endDate = endDateInput.value;
+
+                if (startDate && endDate) {
+                    const workingDays = calculateWorkingDays(startDate, endDate);
+                    
+                    displayStartDate.textContent = formatDateFR(startDate);
+                    displayEndDate.textContent = formatDateFR(endDate);
+                    calculatedDays.textContent = workingDays + ' jour' + (workingDays > 1 ? 's' : '');
+                    numberOfDaysHidden.value = workingDays;
+                    
+                    dateInfo.style.display = 'block';
+                    
+                    // Validation des dates
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    let isValid = true;
+                    let errorMessage = '';
+                    
+                    if (start < today) {
+                        isValid = false;
+                        errorMessage = 'La date de début ne peut pas être antérieure à aujourd\'hui';
+                    } else if (start > end) {
+                        isValid = false;
+                        errorMessage = 'La date de fin doit être postérieure à la date de début';
+                    } else if (workingDays === 0) {
+                        isValid = false;
+                        errorMessage = 'La période sélectionnée ne contient aucun jour ouvré';
+                    }
+                    
+                    if (!isValid) {
+                        calculatedDays.innerHTML = '<span style="color: #dc2626;">' + errorMessage + '</span>';
+                        submitBtn.disabled = true;
+                        submitBtn.style.opacity = '0.5';
+                    } else {
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                    }
+                } else {
+                    dateInfo.style.display = 'none';
+                    numberOfDaysHidden.value = '';
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                }
+            }
+
+            // Écouteurs d'événements pour les champs de date
+            startDateInput.addEventListener('change', updateDateInfo);
+            endDateInput.addEventListener('change', updateDateInfo);
+
+            // Validation du formulaire avant soumission
+            document.getElementById('leave-request-form').addEventListener('submit', function(e) {
+                const startDate = startDateInput.value;
+                const endDate = endDateInput.value;
+                const numberOfDays = parseInt(numberOfDaysHidden.value);
+
+                if (!startDate || !endDate) {
+                    e.preventDefault();
+                    alert('Veuillez sélectionner les dates de début et de fin.');
+                    return;
+                }
+
+                if (numberOfDays <= 0) {
+                    e.preventDefault();
+                    alert('La période sélectionnée doit contenir au moins un jour ouvré.');
+                    return;
+                }
+
+                // Confirmation pour les longues périodes
+                if (numberOfDays > 10) {
+                    if (!confirm('Vous demandez ' + numberOfDays + ' jours de congé. Confirmez-vous cette demande ?')) {
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
+                // Animation du bouton de soumission
+                submitBtn.innerHTML = '⏳ Envoi en cours...';
+                submitBtn.disabled = true;
+            });
+
+            // Initialisation au chargement de la page
+            updateDateInfo();
+
+            // Définir la date minimum à aujourd'hui
+            const today = new Date().toISOString().split('T')[0];
+            startDateInput.setAttribute('min', today);
+            endDateInput.setAttribute('min', today);
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,444 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Enregistrer ma présence - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .attendance-form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .attendance-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            color: white;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .attendance-card h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .attendance-card .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .current-time {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .time-display {
+            font-size: 3rem;
+            font-weight: 200;
+            margin-bottom: 0.5rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .date-display {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .time-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quick-action-btn {
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quick-action-btn:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+            transform: translateY(-2px);
+        }
+
+        .quick-action-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .quick-action-icon {
+            font-size: 2rem;
+        }
+
+        .quick-action-text {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-present {
+            background: rgba(72, 187, 120, 0.2);
+            color: #2f855a;
+        }
+
+        .status-absent {
+            background: rgba(245, 101, 101, 0.2);
+            color: #c53030;
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-info {
+            background: rgba(49, 130, 206, 0.1);
+            color: #2c5282;
+            border: 1px solid rgba(49, 130, 206, 0.2);
+        }
+
+        .alert-warning {
+            background: rgba(237, 137, 54, 0.1);
+            color: #c05621;
+            border: 1px solid rgba(237, 137, 54, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .attendance-form-container {
+                padding: 1rem;
+            }
+            
+            .time-inputs {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .attendance-card h1 {
+                font-size: 2rem;
+            }
+            
+            .time-display {
+                font-size: 2rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="attendance-form-container">
+    <!-- En-tête avec horloge -->
+    <div class="attendance-card">
+        <h1>
+            <span>⏰</span>
+            Enregistrer ma présence
+        </h1>
+        <p class="subtitle">Pointage du {{ "now"|date("d/m/Y") }}</p>
+        
+        <div class="current-time">
+            <div class="time-display" id="currentTime">{{ "now"|date("H:i:s") }}</div>
+            <div class="date-display">{{ "now"|date("l d F Y")|capitalize }}</div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="quick-actions">
+        <div class="quick-action-btn" onclick="setQuickAction('checkin')">
+            <div class="quick-action-icon">🟢</div>
+            <div class="quick-action-text">Arrivée</div>
+            <small>Pointer l'arrivée</small>
+        </div>
+        <div class="quick-action-btn" onclick="setQuickAction('checkout')">
+            <div class="quick-action-icon">🔴</div>
+            <div class="quick-action-text">Départ</div>
+            <small>Pointer le départ</small>
+        </div>
+        <div class="quick-action-btn" onclick="setQuickAction('fullday')">
+            <div class="quick-action-icon">📅</div>
+            <div class="quick-action-text">Journée complète</div>
+            <small>8h00 - 17h00</small>
+        </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="form-container">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        
+        <!-- Alertes d'information -->
+        <div class="alert alert-info">
+            <span>ℹ️</span>
+            <div>
+                <strong>Information :</strong> 
+                Vous pouvez utiliser les actions rapides ci-dessus ou remplir manuellement les horaires.
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.workDate, 'Date de travail') }}
+            {{ form_widget(form.workDate, {'attr': {'class': 'form-control', 'value': 'now'|date('Y-m-d')}}) }}
+            {{ form_errors(form.workDate) }}
+        </div>
+
+        <div class="time-inputs">
+            <div class="form-group">
+                {{ form_label(form.checkIn, 'Heure d\'arrivée') }}
+                {{ form_widget(form.checkIn, {'attr': {'class': 'form-control', 'placeholder': 'Ex: 08:00'}}) }}
+                {{ form_errors(form.checkIn) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.checkOut, 'Heure de départ') }}
+                {{ form_widget(form.checkOut, {'attr': {'class': 'form-control', 'placeholder': 'Ex: 17:00'}}) }}
+                {{ form_errors(form.checkOut) }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.status, 'Statut') }}
+            {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.status) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.notes, 'Notes (optionnel)') }}
+            {{ form_widget(form.notes, {'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'Ajouter des notes concernant cette journée de travail...'}}) }}
+            {{ form_errors(form.notes) }}
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ path('app_employee_attendance_index') }}" class="btn btn-secondary">
+                Annuler
+            </a>
+            <button type="submit" class="btn btn-primary">
+                📝 Enregistrer la présence
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<script>
+    // Mise à jour de l'horloge en temps réel
+    function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('fr-FR');
+        document.getElementById('currentTime').textContent = timeString;
+    }
+    
+    setInterval(updateClock, 1000);
+
+    // Actions rapides
+    function setQuickAction(action) {
+        // Retirer la classe active de tous les boutons
+        document.querySelectorAll('.quick-action-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        const now = new Date();
+        const currentTime = now.toTimeString().slice(0, 5);
+        
+        switch(action) {
+            case 'checkin':
+                document.querySelector('input[name*="checkIn"]').value = currentTime;
+                document.querySelector('input[name*="checkOut"]').value = '';
+                document.querySelector('select[name*="status"]').value = 'present';
+                event.target.closest('.quick-action-btn').classList.add('active');
+                break;
+                
+            case 'checkout':
+                if (!document.querySelector('input[name*="checkIn"]').value) {
+                    document.querySelector('input[name*="checkIn"]').value = '08:00';
+                }
+                document.querySelector('input[name*="checkOut"]').value = currentTime;
+                document.querySelector('select[name*="status"]').value = 'present';
+                event.target.closest('.quick-action-btn').classList.add('active');
+                break;
+                
+            case 'fullday':
+                document.querySelector('input[name*="checkIn"]').value = '08:00';
+                document.querySelector('input[name*="checkOut"]').value = '17:00';
+                document.querySelector('select[name*="status"]').value = 'present';
+                event.target.closest('.quick-action-btn').classList.add('active');
+                break;
+        }
+        
+        // Calculer automatiquement les heures travaillées
+        calculateWorkedHours();
+    }
+
+    // Calculer les heures travaillées
+    function calculateWorkedHours() {
+        const checkIn = document.querySelector('input[name*="checkIn"]').value;
+        const checkOut = document.querySelector('input[name*="checkOut"]').value;
+        
+        if (checkIn && checkOut) {
+            const [inHour, inMin] = checkIn.split(':').map(Number);
+            const [outHour, outMin] = checkOut.split(':').map(Number);
+            
+            const inMinutes = inHour * 60 + inMin;
+            const outMinutes = outHour * 60 + outMin;
+            
+            const workedMinutes = outMinutes - inMinutes;
+            const workedHours = Math.floor(workedMinutes / 60);
+            const remainingMinutes = workedMinutes % 60;
+            
+            if (workedMinutes > 0) {
+                // Si il y a un champ pour les heures travaillées, le remplir
+                const workedHoursField = document.querySelector('input[name*="workedHours"]');
+                if (workedHoursField) {
+                    workedHoursField.value = workedHours + (remainingMinutes / 60);
+                }
+            }
+        }
+    }
+
+    // Ajouter des écouteurs d'événements pour le calcul automatique
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkInField = document.querySelector('input[name*="checkIn"]');
+        const checkOutField = document.querySelector('input[name*="checkOut"]');
+        
+        if (checkInField) checkInField.addEventListener('change', calculateWorkedHours);
+        if (checkOutField) checkOutField.addEventListener('change', calculateWorkedHours);
+    });
+
+    // Animation au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        const elements = document.querySelectorAll('.attendance-card, .form-container, .quick-action-btn');
+        elements.forEach((el, index) => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                el.style.transition = 'all 0.6s ease';
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, index * 150);
+        });
+    });
+</script>
+{% endblock %}

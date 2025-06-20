@@ -1,0 +1,614 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ notification.title }} - Notifications - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .notification-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .notification-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .notification-content {
+            padding: 2rem;
+        }
+        
+        .notification-type {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+        }
+        
+        .type-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .type-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .type-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .type-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .type-reminder {
+            background-color: #e0e7ff;
+            color: #3730a3;
+        }
+        
+        .notification-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        
+        .notification-message {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #374151;
+            margin-bottom: 2rem;
+        }
+        
+        .notification-meta {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .meta-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .meta-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .meta-label {
+            font-weight: 500;
+            color: #374151;
+            min-width: 120px;
+        }
+        
+        .meta-value {
+            color: #6b7280;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-read {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-unread {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .related-request {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .related-request-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .related-request-title {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+        
+        .related-request-details {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn-back {
+            background: #6b7280;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-back:hover {
+            background: #4b5563;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+        
+        .btn-mark-read {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-mark-read:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+        
+        .btn-view-request {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-view-request:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+        
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+        
+        .breadcrumb-item a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: white;
+        }
+        
+        .breadcrumb-item.active {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .notification-animation {
+            animation: slideInUp 0.6s ease-out;
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .priority-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .priority-high {
+            background-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        }
+        
+        .priority-medium {
+            background-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        }
+        
+        .priority-low {
+            background-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .notification-header {
+                padding: 1.5rem;
+                text-align: center;
+            }
+            
+            .notification-content {
+                padding: 1.5rem;
+            }
+            
+            .notification-meta {
+                padding: 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .meta-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+            
+            .meta-label {
+                min-width: auto;
+                font-size: 0.9rem;
+            }
+        }
+        
+        .sender-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .sender-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .sender-details h6 {
+            margin: 0;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .sender-details small {
+            color: #6b7280;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <!-- En-tête avec navigation -->
+    <div class="notification-header">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ path('employee_dashboard') }}">
+                        <i class="fas fa-home me-1"></i>
+                        Tableau de bord
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ path('employee_notification_index') }}">
+                        Notifications
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    Détails
+                </li>
+            </ol>
+        </nav>
+        
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h2 mb-1">
+                    <i class="fas fa-bell me-2"></i>
+                    Détails de la notification
+                </h1>
+                <p class="mb-0 opacity-75">
+                    {{ notification.createdAt|date('d/m/Y à H:i') }}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                {% if not notification.isRead %}
+                    <form method="POST" action="{{ path('employee_notification_mark_read', {'id': notification.id}) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-mark-read">
+                            <i class="fas fa-check me-2"></i>
+                            Marquer comme lu
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal de la notification -->
+    <div class="notification-card notification-animation">
+        <!-- Indicateur de priorité (si applicable) -->
+        {% if notification.priority is defined %}
+            <div class="priority-indicator priority-{{ notification.priority|lower }}"></div>
+        {% endif %}
+        
+        <div class="notification-content">
+            <!-- Type de notification -->
+            {% set typeClass = 'type-info' %}
+            {% set typeIcon = 'fas fa-info-circle' %}
+            
+            {% if notification.type == 'success' or notification.type == 'approval' %}
+                {% set typeClass = 'type-success' %}
+                {% set typeIcon = 'fas fa-check-circle' %}
+            {% elseif notification.type == 'warning' or notification.type == 'reminder' %}
+                {% set typeClass = 'type-warning' %}
+                {% set typeIcon = 'fas fa-exclamation-triangle' %}
+            {% elseif notification.type == 'error' or notification.type == 'rejection' %}
+                {% set typeClass = 'type-error' %}
+                {% set typeIcon = 'fas fa-times-circle' %}
+            {% elseif notification.type == 'reminder' %}
+                {% set typeClass = 'type-reminder' %}
+                {% set typeIcon = 'fas fa-clock' %}
+            {% endif %}
+            
+            <div class="notification-type {{ typeClass }}">
+                <i class="{{ typeIcon }} me-2"></i>
+                {{ notification.type|title }}
+            </div>
+
+            <!-- Informations sur l'expéditeur -->
+            {% if notification.sender %}
+                <div class="sender-info">
+                    <div class="sender-avatar">
+                        {{ notification.sender.firstName|first }}{{ notification.sender.lastName|first }}
+                    </div>
+                    <div class="sender-details">
+                        <h6>{{ notification.sender.firstName }} {{ notification.sender.lastName }}</h6>
+                        <small>{{ notification.sender.position ?? 'Employé' }}</small>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Titre de la notification -->
+            <h1 class="notification-title">
+                {{ notification.title }}
+            </h1>
+
+            <!-- Message principal -->
+            <div class="notification-message">
+                {{ notification.message|nl2br }}
+            </div>
+
+            <!-- Demande de congé liée (si applicable) -->
+            {% if notification.leaveRequest %}
+                <div class="related-request">
+                    <div class="related-request-header">
+                        <i class="fas fa-link me-2 text-muted"></i>
+                        <span class="fw-semibold">Demande de congé associée</span>
+                    </div>
+                    <div class="related-request-title">
+                        {{ notification.leaveRequest.leaveType.name }}
+                    </div>
+                    <div class="related-request-details">
+                        Du {{ notification.leaveRequest.startDate|date('d/m/Y') }} 
+                        au {{ notification.leaveRequest.endDate|date('d/m/Y') }}
+                        ({{ notification.leaveRequest.numberOfDays }} jour{{ notification.leaveRequest.numberOfDays > 1 ? 's' : '' }})
+                        
+                        {% set statusClass = 'text-warning' %}
+                        {% set statusText = 'En attente' %}
+                        {% if notification.leaveRequest.status == 'approved' %}
+                            {% set statusClass = 'text-success' %}
+                            {% set statusText = 'Approuvée' %}
+                        {% elseif notification.leaveRequest.status == 'rejected' %}
+                            {% set statusClass = 'text-danger' %}
+                            {% set statusText = 'Rejetée' %}
+                        {% endif %}
+                        
+                        <span class="ms-2 fw-semibold {{ statusClass }}">
+                            • {{ statusText }}
+                        </span>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Métadonnées -->
+        <div class="notification-meta">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="meta-item">
+                        <i class="fas fa-calendar-alt meta-icon"></i>
+                        <span class="meta-label">Date de création :</span>
+                        <span class="meta-value">
+                            {{ notification.createdAt|date('d/m/Y à H:i') }}
+                        </span>
+                    </div>
+                    
+                    <div class="meta-item">
+                        <i class="fas fa-eye meta-icon"></i>
+                        <span class="meta-label">Statut :</span>
+                        <span class="meta-value">
+                            {% if notification.isRead %}
+                                <span class="status-indicator status-read">
+                                    <i class="fas fa-check me-1"></i>
+                                    Lu
+                                </span>
+                            {% else %}
+                                <span class="status-indicator status-unread">
+                                    <i class="fas fa-circle me-1"></i>
+                                    Non lu
+                                </span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    {% if notification.readAt %}
+                        <div class="meta-item">
+                            <i class="fas fa-clock meta-icon"></i>
+                            <span class="meta-label">Lu le :</span>
+                            <span class="meta-value">
+                                {{ notification.readAt|date('d/m/Y à H:i') }}
+                            </span>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="meta-item">
+                        <i class="fas fa-tag meta-icon"></i>
+                        <span class="meta-label">Type :</span>
+                        <span class="meta-value">{{ notification.type|title }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Boutons d'action -->
+    <div class="action-buttons">
+        <a href="{{ path('employee_notification_index') }}" class="btn-back">
+            <i class="fas fa-arrow-left me-2"></i>
+            Retour aux notifications
+        </a>
+        
+        {% if notification.leaveRequest %}
+            <a href="{{ path('employee_leave_request_show', {'id': notification.leaveRequest.id}) }}" 
+               class="btn-view-request">
+                <i class="fas fa-external-link-alt me-2"></i>
+                Voir la demande
+            </a>
+        {% endif %}
+        
+        {% if not notification.isRead %}
+            <form method="POST" action="{{ path('employee_notification_mark_read', {'id': notification.id}) }}" style="display: inline;">
+                <button type="submit" class="btn-mark-read">
+                    <i class="fas fa-check me-2"></i>
+                    Marquer comme lu
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Marquer automatiquement comme lu après 3 secondes si pas encore lu
+            {% if not notification.isRead %}
+                setTimeout(function() {
+                    // Vous pouvez décommenter cette ligne pour un marquage automatique
+                    // window.location.href = "{{ path('employee_notification_mark_read', {'id': notification.id}) }}";
+                }, 3000);
+            {% endif %}
+            
+            // Animation d'entrée
+            const card = document.querySelector('.notification-card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
+            
+            // Gestion du formulaire de marquage comme lu
+            const markReadForms = document.querySelectorAll('form[action*="mark_read"]');
+            markReadForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const button = form.querySelector('button');
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Marquage...';
+                });
+            });
+            
+            // Effet de lecture progressive du message
+            const message = document.querySelector('.notification-message');
+            if (message && !{{ notification.isRead ? 'true' : 'false' }}) {
+                message.style.opacity = '0.7';
+                
+                setTimeout(() => {
+                    message.style.transition = 'opacity 1s ease';
+                    message.style.opacity = '1';
+                }, 500);
+            }
+        });
+        
+        // Raccourcis clavier
+        document.addEventListener('keydown', function(e) {
+            // Échap pour retourner à la liste
+            if (e.key === 'Escape') {
+                window.location.href = "{{ path('employee_notification_index') }}";
+            }
+            
+            // M pour marquer comme lu
+            {% if not notification.isRead %}
+                if (e.key === 'm' || e.key === 'M') {
+                    const markReadForm = document.querySelector('form[action*="mark_read"]');
+                    if (markReadForm) {
+                        markReadForm.submit();
+                    }
+                }
+            {% endif %}
+        });
+    </script>
+{% endblock %}

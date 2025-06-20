@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Connexion - HR Flow{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --primary-dark: #0b5ed7;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --warning-color: #fd7e14;
+            --info-color: #0dcaf0;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --border-radius: 12px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Éléments décoratifs de fond */
+        .bg-decoration {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .bg-decoration::before,
+        .bg-decoration::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .bg-decoration::before {
+            width: 300px;
+            height: 300px;
+            top: -150px;
+            right: -150px;
+            animation-delay: -2s;
+        }
+
+        .bg-decoration::after {
+            width: 200px;
+            height: 200px;
+            bottom: -100px;
+            left: -100px;
+            animation-delay: -4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        /* Container principal */
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        /* Card de connexion */
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 40px 35px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Header */
+        .login-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 2rem;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+        }
+
+        .login-title {
+            color: var(--dark-color);
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            color: var(--secondary-color);
+            font-weight: 400;
+            font-size: 0.95rem;
+        }
+
+        /* Formulaire */
+        .form-floating {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .form-floating > .form-control {
+            height: 60px;
+            padding: 20px 16px 8px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            background: #fff;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-floating > .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-floating > label {
+            padding: 20px 16px 8px 16px;
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+            z-index: 3;
+        }
+
+        /* Bouton de connexion */
+        .btn-login {
+            width: 100%;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border: none;
+            border-radius: var(--border-radius);
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-login:hover::before {
+            left: 100%;
+        }
+
+        /* Options supplémentaires */
+        .login-options {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-check-input {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 2px solid #dee2e6;
+            transition: var(--transition);
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .forgot-password {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .forgot-password:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Messages d'erreur */
+        .alert {
+            border-radius: var(--border-radius);
+            border: none;
+            font-weight: 500;
+            margin-bottom: 25px;
+            padding: 15px 20px;
+        }
+
+        .alert-danger {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .alert-success {
+            background: rgba(25, 135, 84, 0.1);
+            color: var(--success-color);
+            border-left: 4px solid var(--success-color);
+        }
+
+        /* Footer */
+        .login-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .login-footer p {
+            color: var(--secondary-color);
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        /* Loading state */
+        .btn-loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .btn-loading .spinner-border {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 15px;
+            }
+            
+            .login-card {
+                padding: 30px 25px;
+            }
+            
+            .login-title {
+                font-size: 1.6rem;
+            }
+            
+            .login-options {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+
+        /* Animations d'entrée */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-decoration"></div>
+    
+    <div class="login-container fade-in">
+        <div class="login-card">
+            <!-- Header -->
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h1 class="login-title">HR Flow</h1>
+                <p class="login-subtitle">Connectez-vous à votre espace de travail</p>
+            </div>
+
+            <!-- Messages d'erreur -->
+            {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            {% if app.user %}
+                <div class="alert alert-success" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Vous êtes connecté en tant que {{ app.user.userIdentifier }}
+                    <a href="{{ path('app_logout') }}" class="btn btn-sm btn-outline-success ms-2">Se déconnecter</a>
+                </div>
+            {% endif %}
+
+            <!-- Formulaire de connexion -->
+            <form method="post" id="loginForm">
+                <input type="hidden" name="_token" value="{{ csrf_token('authenticate') }}">
+
+                <!-- Champ Email -->
+                <div class="form-floating position-relative">
+                    <input type="email" 
+                           class="form-control" 
+                           id="inputEmail" 
+                           name="email" 
+                           value="{{ last_username }}" 
+                           required 
+                           autofocus
+                           placeholder="nom@exemple.com">
+                    <label for="inputEmail">Adresse email</label>
+                    <span class="input-icon">
+                        <i class="fas fa-envelope"></i>
+                    </span>
+                </div>
+
+                <!-- Champ Mot de passe -->
+                <div class="form-floating position-relative">
+                    <input type="password" 
+                           class="form-control" 
+                           id="inputPassword" 
+                           name="password" 
+                           required
+                           placeholder="Mot de passe">
+                    <label for="inputPassword">Mot de passe</label>
+                    <span class="input-icon">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                </div>
+
+                <!-- Options -->
+                <div class="login-options">
+                    <div class="remember-me">
+                        <input class="form-check-input" 
+                               type="checkbox" 
+                               id="remember_me" 
+                               name="_remember_me">
+                        <label class="form-check-label" for="remember_me">
+                            Se souvenir de moi
+                        </label>
+                    </div>
+                    <a href="#" class="forgot-password">
+                        Mot de passe oublié ?
+                    </a>
+                </div>
+
+                <!-- Bouton de connexion -->
+                <button class="btn btn-login" type="submit" id="loginBtn">
+                    <span class="btn-text">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Se connecter
+                    </span>
+                </button>
+
+                <!-- Champ caché pour la redirection -->
+                <input type="hidden" name="_target_path" value="{{ app.request.get('redirect_to') }}">
+            </form>
+
+            <!-- Footer -->
+            <div class="login-footer">
+                <p>&copy; {{ "now"|date("Y") }} HR Flow. Tous droits réservés.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('loginForm');
+            const submitBtn = document.getElementById('loginBtn');
+            const inputs = form.querySelectorAll('input[required]');
+
+            // Animation de focus sur les champs
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'translateY(-2px)';
+                });
+
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'translateY(0)';
+                });
+
+                // Validation en temps réel
+                input.addEventListener('input', function() {
+                    if (this.validity.valid) {
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+                    } else {
+                        this.classList.remove('is-valid');
+                        this.classList.add('is-invalid');
+                    }
+                });
+            });
+
+            // Gestion de la soumission du formulaire
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+
+                // Validation des champs
+                inputs.forEach(input => {
+                    if (!input.validity.valid) {
+                        isValid = false;
+                        input.classList.add('is-invalid');
+                        
+                        // Animation de secousse pour les champs invalides
+                        input.style.animation = 'shake 0.5s ease-in-out';
+                        setTimeout(() => {
+                            input.style.animation = '';
+                        }, 500);
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    return;
+                }
+
+                // Animation de loading
+                submitBtn.classList.add('btn-loading');
+                submitBtn.innerHTML = `
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Connexion en cours...
+                `;
+            });
+
+            // Animation de secousse pour les erreurs
+            const errorAlert = document.querySelector('.alert-danger');
+            if (errorAlert) {
+                errorAlert.style.animation = 'shake 0.5s ease-in-out';
+                
+                // Mettre le focus sur le premier champ après une erreur
+                setTimeout(() => {
+                    inputs[0].focus();
+                }, 100);
+            }
+        });
+
+        // Animations CSS supplémentaires
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+                20%, 40%, 60%, 80% { transform: translateX(3px); }
+            }
+
+            .is-invalid {
+                border-color: var(--danger-color) !important;
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.1) !important;
+            }
+
+            .is-valid {
+                border-color: var(--success-color) !important;
+                box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.1) !important;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

@@ -1,0 +1,733 @@
+{# templates/employee/leave_request/_form.html.twig #}
+
+{{ form_start(form, {'attr': {'class': 'leave-request-form', 'novalidate': 'novalidate'}}) }}
+
+<div class="form-container">
+    <div class="form-header">
+        <h3 class="form-title">
+            <i class="fas fa-calendar-alt"></i>
+            {% if app.request.get('_route') == 'employee_leave_request_new' %}
+                Nouvelle demande de congé
+            {% else %}
+                Modifier la demande de congé
+            {% endif %}
+        </h3>
+        <p class="form-subtitle">Veuillez remplir tous les champs obligatoires</p>
+    </div>
+
+    <div class="form-body">
+        {# Section Type de congé #}
+        <div class="form-section">
+            <div class="section-header">
+                <h4><i class="fas fa-tag"></i> Type de congé</h4>
+            </div>
+            <div class="form-group">
+                {{ form_label(form.leaveType, 'Type de congé *', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.leaveType, {
+                    'attr': {
+                        'class': 'form-control form-select',
+                        'data-placeholder': 'Sélectionnez un type de congé',
+                        'required': true
+                    }
+                }) }}
+                {{ form_errors(form.leaveType) }}
+                <small class="form-help">
+                    <i class="fas fa-info-circle"></i>
+                    Choisissez parmi les types de congés disponibles selon votre profil
+                </small>
+            </div>
+        </div>
+
+        {# Section Période #}
+        <div class="form-section">
+            <div class="section-header">
+                <h4><i class="fas fa-calendar-week"></i> Période de congé</h4>
+            </div>
+            <div class="date-range-container">
+                <div class="form-group date-group">
+                    {{ form_label(form.startDate, 'Date de début *', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.startDate, {
+                        'attr': {
+                            'class': 'form-control date-picker',
+                            'min': 'today',
+                            'required': true,
+                            'data-toggle': 'datepicker'
+                        }
+                    }) }}
+                    {{ form_errors(form.startDate) }}
+                </div>
+                
+                <div class="date-separator">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+                
+                <div class="form-group date-group">
+                    {{ form_label(form.endDate, 'Date de fin *', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.endDate, {
+                        'attr': {
+                            'class': 'form-control date-picker',
+                            'min': 'today',
+                            'required': true,
+                            'data-toggle': 'datepicker'
+                        }
+                    }) }}
+                    {{ form_errors(form.endDate) }}
+                </div>
+            </div>
+            
+            <div class="duration-info">
+                <div class="duration-display">
+                    <span class="duration-label">Durée calculée :</span>
+                    <span class="duration-value" id="calculated-days">0 jour(s)</span>
+                </div>
+                <small class="form-help">
+                    <i class="fas fa-info-circle"></i>
+                    Les weekends et jours fériés sont automatiquement exclus
+                </small>
+            </div>
+        </div>
+
+        {# Section Détails #}
+        <div class="form-section">
+            <div class="section-header">
+                <h4><i class="fas fa-file-text"></i> Détails de la demande</h4>
+            </div>
+            
+            <div class="form-group">
+                {{ form_label(form.reason, 'Motif de la demande', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.reason, {
+                    'attr': {
+                        'class': 'form-control form-textarea',
+                        'rows': 4,
+                        'placeholder': 'Décrivez brièvement le motif de votre demande de congé...',
+                        'maxlength': 500
+                    }
+                }) }}
+                {{ form_errors(form.reason) }}
+                <div class="character-counter">
+                    <span id="char-count">0</span>/500 caractères
+                </div>
+            </div>
+        </div>
+
+        {# Section Solde disponible #}
+        <div class="form-section">
+            <div class="section-header">
+                <h4><i class="fas fa-chart-pie"></i> Solde disponible</h4>
+            </div>
+            <div class="balance-info">
+                <div class="balance-card">
+                    <div class="balance-item">
+                        <span class="balance-label">Solde total :</span>
+                        <span class="balance-value total" id="total-balance">-- jours</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="balance-label">Déjà utilisé :</span>
+                        <span class="balance-value used" id="used-balance">-- jours</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="balance-label">Restant :</span>
+                        <span class="balance-value remaining" id="remaining-balance">-- jours</span>
+                    </div>
+                </div>
+                <div class="balance-alert" id="balance-warning" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Attention : Cette demande dépasse votre solde disponible</span>
+                </div>
+            </div>
+        </div>
+
+        {# Section Actions #}
+        <div class="form-actions">
+            <div class="action-buttons">
+                <button type="button" class="btn btn-secondary btn-cancel" onclick="history.back()">
+                    <i class="fas fa-times"></i>
+                    Annuler
+                </button>
+                
+                <button type="button" class="btn btn-outline-primary btn-preview" id="preview-btn">
+                    <i class="fas fa-eye"></i>
+                    Aperçu
+                </button>
+                
+                <button type="submit" class="btn btn-primary btn-submit" id="submit-btn">
+                    <i class="fas fa-paper-plane"></i>
+                    {% if app.request.get('_route') == 'employee_leave_request_new' %}
+                        Soumettre la demande
+                    {% else %}
+                        Mettre à jour
+                    {% endif %}
+                </button>
+            </div>
+            
+            <div class="form-disclaimer">
+                <small>
+                    <i class="fas fa-info-circle"></i>
+                    Une fois soumise, votre demande sera transmise à votre manager pour approbation.
+                    Vous recevrez une notification de la décision.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Modal d'aperçu #}
+<div class="modal fade" id="previewModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye"></i>
+                    Aperçu de la demande
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-content">
+                    <div class="preview-section">
+                        <h6>Type de congé</h6>
+                        <p id="preview-leave-type">--</p>
+                    </div>
+                    <div class="preview-section">
+                        <h6>Période</h6>
+                        <p id="preview-period">--</p>
+                    </div>
+                    <div class="preview-section">
+                        <h6>Durée</h6>
+                        <p id="preview-duration">--</p>
+                    </div>
+                    <div class="preview-section">
+                        <h6>Motif</h6>
+                        <p id="preview-reason">--</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Modifier
+                </button>
+                <button type="button" class="btn btn-primary" id="confirm-submit">
+                    Confirmer et soumettre
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ form_end(form) }}
+
+<style>
+/* Styles pour le formulaire de demande de congé */
+.leave-request-form {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.form-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.form-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.form-title i {
+    margin-right: 0.5rem;
+}
+
+.form-subtitle {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+.form-body {
+    padding: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.section-header {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.section-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #495057;
+    font-weight: 600;
+}
+
+.section-header i {
+    margin-right: 0.5rem;
+    color: #667eea;
+}
+
+.form-section .form-group {
+    padding: 1rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    outline: none;
+}
+
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    padding-right: 2.5rem;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.date-range-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.date-group {
+    flex: 1;
+    margin: 0;
+}
+
+.date-separator {
+    display: flex;
+    align-items: center;
+    color: #6c757d;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.duration-info {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+.duration-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.duration-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.duration-value {
+    background: #667eea;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.form-help {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.form-help i {
+    margin-right: 0.25rem;
+}
+
+.character-counter {
+    text-align: right;
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+}
+
+.balance-info {
+    padding: 1rem;
+}
+
+.balance-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.balance-item {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.balance-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.balance-value {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.balance-value.total {
+    color: #28a745;
+}
+
+.balance-value.used {
+    color: #dc3545;
+}
+
+.balance-value.remaining {
+    color: #667eea;
+}
+
+.balance-alert {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+}
+
+.balance-alert i {
+    margin-right: 0.5rem;
+}
+
+.form-actions {
+    padding: 2rem;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-outline-primary {
+    background: transparent;
+    color: #667eea;
+    border-color: #667eea;
+}
+
+.btn-outline-primary:hover {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5a6fd8;
+}
+
+.form-disclaimer {
+    text-align: center;
+    color: #6c757d;
+}
+
+.form-errors {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.preview-content {
+    padding: 1rem 0;
+}
+
+.preview-section {
+    margin-bottom: 1rem;
+}
+
+.preview-section h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.preview-section p {
+    color: #6c757d;
+    margin: 0;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-container {
+        margin: 1rem;
+    }
+    
+    .form-header,
+    .form-body,
+    .form-actions {
+        padding: 1rem;
+    }
+    
+    .date-range-container {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .date-separator {
+        transform: rotate(90deg);
+        margin: 0.5rem 0;
+    }
+    
+    .balance-card {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.querySelector('[data-toggle="datepicker"][id*="startDate"]');
+    const endDateInput = document.querySelector('[data-toggle="datepicker"][id*="endDate"]');
+    const leaveTypeSelect = document.querySelector('select[id*="leaveType"]');
+    const reasonTextarea = document.querySelector('textarea[id*="reason"]');
+    const calculatedDaysSpan = document.getElementById('calculated-days');
+    const charCountSpan = document.getElementById('char-count');
+    const previewBtn = document.getElementById('preview-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const confirmSubmitBtn = document.getElementById('confirm-submit');
+
+    // Calcul automatique de la durée
+    function calculateDuration() {
+        if (startDateInput.value && endDateInput.value) {
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
+            
+            if (endDate >= startDate) {
+                let days = 0;
+                let currentDate = new Date(startDate);
+                
+                while (currentDate <= endDate) {
+                    // Exclure les weekends (samedi = 6, dimanche = 0)
+                    if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+                        days++;
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                
+                calculatedDaysSpan.textContent = days + ' jour(s)';
+                updateBalanceWarning(days);
+            }
+        }
+    }
+
+    // Mise à jour de l'alerte de solde
+    function updateBalanceWarning(requestedDays) {
+        const remaining = parseInt(document.getElementById('remaining-balance').textContent) || 0;
+        const warningDiv = document.getElementById('balance-warning');
+        
+        if (requestedDays > remaining) {
+            warningDiv.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.classList.add('btn-disabled');
+        } else {
+            warningDiv.style.display = 'none';
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('btn-disabled');
+        }
+    }
+
+    // Compteur de caractères
+    function updateCharCount() {
+        if (reasonTextarea && charCountSpan) {
+            const count = reasonTextarea.value.length;
+            charCountSpan.textContent = count;
+            
+            if (count > 450) {
+                charCountSpan.style.color = '#dc3545';
+            } else if (count > 400) {
+                charCountSpan.style.color = '#fd7e14';
+            } else {
+                charCountSpan.style.color = '#6c757d';
+            }
+        }
+    }
+
+    // Chargement du solde par type de congé
+    function loadLeaveBalance() {
+        if (leaveTypeSelect.value) {
+            // Simulation - À remplacer par un appel AJAX réel
+            fetch(`/employee/leave-balance/${leaveTypeSelect.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('total-balance').textContent = data.totalDays + ' jours';
+                    document.getElementById('used-balance').textContent = data.usedDays + ' jours';
+                    document.getElementById('remaining-balance').textContent = data.remainingDays + ' jours';
+                })
+                .catch(error => {
+                    console.log('Erreur lors du chargement du solde:', error);
+                    // Valeurs par défaut en cas d'erreur
+                    document.getElementById('total-balance').textContent = '25 jours';
+                    document.getElementById('used-balance').textContent = '5 jours';
+                    document.getElementById('remaining-balance').textContent = '20 jours';
+                });
+        }
+    }
+
+    // Aperçu de la demande
+    function showPreview() {
+        const leaveTypeText = leaveTypeSelect.options[leaveTypeSelect.selectedIndex]?.text || '--';
+        const startDate = startDateInput.value ? new Date(startDateInput.value).toLocaleDateString('fr-FR') : '--';
+        const endDate = endDateInput.value ? new Date(endDateInput.value).toLocaleDateString('fr-FR') : '--';
+        const duration = calculatedDaysSpan.textContent;
+        const reason = reasonTextarea.value || 'Aucun motif spécifié';
+
+        document.getElementById('preview-leave-type').textContent = leaveTypeText;
+        document.getElementById('preview-period').textContent = `Du ${startDate} au ${endDate}`;
+        document.getElementById('preview-duration').textContent = duration;
+        document.getElementById('preview-reason').textContent = reason;
+
+        // Afficher le modal (Bootstrap)
+        const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+        modal.show();
+    }
+
+    // Event listeners
+    if (startDateInput) {
+        startDateInput.addEventListener('change', calculateDuration);
+        startDateInput.min = new Date().toISOString().split('T')[0]; // Minimum aujourd'hui
+    }
+
+    if (endDateInput) {
+        endDateInput.addEventListener('change', calculateDuration);
+        endDateInput.min = new Date().toISOString().split('T')[0]; // Minimum aujourd'hui
+    }
+
+    if (leaveTypeSelect) {
+        leaveTypeSelect.addEventListener('change', loadLeaveBalance);
+        // Charger le solde initial si un type est déjà sélectionné
+        if (leaveTypeSelect.value) {
+            loadLeaveBalance();
+        }
+    }
+
+    if (reasonTextarea) {
+        reasonTextarea.addEventListener('input', updateCharCount);
+        updateCharCount(); // Comptage initial
+    }
+
+    if (previewBtn) {
+        previewBtn.addEventListener('click', showPreview);
+    }
+
+    if (confirmSubmitBtn) {
+        confirmSubmitBtn.addEventListener('click', function() {
+            // Fermer le modal et soumettre le formulaire
+            const modal = bootstrap.Modal.getInstance(document.getElementById('previewModal'));
+            modal.hide();
+            document.querySelector('.leave-request-form').submit();
+        });
+    }
+
+    // Validation en temps réel
+    function validateForm() {
+        const isValid = leaveTypeSelect.value && 
+                       startDateInput.value && 
+                       endDateInput.value && 
+                       new Date(endDateInput.value) >= new Date(startDateInput.value);
+        
+        previewBtn.disabled = !isValid;
+        if (!isValid) {
+            submitBtn.disabled = true;
+        }
+    }
+
+    // Ajouter la validation sur tous les champs requis
+    [leaveTypeSelect, startDateInput, endDateInput].forEach(field => {
+        if (field) {
+            field.addEventListener('change', validateForm);
+        }
+    });
+
+    // Validation initiale
+    validateForm();
+});
+</script>

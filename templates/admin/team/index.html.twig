@@ -1,0 +1,850 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Équipes - HR Flow Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-container {
+            background-color: #f8fafc;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-text h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header-text p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .filters-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filters-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+
+        .filters-toggle {
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filters-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .filter-input {
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-filter {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-filter:hover {
+            background: #5a67d8;
+        }
+
+        .btn-reset {
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-reset:hover {
+            background: #cbd5e0;
+            text-decoration: none;
+            color: #4a5568;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .stat-card.total::before { background: #667eea; }
+        .stat-card.active::before { background: #48bb78; }
+        .stat-card.inactive::before { background: #f56565; }
+        .stat-card.departments::before { background: #ed8936; }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-card.total .stat-number { color: #667eea; }
+        .stat-card.active .stat-number { color: #48bb78; }
+        .stat-card.inactive .stat-number { color: #f56565; }
+        .stat-card.departments .stat-number { color: #ed8936; }
+
+        .stat-label {
+            color: #718096;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .teams-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .teams-header {
+            padding: 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .teams-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 0;
+        }
+
+        .teams-count {
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .teams-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .teams-table th {
+            background: #f7fafc;
+            padding: 20px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .teams-table td {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        .teams-table tr:hover {
+            background-color: #f7fafc;
+        }
+
+        .team-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .team-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 18px;
+        }
+
+        .team-details h4 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .team-details p {
+            margin: 0;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .team-leader {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .leader-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #edf2f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .leader-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .leader-name {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .leader-role {
+            color: #718096;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .department-badge {
+            background: #e6fffa;
+            color: #00a3c4;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .members-count {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .members-number {
+            background: #edf2f7;
+            color: #2d3748;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #c6f6d5;
+            color: #2f855a;
+        }
+
+        .status-inactive {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .actions-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .actions-btn {
+            background: #edf2f7;
+            color: #4a5568;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .actions-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .actions-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            min-width: 150px;
+            display: none;
+        }
+
+        .actions-menu.show {
+            display: block;
+        }
+
+        .actions-menu a {
+            display: block;
+            padding: 10px 15px;
+            color: #4a5568;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .actions-menu a:hover {
+            background: #f7fafc;
+        }
+
+        .actions-menu a.danger {
+            color: #e53e3e;
+        }
+
+        .actions-menu a.danger:hover {
+            background: #fed7d7;
+        }
+
+        .no-teams {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .no-teams-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .no-teams h3 {
+            margin: 0 0 10px 0;
+            font-size: 20px;
+            color: #4a5568;
+        }
+
+        .no-teams p {
+            margin: 0 0 20px 0;
+            font-size: 16px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 25px;
+            background: #f7fafc;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .pagination a:hover {
+            background: #e2e8f0;
+        }
+
+        .pagination .current {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .filters-form {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .teams-table {
+                font-size: 14px;
+            }
+
+            .teams-table th,
+            .teams-table td {
+                padding: 15px 10px;
+            }
+
+            .team-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+
+            .teams-table th:nth-child(n+4),
+            .teams-table td:nth-child(n+4) {
+                display: none;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="admin-container">
+    <!-- Header -->
+    <div class="admin-header">
+        <div class="header-content">
+            <div class="header-title">
+                <div class="header-icon">👥</div>
+                <div class="header-text">
+                    <h1>Gestion des Équipes</h1>
+                    <p>Organisez et gérez les équipes de votre entreprise</p>
+                </div>
+            </div>
+            <a href="{{ path('admin_team_new') }}" class="btn-primary">
+                ➕ Nouvelle Équipe
+            </a>
+        </div>
+    </div>
+
+    <div class="content-wrapper">
+        <!-- Messages Flash -->
+        {% for flash_success in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ flash_success }}
+            </div>
+        {% endfor %}
+
+        {% for flash_error in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ flash_error }}
+            </div>
+        {% endfor %}
+
+        <!-- Filtres -->
+        <div class="filters-section">
+            <div class="filters-header">
+                <h3 class="filters-title">Filtrer les équipes</h3>
+                <button type="button" class="filters-toggle" onclick="toggleFilters()">
+                    <span id="filterToggleText">Masquer</span> 🔽
+                </button>
+            </div>
+            <form method="GET" class="filters-form" id="filtersForm">
+                <div class="filter-group">
+                    <label class="filter-label">Recherche</label>
+                    <input type="text" name="search" value="{{ app.request.query.get('search') }}" 
+                           placeholder="Nom d'équipe..." class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Département</label>
+                    <select name="department" class="filter-input">
+                        <option value="">Tous les départements</option>
+                        {% for department in departments %}
+                            <option value="{{ department.id }}" 
+                                    {% if app.request.query.get('department') == department.id|lower|default('') %}selected{% endif %}>
+                                {{ department.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Statut</label>
+                    <select name="status" class="filter-input">
+                        <option value="">Tous</option>
+                        <option value="1" {% if app.request.query.get('status') == '1' %}selected{% endif %}>Actif</option>
+                        <option value="0" {% if app.request.query.get('status') == '0' %}selected{% endif %}>Inactif</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button type="submit" class="btn-filter">Filtrer</button>
+                </div>
+                <div class="filter-group">
+                    <a href="{{ path('admin_team_index') }}" class="btn-reset">Réinitialiser</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="stats-section">
+            <div class="stat-card total">
+                <div class="stat-number">{{ teams|length }}</div>
+                <div class="stat-label">Total Équipes</div>
+            </div>
+            <div class="stat-card active">
+                <div class="stat-number">
+                    {% set activeCount = 0 %}
+                    {% for team in teams %}
+                        {% if team.isActive %}
+                            {% set activeCount = activeCount + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ activeCount }}
+                </div>
+                <div class="stat-label">Équipes Actives</div>
+            </div>
+            <div class="stat-card inactive">
+                <div class="stat-number">{{ teams|length - activeCount }}</div>
+                <div class="stat-label">Équipes Inactives</div>
+            </div>
+            <div class="stat-card departments">
+                <div class="stat-number">
+                    {% set uniqueDepartments = [] %}
+                    {% for team in teams %}
+                        {% if team.department and team.department.id not in uniqueDepartments %}
+                            {% set uniqueDepartments = uniqueDepartments|merge([team.department.id]) %}
+                        {% endif %}  
+                    {% endfor %}
+                    {{ uniqueDepartments|length }}
+                </div>
+            <div class="stat-label">Départements</div>
+</div>
+        </div>
+
+        <!-- Liste des équipes -->
+        <div class="teams-section">
+            <div class="teams-header">
+                <h3 class="teams-title">Liste des Équipes</h3>
+                <span class="teams-count">{{ teams|length }} équipe(s)</span>
+            </div>
+
+            {% if teams|length > 0 %}
+                <table class="teams-table">
+                    <thead>
+                        <tr>
+                            <th>Équipe</th>
+                            <th>Chef d'Équipe</th>
+                            <th>Département</th>
+                            <th>Membres</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for team in teams %}
+                            <tr>
+                                <td>
+                                    <div class="team-info">
+                                        {% set colors = ['#667eea', '#48bb78', '#ed8936', '#f56565', '#38b2ac'] %}
+                                        <div class="team-avatar" style="background: {{ colors[loop.index0 % colors|length] }};">
+                                            {{ team.name|slice(0, 2)|upper }}
+                                        </div>
+                                        <div class="team-details">
+                                            <h4>{{ team.name }}</h4>
+                                            <p>{{ team.description|slice(0, 50) }}{% if team.description|length > 50 %}...{% endif %}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if team.leader %}
+                                        <div class="team-leader">
+                                            <div class="leader-avatar">
+                                                {{ team.leader.firstName|slice(0, 1)|upper }}{{ team.leader.lastName|slice(0, 1)|upper }}
+                                            </div>
+                                            <div class="leader-info">
+                                                <div class="leader-name">{{ team.leader.firstName }} {{ team.leader.lastName }}</div>
+                                                <div class="leader-role">{{ team.leader.position }}</div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span style="color: #718096; font-style: italic;">Non assigné</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="department-badge">{{ team.department.name }}</span>
+                                </td>
+                                <td>
+                                    <div class="members-count">
+                                        👤
+                                        <span class="members-number">{{ team.teamMembers|filter(tm => tm.isActive)|length }}</span>
+                                        membre(s)
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge {{ team.isActive ? 'status-active' : 'status-inactive' }}">
+                                        {{ team.isActive ? 'Actif' : 'Inactif' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="actions-dropdown">
+                                        <button class="actions-btn" onclick="toggleActionsMenu({{ team.id }})">
+                                            Actions ⋯
+                                        </button>
+                                        <div class="actions-menu" id="actions-{{ team.id }}">
+                                            <a href="{{ path('admin_team_show', {id: team.id}) }}">👁️ Voir détails</a>
+                                            <a href="{{ path('admin_team_edit', {id: team.id}) }}">✏️ Modifier</a>
+                                            <a href="{{ path('admin_team_members', {id: team.id}) }}">👥 Gérer membres</a>
+                                            {% if team.isActive %}
+                                                <a href="{{ path('admin_team_deactivate', {id: team.id}) }}" 
+                                                   onclick="return confirm('Désactiver cette équipe ?')">
+                                                    ⏸️ Désactiver
+                                                </a>
+                                            {% else %}
+                                                <a href="{{ path('admin_team_activate', {id: team.id}) }}">
+                                                    ▶️ Activer
+                                                </a>
+                                            {% endif %}
+                                            <a href="{{ path('admin_team_delete', {id: team.id}) }}" 
+                                               class="danger" 
+                                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette équipe ? Cette action est irréversible.')">
+                                                🗑️ Supprimer
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+  
+            {% else %}
+                <div class="no-teams">
+                    <div class="no-teams-icon">👥</div>
+                    <h3>Aucune équipe trouvée</h3>
+                    <p>Il n'y a pas encore d'équipes dans le système ou aucune équipe ne correspond à vos critères de recherche.</p>
+                    <a href="{{ path('admin_team_new') }}" class="btn-primary">
+                        ➕ Créer la première équipe
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Toggle des filtres
+        function toggleFilters() {
+            const filtersForm = document.getElementById('filtersForm');
+            const toggleText = document.getElementById('filterToggleText');
+            
+            if (filtersForm.style.display === 'none') {
+                filtersForm.style.display = 'grid';
+                toggleText.textContent = 'Masquer';
+            } else {
+                filtersForm.style.display = 'none';
+                toggleText.textContent = 'Afficher';
+            }
+        }
+
+        // Toggle du menu d'actions
+        function toggleActionsMenu(teamId) {
+            // Fermer tous les autres menus
+            document.querySelectorAll('.actions-menu').forEach(menu => {
+                if (menu.id !== `actions-${teamId}`) {
+                    menu.classList.remove('show');
+                }
+            });
+
+            // Toggle le menu actuel
+            const menu = document.getElementById(`actions-${teamId}`);
+            menu.classList.toggle('show');
+        }
+
+        // Fermer les menus en cliquant à l'extérieur
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.actions-dropdown')) {
+                document.querySelectorAll('.actions-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }
+        });
+
+        // Auto-submit des filtres avec délai
+        let searchTimeout;
+        document.querySelector('input[name="search"]').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.form.submit();
+            }, 500);
+        });
+
+        // Submit immédiat pour les selects
+        document.querySelectorAll('select[name="department"], select[name="status"]').forEach(select => {
+            select.addEventListener('change', function() {
+                this.form.submit();
+            });
+        });
+
+        // Animation d'apparition des cartes
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        document.querySelectorAll('.stat-card, .teams-section').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,503 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier l'équipe {{ team.name }} - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .team-edit-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .page-title {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .breadcrumb {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        
+        .breadcrumb a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .form-section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            color: #495057;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+        
+        .form-control.is-invalid {
+            border-color: #dc3545;
+        }
+        
+        .form-control.is-valid {
+            border-color: #28a745;
+        }
+        
+        .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px 12px;
+            padding-right: 40px;
+        }
+        
+        .form-text {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .form-errors {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 10px 15px;
+            margin-top: 5px;
+            color: #721c24;
+            font-size: 0.875rem;
+        }
+        
+        .form-errors ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-input {
+            width: auto;
+            margin: 0;
+        }
+        
+        .checkbox-label {
+            margin: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #545b62;
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+            transform: translateY(-1px);
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            border-left: 4px solid;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .info-card {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-card-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        .info-card-text {
+            color: #6c757d;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        @media (max-width: 768px) {
+            .team-edit-container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="team-edit-container">
+    <!-- En-tête de page -->
+    <div class="page-header">
+        <div>
+            <nav class="breadcrumb">
+                <a href="{{ path('admin_dashboard') }}">Administration</a> > 
+                <a href="{{ path('admin_team_index') }}">Équipes</a> > 
+                <span>Modifier {{ team.name }}</span>
+            </nav>
+            <h1 class="page-title">
+                <i class="fas fa-users"></i>
+                Modifier l'équipe : {{ team.name }}
+            </h1>
+        </div>
+    </div>
+
+    <!-- Messages flash -->
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type == 'success' ? 'success' : 'danger' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- Carte d'information -->
+    <div class="info-card">
+        <div class="info-card-title">
+            <i class="fas fa-info-circle"></i>
+            Informations sur l'équipe
+        </div>
+        <div class="info-card-text">
+            Modifiez les informations de l'équipe. Les champs marqués d'un astérisque (*) sont obligatoires.
+            <br>
+            <strong>Date de création :</strong> {{ team.createdAt ? team.createdAt|date('d/m/Y à H:i') : 'Non définie' }}
+        </div>
+    </div>
+
+    <!-- Formulaire d'édition -->
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+    
+        <!-- Section : Informations générales -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-info-circle"></i>
+                Informations générales
+            </h3>
+            
+            <div class="form-group">
+                {{ form_label(form.name, 'Nom de l\'équipe', {'label_attr': {'class': 'form-label required-field'}}) }}
+                {{ form_widget(form.name, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Équipe Marketing'}}) }}
+                {% if form.name.vars.errors|length > 0 %}
+                    <div class="form-errors">
+                        {{ form_errors(form.name) }}
+                    </div>
+                {% endif %}
+                <div class="form-text">
+                    Saisissez un nom descriptif pour identifier facilement l'équipe
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Décrivez le rôle et les responsabilités de cette équipe...'}}) }}
+                {% if form.description.vars.errors|length > 0 %}
+                    <div class="form-errors">
+                        {{ form_errors(form.description) }}
+                    </div>
+                {% endif %}
+                <div class="form-text">
+                    Description optionnelle de l'équipe et de ses missions
+                </div>
+            </div>
+        </div>
+
+        <!-- Section : Organisation -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-sitemap"></i>
+                Organisation
+            </h3>
+            
+            <div class="form-group">
+                {{ form_label(form.department_id, 'Département', {'label_attr': {'class': 'form-label required-field'}}) }}
+                {{ form_widget(form.department_id, {'attr': {'class': 'form-control form-select'}}) }}
+                {% if form.department_id.vars.errors|length > 0 %}
+                    <div class="form-errors">
+                        {{ form_errors(form.department_id) }}
+                    </div>
+                {% endif %}
+                <div class="form-text">
+                    Sélectionnez le département auquel appartient cette équipe
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.leader_id, 'Chef d\'équipe', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.leader_id, {'attr': {'class': 'form-control form-select'}}) }}
+                {% if form.leader_id.vars.errors|length > 0 %}
+                    <div class="form-errors">
+                        {{ form_errors(form.leader_id) }}
+                    </div>
+                {% endif %}
+                <div class="form-text">
+                    Choisissez un employé pour diriger cette équipe (optionnel)
+                </div>
+            </div>
+        </div>
+
+        <!-- Section : Paramètres -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="fas fa-cog"></i>
+                Paramètres
+            </h3>
+            
+            <div class="form-group">
+                <div class="checkbox-wrapper">
+                    {{ form_widget(form.isActive, {'attr': {'class': 'checkbox-input'}}) }}
+                    {{ form_label(form.isActive, 'Équipe active', {'label_attr': {'class': 'checkbox-label'}}) }}
+                </div>
+                {% if form.isActive.vars.errors|length > 0 %}
+                    <div class="form-errors">
+                        {{ form_errors(form.isActive) }}
+                    </div>
+                {% endif %}
+                <div class="form-text">
+                    Une équipe inactive ne sera plus visible dans les sélections
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="action-buttons">
+            <a href="{{ path('admin_team_show', {'id': team.id}) }}" class="btn btn-secondary">
+                <i class="fas fa-eye"></i>
+                Voir l'équipe
+            </a>
+            
+            <a href="{{ path('admin_team_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Retour à la liste
+            </a>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                Enregistrer les modifications
+            </button>
+        </div>
+
+    {{ form_end(form) }}
+    
+    <!-- Section de suppression -->
+    <div class="form-section" style="margin-top: 40px; padding-top: 25px; border-top: 2px solid #dee2e6;">
+        <h3 class="section-title" style="color: #dc3545;">
+            <i class="fas fa-exclamation-triangle"></i>
+            Zone de danger
+        </h3>
+        
+        <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 20px;">
+            <p style="margin: 0 0 15px 0; color: #6c757d;">
+                <strong>Attention :</strong> La suppression d'une équipe est une action irréversible. 
+                Assurez-vous que l'équipe n'a plus de membres actifs avant de procéder à sa suppression.
+            </p>
+            
+            <form method="post" action="{{ path('admin_team_delete', {'id': team.id}) }}" 
+                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette équipe ? Cette action est irréversible.')">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ team.id) }}">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i>
+                    Supprimer cette équipe
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Amélioration de l'UX : auto-save des modifications en brouillon
+            const form = document.querySelector('form[name="team"]');
+            const inputs = form.querySelectorAll('input, select, textarea');
+            
+            // Marquer les champs modifiés
+            inputs.forEach(input => {
+                const originalValue = input.value;
+                
+                input.addEventListener('input', function() {
+                    if (this.value !== originalValue) {
+                        this.classList.add('is-valid');
+                    } else {
+                        this.classList.remove('is-valid');
+                    }
+                });
+            });
+            
+            // Validation en temps réel
+            const nameInput = document.querySelector('#team_name');
+            if (nameInput) {
+                nameInput.addEventListener('blur', function() {
+                    if (this.value.trim().length < 2) {
+                        this.classList.add('is-invalid');
+                    } else {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            }
+            
+            // Confirmation avant de quitter si des modifications sont en cours
+            let formChanged = false;
+            inputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    formChanged = true;
+                });
+            });
+            
+            window.addEventListener('beforeunload', function(e) {
+                if (formChanged) {
+                    e.preventDefault();
+                    e.returnValue = 'Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir quitter cette page ?';
+                }
+            });
+            
+            // Désactiver l'alerte de fermeture lors de la soumission
+            form.addEventListener('submit', function() {
+                formChanged = false;
+            });
+            
+            // Amélioration visuelle : focus sur le premier champ avec erreur
+            const firstErrorField = document.querySelector('.form-control.is-invalid');
+            if (firstErrorField) {
+                firstErrorField.focus();
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    </script>
+{% endblock %}

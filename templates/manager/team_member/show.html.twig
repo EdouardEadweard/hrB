@@ -1,0 +1,504 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail du membre - {{ team_member.user.firstName }} {{ team_member.user.lastName }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .member-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .member-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        
+        .info-card h3 {
+            color: #495057;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
+            font-size: 1.2rem;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            flex: 0 0 40%;
+        }
+        
+        .info-value {
+            flex: 1;
+            text-align: right;
+            color: #495057;
+        }
+        
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-active {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .status-inactive {
+            background: linear-gradient(45deg, #dc3545, #fd7e14);
+            color: white;
+        }
+        
+        .btn-action {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.25rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #0056b3, #004085);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #e0a800);
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: linear-gradient(45deg, #e0a800, #d39e00);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255,193,7,0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(45deg, #c82333, #a71e2a);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220,53,69,0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #545b62);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(45deg, #545b62, #494f54);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(108,117,125,0.3);
+        }
+        
+        .actions-container {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .breadcrumb {
+            background: transparent;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "›";
+            color: #6c757d;
+        }
+        
+        .breadcrumb-item a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+        
+        .alert {
+            border-radius: 8px;
+            border: none;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-info {
+            background: linear-gradient(45deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+        }
+        
+        @media (max-width: 768px) {
+            .member-header {
+                text-align: center;
+                padding: 1.5rem;
+            }
+            
+            .info-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .info-value {
+                text-align: left;
+            }
+            
+            .actions-container {
+                padding: 1rem;
+            }
+            
+            .btn-action {
+                display: block;
+                margin: 0.5rem 0;
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <!-- Fil d'Ariane -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('manager_dashboard') }}">Tableau de bord Manager</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ path('manager_team_member_index') }}">Membres d'équipe</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ team_member.user.firstName }} {{ team_member.user.lastName }}
+            </li>
+        </ol>
+    </nav>
+
+    <!-- En-tête du membre -->
+    <div class="member-header">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <div class="member-avatar mx-auto">
+                    {{ team_member.user.firstName|first|upper }}{{ team_member.user.lastName|first|upper }}
+                </div>
+            </div>
+            <div class="col-md-10">
+                <h1 class="mb-2">{{ team_member.user.firstName }} {{ team_member.user.lastName }}</h1>
+                <p class="mb-1">
+                    <i class="fas fa-briefcase me-2"></i>{{ team_member.user.position }}
+                </p>
+                <p class="mb-1">
+                    <i class="fas fa-users me-2"></i>{{ team_member.team.name }}
+                </p>
+                <p class="mb-0">
+                    <i class="fas fa-building me-2"></i>{{ team_member.team.department.name }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informations personnelles -->
+        <div class="col-lg-6">
+            <div class="info-card">
+                <h3><i class="fas fa-user me-2"></i>Informations personnelles</h3>
+                
+                <div class="info-row">
+                    <span class="info-label">Email :</span>
+                    <span class="info-value">
+                        <a href="mailto:{{ team_member.user.email }}" class="text-primary">
+                            {{ team_member.user.email }}
+                        </a>
+                    </span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Téléphone :</span>
+                    <span class="info-value">
+                        {% if team_member.user.phone %}
+                            <a href="tel:{{ team_member.user.phone }}" class="text-primary">
+                                {{ team_member.user.phone }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Non renseigné</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Date d'embauche :</span>
+                    <span class="info-value">
+                        {% if team_member.user.hireDate %}
+                            {{ team_member.user.hireDate|date('d/m/Y') }}
+                        {% else %}
+                            <span class="text-muted">Non renseignée</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Statut :</span>
+                    <span class="info-value">
+                        <span class="status-badge {{ team_member.user.isActive ? 'status-active' : 'status-inactive' }}">
+                            {{ team_member.user.isActive ? 'Actif' : 'Inactif' }}
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations équipe -->
+        <div class="col-lg-6">
+            <div class="info-card">
+                <h3><i class="fas fa-users me-2"></i>Informations équipe</h3>
+                
+                <div class="info-row">
+                    <span class="info-label">Équipe :</span>
+                    <span class="info-value">
+                        <strong>{{ team_member.team.name }}</strong>
+                    </span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Département :</span>
+                    <span class="info-value">{{ team_member.team.department.name }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Chef d'équipe :</span>
+                    <span class="info-value">
+                        {% if team_member.team.leader %}
+                            {{ team_member.team.leader.firstName }} {{ team_member.team.leader.lastName }}
+                        {% else %}
+                            <span class="text-muted">Non assigné</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Date d'adhésion :</span>
+                    <span class="info-value">
+                        {% if team_member.joinedAt %}
+                            {{ team_member.joinedAt|date('d/m/Y à H:i') }}
+                        {% else %}
+                            <span class="text-muted">Non renseignée</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                {% if team_member.leftAt %}
+                <div class="info-row">
+                    <span class="info-label">Date de sortie :</span>
+                    <span class="info-value text-danger">
+                        {{ team_member.leftAt|date('d/m/Y à H:i') }}
+                    </span>
+                </div>
+                {% endif %}
+                
+                <div class="info-row">
+                    <span class="info-label">Statut dans l'équipe :</span>
+                    <span class="info-value">
+                        <span class="status-badge {{ team_member.isActive ? 'status-active' : 'status-inactive' }}">
+                            {{ team_member.isActive ? 'Membre actif' : 'Membre inactif' }}
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations supplémentaires -->
+    <div class="row">
+        <div class="col-12">
+            <div class="info-card">
+                <h3><i class="fas fa-info-circle me-2"></i>Informations supplémentaires</h3>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <span class="info-label">Manager direct :</span>
+                            <span class="info-value">
+                                {% if team_member.user.manager %}
+                                    {{ team_member.user.manager.firstName }} {{ team_member.user.manager.lastName }}
+                                {% else %}
+                                    <span class="text-muted">Aucun manager assigné</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Rôles :</span>
+                            <span class="info-value">
+                                {% if team_member.user.roles %}
+                                    {% for role in team_member.user.roles %}
+                                        <span class="badge bg-primary me-1">{{ role }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">Aucun rôle assigné</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <span class="info-label">Créé le :</span>
+                            <span class="info-value">
+                                {{ team_member.user.createdAt|date('d/m/Y à H:i') }}
+                            </span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Dernière modification :</span>
+                            <span class="info-value">
+                                {{ team_member.user.updatedAt|date('d/m/Y à H:i') }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages d'information -->
+    {% if not team_member.isActive %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Information :</strong> Ce membre n'est plus actif dans cette équipe.
+            {% if team_member.leftAt %}
+                Il a quitté l'équipe le {{ team_member.leftAt|date('d/m/Y') }}.
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="actions-container">
+        <h4 class="mb-3">Actions disponibles</h4>
+        
+        <a href="{{ path('manager_team_member_edit', {'id': team_member.id}) }}" 
+           class="btn-action btn-warning">
+            <i class="fas fa-edit me-2"></i>Modifier
+        </a>
+        
+        {% if team_member.isActive %}
+            <a href="{{ path('manager_team_member_deactivate', {'id': team_member.id}) }}" 
+               class="btn-action btn-danger"
+               onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce membre de l\'équipe ?')">
+                <i class="fas fa-user-times me-2"></i>Désactiver
+            </a>
+        {% else %}
+            <a href="{{ path('manager_team_member_activate', {'id': team_member.id}) }}" 
+               class="btn-action btn-primary">
+                <i class="fas fa-user-check me-2"></i>Réactiver
+            </a>
+        {% endif %}
+        
+        <a href="{{ path('employee_profile_show', {'id': team_member.user.id}) }}" 
+           class="btn-action btn-primary">
+            <i class="fas fa-user me-2"></i>Voir le profil complet
+        </a>
+        
+        <a href="{{ path('manager_team_member_index') }}" 
+           class="btn-action btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Animation d'entrée des cartes
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.info-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+
+        // Confirmation pour les actions critiques
+        document.querySelectorAll('.btn-danger').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (!this.onclick && !confirm('Êtes-vous sûr de vouloir effectuer cette action ?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Tooltip pour les badges de statut
+        document.querySelectorAll('.status-badge').forEach(badge => {
+            badge.title = badge.textContent.trim();
+        });
+    </script>
+{% endblock %}

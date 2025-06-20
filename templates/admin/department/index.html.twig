@@ -1,0 +1,726 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Départements - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .department-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 1rem 1rem;
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .search-filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-bar {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+        
+        .filter-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tag {
+            padding: 0.25rem 0.75rem;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-tag.active,
+        .filter-tag:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .departments-grid {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .department-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .department-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        
+        .department-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .department-header-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .department-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        
+        .department-code {
+            font-size: 0.875rem;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+        
+        .department-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .department-description {
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+        
+        .department-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .dept-stat {
+            text-align: center;
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+        }
+        
+        .dept-stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .dept-stat-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .department-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+        
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-view {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .btn-view:hover {
+            background: #d1d5db;
+            color: #1f2937;
+        }
+        
+        .btn-edit {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .btn-edit:hover {
+            background: #bfdbfe;
+            color: #1e3a8a;
+        }
+        
+        .btn-delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .btn-delete:hover {
+            background: #fecaca;
+            color: #b91c1c;
+        }
+        
+        .floating-add-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.2s;
+            text-decoration: none;
+            z-index: 1000;
+        }
+        
+        .floating-add-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .loading-spinner {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .department-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .department-actions {
+                flex-direction: column;
+            }
+            
+            .floating-add-btn {
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="department-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2 fw-bold">
+                        <i class="fas fa-building me-3"></i>
+                        Gestion des Départements
+                    </h1>
+                    <p class="mb-0 opacity-75">
+                        Organisez et gérez les départements de votre entreprise
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="d-flex justify-content-md-end gap-2">
+                        <a href="{{ path('admin_department_new') }}" class="btn btn-light btn-lg">
+                            <i class="fas fa-plus me-2"></i>
+                            Nouveau Département
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Cartes de statistiques -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-number">{{ departments|length }}</div>
+                <div class="stat-label">Total Départements</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    {{ departments|filter(d => d.isActive)|length }}
+                </div>
+                <div class="stat-label">Départements Actifs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    {% set totalEmployees = 0 %}
+                    {% for department in departments %}
+                        {% set totalEmployees = totalEmployees + department.manager|length %}
+                    {% endfor %}
+                    {{ totalEmployees }}
+                </div>
+                <div class="stat-label">Total Employés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    {{ departments|filter(d => d.manager is not null)|length }}
+                </div>
+                <div class="stat-label">Avec Manager</div>
+            </div>
+        </div>
+
+        <!-- Section recherche et filtres -->
+        <div class="search-filter-section">
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" 
+                       placeholder="Rechercher un département par nom, code ou description...">
+            </div>
+            <div class="filter-tags">
+                <span class="filter-tag active" data-filter="all">
+                    <i class="fas fa-list me-1"></i>Tous
+                </span>
+                <span class="filter-tag" data-filter="active">
+                    <i class="fas fa-check-circle me-1"></i>Actifs
+                </span>
+                <span class="filter-tag" data-filter="inactive">
+                    <i class="fas fa-times-circle me-1"></i>Inactifs
+                </span>
+                <span class="filter-tag" data-filter="with-manager">
+                    <i class="fas fa-user-tie me-1"></i>Avec Manager
+                </span>
+                <span class="filter-tag" data-filter="without-manager">
+                    <i class="fas fa-user-slash me-1"></i>Sans Manager
+                </span>
+            </div>
+        </div>
+
+        <!-- Spinner de chargement -->
+        <div id="loadingSpinner" class="loading-spinner">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Grille des départements -->
+        <div id="departmentsGrid" class="departments-grid">
+            {% if departments is empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3>Aucun département trouvé</h3>
+                    <p>Commencez par créer votre premier département pour organiser votre entreprise.</p>
+                    <a href="{{ path('admin_department_new') }}" class="btn btn-primary btn-lg mt-3">
+                        <i class="fas fa-plus me-2"></i>
+                        Créer le premier département
+                    </a>
+                </div>
+            {% else %}
+                {% for department in departments %}
+                    <div class="department-card fade-in" 
+                         data-name="{{ department.name|lower }}"
+                         data-code="{{ department.code|lower }}"
+                         data-description="{{ department.description|lower|default('') }}"
+                         data-status="{{ department.isActive ? 'active' : 'inactive' }}"
+                         data-manager="{{ department.manager ? 'with-manager' : 'without-manager' }}">
+                        
+                        <div class="department-header-card">
+                            <div>
+                                <div class="department-name">{{ department.name }}</div>
+                                <div class="department-code">{{ department.code }}</div>
+                            </div>
+                            <div>
+                                <span class="department-status {{ department.isActive ? 'status-active' : 'status-inactive' }}">
+                                    <i class="fas fa-{{ department.isActive ? 'check' : 'times' }} me-1"></i>
+                                    {{ department.isActive ? 'Actif' : 'Inactif' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {% if department.description %}
+                            <div class="department-description">
+                                {{ department.description|length > 100 ? 
+                                   department.description|slice(0, 100) ~ '...' : 
+                                   department.description }}
+                            </div>
+                        {% endif %}
+
+                        <div class="department-stats">
+                            <div class="dept-stat">
+                                <div class="dept-stat-number">{{ department.manager|length }}</div>
+                                <div class="dept-stat-label">Employés</div>
+                            </div>
+                            <div class="dept-stat">
+                                <div class="dept-stat-number">{{ department.teams|length|default(0) }}</div>
+                                <div class="dept-stat-label">Équipes</div>
+                            </div>
+                        </div>
+
+                        {% if department.manager %}
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-user-tie me-1"></i>
+                                    Manager: {{ department.manager.firstName }} {{ department.manager.lastName }}
+                                </small>
+                            </div>
+                        {% endif %}
+
+                        <div class="department-actions">
+                            <a href="{{ path('admin_department_show', {'id': department.id}) }}" 
+                               class="action-btn btn-view" title="Voir les détails">
+                                <i class="fas fa-eye me-1"></i>Voir
+                            </a>
+                            <a href="{{ path('admin_department_edit', {'id': department.id}) }}" 
+                               class="action-btn btn-edit" title="Modifier">
+                                <i class="fas fa-edit me-1"></i>Modifier
+                            </a>
+                            <button class="action-btn btn-delete" 
+                                    onclick="confirmDelete({{ department.id }}, '{{ department.name }}')"
+                                    title="Supprimer">
+                                <i class="fas fa-trash me-1"></i>Supprimer
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Bouton flottant d'ajout -->
+    <a href="{{ path('admin_department_new') }}" class="floating-add-btn" title="Nouveau département">
+        <i class="fas fa-plus fa-lg"></i>
+    </a>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer le département <strong id="departmentToDelete"></strong> ?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Cette action est irréversible et peut affecter les employés associés.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const filterTags = document.querySelectorAll('.filter-tag');
+            const departmentCards = document.querySelectorAll('.department-card');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            
+            let currentFilter = 'all';
+            let searchTerm = '';
+
+            // Fonction de recherche et filtrage
+            function filterDepartments() {
+                // Afficher le spinner
+                loadingSpinner.style.display = 'flex';
+                
+                setTimeout(() => {
+                    departmentCards.forEach(card => {
+                        const name = card.dataset.name || '';
+                        const code = card.dataset.code || '';
+                        const description = card.dataset.description || '';
+                        const status = card.dataset.status;
+                        const manager = card.dataset.manager;
+                        
+                        // Vérifier la recherche textuelle
+                        const matchesSearch = searchTerm === '' || 
+                            name.includes(searchTerm.toLowerCase()) || 
+                            code.includes(searchTerm.toLowerCase()) || 
+                            description.includes(searchTerm.toLowerCase());
+                        
+                        // Vérifier les filtres
+                        let matchesFilter = true;
+                        switch(currentFilter) {
+                            case 'active':
+                                matchesFilter = status === 'active';
+                                break;
+                            case 'inactive':
+                                matchesFilter = status === 'inactive';
+                                break;
+                            case 'with-manager':
+                                matchesFilter = manager === 'with-manager';
+                                break;
+                            case 'without-manager':
+                                matchesFilter = manager === 'without-manager';
+                                break;
+                            default:
+                                matchesFilter = true;
+                        }
+                        
+                        // Afficher ou masquer la carte
+                        if (matchesSearch && matchesFilter) {
+                            card.style.display = 'block';
+                            card.classList.add('fade-in');
+                        } else {
+                            card.style.display = 'none';
+                            card.classList.remove('fade-in');
+                        }
+                    });
+                    
+                    // Masquer le spinner
+                    loadingSpinner.style.display = 'none';
+                }, 300);
+            }
+
+            // Événement de recherche
+            searchInput.addEventListener('input', function(e) {
+                searchTerm = e.target.value;
+                filterDepartments();
+            });
+
+            // Événements des filtres
+            filterTags.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    // Retirer la classe active de tous les tags
+                    filterTags.forEach(t => t.classList.remove('active'));
+                    
+                    // Ajouter la classe active au tag cliqué
+                    this.classList.add('active');
+                    
+                    currentFilter = this.dataset.filter;
+                    filterDepartments();
+                });
+            });
+
+            // Animation d'apparition progressive des cartes
+            function animateCards() {
+                departmentCards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.classList.add('fade-in');
+                    }, index * 100);
+                });
+            }
+
+            animateCards();
+
+            // Amélioration de l'accessibilité
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    this.value = '';
+                    searchTerm = '';
+                    filterDepartments();
+                }
+            });
+        });
+
+        // Fonction de confirmation de suppression
+        function confirmDelete(id, name) {
+            document.getElementById('departmentToDelete').textContent = name;
+            document.getElementById('deleteForm').action = `/admin/department/${id}/delete`;
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+
+        // Notifications toast pour les messages flash
+        {% for message in app.flashes('success') %}
+            showToast('success', '{{ message }}');
+        {% endfor %}
+        
+        {% for message in app.flashes('error') %}
+            showToast('error', '{{ message }}');
+        {% endfor %}
+
+        function showToast(type, message) {
+            // Créer un élément toast
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Supprimer automatiquement après 5 secondes
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
+    </script>
+    
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+{% endblock %}

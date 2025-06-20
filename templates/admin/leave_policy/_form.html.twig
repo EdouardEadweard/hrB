@@ -1,0 +1,617 @@
+{# Formulaire réutilisable pour les politiques de congés #}
+
+{# CSS spécifique au formulaire #}
+<style>
+    .form-section {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-section-title {
+        color: #495057;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-label {
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #212529;
+    }
+    
+    .form-label .required::after {
+        content: " *";
+        color: #dc3545;
+    }
+    
+    .form-control, .form-select {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        color: #212529;
+        background-color: #fff;
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3cpath fill='%23dc3545' d='m0 0l12 12m0-12l-12 12'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .form-control.is-valid, .form-select.is-valid {
+        border-color: #198754;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='m2.3 6.73.94-.94 1.44 1.44.94-.94.94.94-2.38 2.38z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+        padding-right: 2.25rem;
+    }
+    
+    .form-check {
+        display: block;
+        min-height: 1.5rem;
+        padding-left: 1.5em;
+        margin-bottom: 0.125rem;
+    }
+    
+    .form-check-input {
+        width: 1em;
+        height: 1em;
+        margin-top: 0.25em;
+        vertical-align: top;
+        background-color: #fff;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        border: 1px solid rgba(0, 0, 0, 0.25);
+        border-radius: 0.25em;
+        margin-left: -1.5em;
+    }
+    
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+    }
+    
+    .form-text {
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #6c757d;
+    }
+    
+    .invalid-feedback {
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+    
+    .rules-helper {
+        background-color: #e7f3ff;
+        border: 1px solid #b3d9ff;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        margin-top: 0.5rem;
+    }
+    
+    .rules-example {
+        background-color: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+        padding: 0.5rem 1rem;
+        margin: 0.5rem 0;
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        border-radius: 0 0.25rem 0.25rem 0;
+    }
+    
+    .json-editor {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    .char-counter {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-align: right;
+        margin-top: 0.25rem;
+    }
+    
+    .char-counter.warning {
+        color: #fd7e14;
+    }
+    
+    .char-counter.danger {
+        color: #dc3545;
+    }
+    
+    .toggle-helper {
+        cursor: pointer;
+        color: #0d6efd;
+        text-decoration: underline;
+        font-size: 0.875rem;
+    }
+    
+    .toggle-helper:hover {
+        color: #0b5ed7;
+    }
+    
+    .collapse-content {
+        display: none;
+    }
+    
+    .collapse-content.show {
+        display: block;
+    }
+</style>
+
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'leave-policy-form'}}) }}
+
+{# Section 1: Informations de base #}
+<div class="form-section">
+    <h5 class="form-section-title">
+        <i class="fas fa-info-circle me-2"></i>
+        Informations générales
+    </h5>
+    
+    <div class="row">
+        <div class="col-md-6">
+            {# Nom de la politique #}
+            <div class="form-group">
+                {{ form_label(form.name, null, {
+                    'label_attr': {'class': 'form-label'},
+                    'label': 'Nom de la politique <span class="required"></span>'|raw
+                }) }}
+                {{ form_widget(form.name, {
+                    'attr': {
+                        'class': 'form-control',
+                        'placeholder': 'Ex: Politique congés annuels - IT',
+                        'maxlength': '100'
+                    }
+                }) }}
+                <div class="char-counter" data-target="name">0/100 caractères</div>
+                {{ form_errors(form.name, {'attr': {'class': 'invalid-feedback d-block'}}) }}
+                <div class="form-text">
+                    Nom descriptif de la politique (maximum 100 caractères)
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            {# Statut actif #}
+            <div class="form-group">
+                <label class="form-label">Statut</label>
+                <div class="form-check">
+                    {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                    {{ form_label(form.isActive, 'Politique active', {'label_attr': {'class': 'form-check-label'}}) }}
+                </div>
+                {{ form_errors(form.isActive, {'attr': {'class': 'invalid-feedback d-block'}}) }}
+                <div class="form-text">
+                    Une politique inactive ne s'applique pas aux nouvelles demandes
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            {# Département #}
+            <div class="form-group">
+                {{ form_label(form.department, null, {
+                    'label_attr': {'class': 'form-label'}
+                }) }}
+                {{ form_widget(form.department, {
+                    'attr': {
+                        'class': 'form-select',
+                        'data-placeholder': 'Sélectionnez un département'
+                    }
+                }) }}
+                {{ form_errors(form.department, {'attr': {'class': 'invalid-feedback d-block'}}) }}
+                <div class="form-text">
+                    Département auquel s'applique cette politique (optionnel)
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            {# Type de congé #}
+            <div class="form-group">
+                {{ form_label(form.leaveType, null, {
+                    'label_attr': {'class': 'form-label'}
+                }) }}
+                {{ form_widget(form.leaveType, {
+                    'attr': {
+                        'class': 'form-select',
+                        'data-placeholder': 'Sélectionnez un type de congé'
+                    }
+                }) }}
+                {{ form_errors(form.leaveType, {'attr': {'class': 'invalid-feedback d-block'}}) }}
+                <div class="form-text">
+                    Type de congé concerné par cette politique (optionnel)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Section 2: Description #}
+<div class="form-section">
+    <h5 class="form-section-title">
+        <i class="fas fa-align-left me-2"></i>
+        Description
+    </h5>
+    
+    <div class="form-group">
+        {{ form_label(form.description, null, {
+            'label_attr': {'class': 'form-label'}
+        }) }}
+        {{ form_widget(form.description, {
+            'attr': {
+                'class': 'form-control',
+                'rows': '4',
+                'placeholder': 'Décrivez les objectifs et le contexte de cette politique...',
+                'maxlength': '1000'
+            }
+        }) }}
+        <div class="char-counter" data-target="description">0/1000 caractères</div>
+        {{ form_errors(form.description, {'attr': {'class': 'invalid-feedback d-block'}}) }}
+        <div class="form-text">
+            Description détaillée de la politique et de son contexte d'application
+        </div>
+    </div>
+</div>
+
+{# Section 3: Règles JSON #}
+<div class="form-section">
+    <h5 class="form-section-title">
+        <i class="fas fa-cogs me-2"></i>
+        Règles et paramètres
+        <span class="toggle-helper ms-2" onclick="toggleHelper('rules-helper')">
+            <i class="fas fa-question-circle"></i> Voir les exemples
+        </span>
+    </h5>
+    
+    <div class="form-group">
+        {{ form_label(form.rules, null, {
+            'label_attr': {'class': 'form-label'}
+        }) }}
+        {{ form_widget(form.rules, {
+            'attr': {
+                'class': 'form-control json-editor',
+                'rows': '10',
+                'placeholder': '{\n  "maxDaysPerRequest": 30,\n  "minDaysNotice": 7,\n  "allowWeekends": false\n}',
+                'data-json-validate': 'true'
+            }
+        }) }}
+        <div id="json-validation-feedback" class="invalid-feedback"></div>
+        {{ form_errors(form.rules, {'attr': {'class': 'invalid-feedback d-block'}}) }}
+        <div class="form-text">
+            Configuration des règles au format JSON (optionnel)
+        </div>
+    </div>
+
+    {# Helper pour les règles JSON #}
+    <div id="rules-helper" class="rules-helper collapse-content">
+        <h6><i class="fas fa-lightbulb"></i> Exemples de règles JSON</h6>
+        
+        <div class="accordion" id="rulesAccordion">
+            {# Règles de base #}
+            <div class="accordion-item">
+                <h6 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-target="#basic-rules">
+                        Règles de base
+                    </button>
+                </h6>
+                <div id="basic-rules" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        <div class="rules-example">
+{
+  "maxDaysPerRequest": 30,
+  "minDaysNotice": 7,
+  "allowWeekends": false,
+  "allowHolidays": false
+}
+                        </div>
+                        <small class="text-muted">
+                            <strong>maxDaysPerRequest:</strong> Nombre maximum de jours par demande<br>
+                            <strong>minDaysNotice:</strong> Préavis minimum en jours<br>
+                            <strong>allowWeekends:</strong> Autoriser les demandes incluant les week-ends<br>
+                            <strong>allowHolidays:</strong> Autoriser les demandes incluant les jours fériés
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            {# Règles d'approbation #}
+            <div class="accordion-item">
+                <h6 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-target="#approval-rules">
+                        Règles d'approbation
+                    </button>
+                </h6>
+                <div id="approval-rules" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        <div class="rules-example">
+{
+  "requireManagerApproval": true,
+  "autoApproveUnder": 3,
+  "requireHRApprovalOver": 15,
+  "requireDirectorApprovalOver": 30
+}
+                        </div>
+                        <small class="text-muted">
+                            <strong>requireManagerApproval:</strong> Approbation du manager requise<br>
+                            <strong>autoApproveUnder:</strong> Auto-approbation sous X jours<br>
+                            <strong>requireHRApprovalOver:</strong> Approbation RH requise au-dessus de X jours<br>
+                            <strong>requireDirectorApprovalOver:</strong> Approbation directeur au-dessus de X jours
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            {# Règles de planification #}
+            <div class="accordion-item">
+                <h6 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-target="#planning-rules">
+                        Règles de planification
+                    </button>
+                </h6>
+                <div id="planning-rules" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        <div class="rules-example">
+{
+  "maxDaysPerYear": 25,
+  "carryOverDays": 5,
+  "blackoutPeriods": [
+    {"start": "2024-12-20", "end": "2024-12-31"},
+    {"start": "2024-07-15", "end": "2024-08-15"}
+  ],
+  "maxConcurrentRequests": 2
+}
+                        </div>
+                        <small class="text-muted">
+                            <strong>maxDaysPerYear:</strong> Maximum de jours par année<br>
+                            <strong>carryOverDays:</strong> Jours reportables à l'année suivante<br>
+                            <strong>blackoutPeriods:</strong> Périodes interdites<br>
+                            <strong>maxConcurrentRequests:</strong> Nombre max de demandes simultanées dans l'équipe
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            {# Règles spécifiques #}
+            <div class="accordion-item">
+                <h6 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-target="#specific-rules">
+                        Règles spécifiques
+                    </button>
+                </h6>
+                <div id="specific-rules" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        <div class="rules-example">
+{
+  "probationPeriodRestriction": 90,
+  "seniorityBonusDays": {
+    "1year": 1,
+    "5years": 3,
+    "10years": 5
+  },
+  "emergencyLeaveAllowed": true,
+  "medicalCertificateRequired": 3
+}
+                        </div>
+                        <small class="text-muted">
+                            <strong>probationPeriodRestriction:</strong> Restriction pendant la période d'essai (jours)<br>
+                            <strong>seniorityBonusDays:</strong> Jours bonus selon l'ancienneté<br>
+                            <strong>emergencyLeaveAllowed:</strong> Congé d'urgence autorisé<br>
+                            <strong>medicalCertificateRequired:</strong> Certificat médical requis au-dessus de X jours
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="insertRuleTemplate('basic')">
+                <i class="fas fa-plus"></i> Insérer règles de base
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="validateJSON()">
+                <i class="fas fa-check"></i> Valider JSON
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-info" onclick="formatJSON()">
+                <i class="fas fa-indent"></i> Formater JSON
+            </button>
+        </div>
+    </div>
+</div>
+
+{{ form_end(form, {'render_rest': false}) }}
+
+{# JavaScript pour la gestion du formulaire #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Compteur de caractères
+    function setupCharCounter(fieldName) {
+        const field = document.querySelector(`[name*="[${fieldName}]"]`);
+        const counter = document.querySelector(`[data-target="${fieldName}"]`);
+        
+        if (field && counter) {
+            const maxLength = parseInt(field.getAttribute('maxlength')) || 0;
+            
+            function updateCounter() {
+                const currentLength = field.value.length;
+                counter.textContent = `${currentLength}/${maxLength} caractères`;
+                
+                // Changement de couleur selon le pourcentage
+                counter.classList.remove('warning', 'danger');
+                if (currentLength > maxLength * 0.9) {
+                    counter.classList.add('danger');
+                } else if (currentLength > maxLength * 0.8) {
+                    counter.classList.add('warning');
+                }
+            }
+            
+            field.addEventListener('input', updateCounter);
+            updateCounter(); // Initialisation
+        }
+    }
+    
+    setupCharCounter('name');
+    setupCharCounter('description');
+
+    // Validation JSON en temps réel
+    const rulesTextarea = document.querySelector('textarea[name*="[rules]"]');
+    const jsonFeedback = document.getElementById('json-validation-feedback');
+    
+    if (rulesTextarea) {
+        rulesTextarea.addEventListener('input', function() {
+            validateJSONField();
+        });
+        
+        rulesTextarea.addEventListener('blur', function() {
+            validateJSONField();
+        });
+    }
+
+    function validateJSONField() {
+        const value = rulesTextarea.value.trim();
+        
+        if (!value) {
+            rulesTextarea.classList.remove('is-invalid', 'is-valid');
+            jsonFeedback.style.display = 'none';
+            return true;
+        }
+        
+        try {
+            JSON.parse(value);
+            rulesTextarea.classList.remove('is-invalid');
+            rulesTextarea.classList.add('is-valid');
+            jsonFeedback.style.display = 'none';
+            return true;
+        } catch (e) {
+            rulesTextarea.classList.remove('is-valid');
+            rulesTextarea.classList.add('is-invalid');
+            jsonFeedback.textContent = `JSON invalide: ${e.message}`;
+            jsonFeedback.style.display = 'block';
+            return false;
+        }
+    }
+
+    // Fonctions globales pour les boutons
+    window.toggleHelper = function(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.classList.toggle('show');
+        }
+    };
+
+    window.validateJSON = function() {
+        if (validateJSONField()) {
+            alert('Le JSON est valide !');
+        }
+    };
+
+    window.formatJSON = function() {
+        const value = rulesTextarea.value.trim();
+        if (value) {
+            try {
+                const parsed = JSON.parse(value);
+                rulesTextarea.value = JSON.stringify(parsed, null, 2);
+                validateJSONField();
+            } catch (e) {
+                alert('Impossible de formater : JSON invalide');
+            }
+        }
+    };
+
+    window.insertRuleTemplate = function(type) {
+        const templates = {
+            basic: {
+                maxDaysPerRequest: 30,
+                minDaysNotice: 7,
+                allowWeekends: false,
+                allowHolidays: false
+            }
+        };
+        
+        if (templates[type]) {
+            const currentValue = rulesTextarea.value.trim();
+            let newValue;
+            
+            if (!currentValue) {
+                newValue = JSON.stringify(templates[type], null, 2);
+            } else {
+                try {
+                    const current = JSON.parse(currentValue);
+                    const merged = { ...current, ...templates[type] };
+                    newValue = JSON.stringify(merged, null, 2);
+                } catch (e) {
+                    newValue = JSON.stringify(templates[type], null, 2);
+                }
+            }
+            
+            rulesTextarea.value = newValue;
+            validateJSONField();
+        }
+    };
+
+    // Accordion simple
+    document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('data-target'));
+            if (target) {
+                target.classList.toggle('collapse');
+                target.classList.toggle('show');
+                this.classList.toggle('collapsed');
+            }
+        });
+    });
+
+    // Validation du formulaire avant soumission
+    const form = document.getElementById('leave-policy-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateJSONField()) {
+                e.preventDefault();
+                alert('Veuillez corriger les erreurs dans le JSON avant de sauvegarder.');
+                rulesTextarea.focus();
+            }
+        });
+    }
+});
+</script>

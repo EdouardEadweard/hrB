@@ -1,0 +1,656 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demande de congé #{{ leave_request.id }} - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .detail-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+        
+        .detail-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .detail-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,100 1000,0 1000,100"/></svg>');
+            background-size: cover;
+        }
+        
+        .detail-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 120px;
+            justify-content: center;
+        }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 2px solid #fde68a;
+        }
+        
+        .status-approved {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 2px solid #a7f3d0;
+        }
+        
+        .status-rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #fecaca;
+        }
+        
+        .info-section {
+            padding: 2rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .info-section:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            color: #111827;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-value:last-child {
+            margin-bottom: 0;
+        }
+        
+        .leave-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .leave-type-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .date-range {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .date-item {
+            flex: 1;
+        }
+        
+        .date-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .date-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .date-separator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-weight: bold;
+        }
+        
+        .duration-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -0.65rem;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #3b82f6;
+        }
+        
+        .timeline-item.completed::before {
+            background: #10b981;
+            box-shadow: 0 0 0 3px #10b981;
+        }
+        
+        .timeline-item.rejected::before {
+            background: #ef4444;
+            box-shadow: 0 0 0 3px #ef4444;
+        }
+        
+        .timeline-content {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .timeline-item.completed .timeline-content {
+            border-left-color: #10b981;
+        }
+        
+        .timeline-item.rejected .timeline-content {
+            border-left-color: #ef4444;
+        }
+        
+        .comment-box {
+            background: #fefce8;
+            border: 1px solid #fde047;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .comment-box.approved {
+            background: #ecfdf5;
+            border-color: #34d399;
+        }
+        
+        .comment-box.rejected {
+            background: #fef2f2;
+            border-color: #f87171;
+        }
+        
+        .btn-action {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: 2px solid #3b82f6;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+            border: 2px solid #f59e0b;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+            border-color: #d97706;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            border: 2px solid #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+            border-color: #4b5563;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+        }
+        
+        .alert-info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .print-section {
+            display: none;
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            .print-section {
+                display: block;
+            }
+            
+            .detail-card {
+                box-shadow: none;
+                border: 1px solid #000;
+            }
+            
+            .detail-header {
+                background: #f8f9fa !important;
+                color: #000 !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .detail-header {
+                padding: 1.5rem;
+            }
+            
+            .info-section {
+                padding: 1.5rem;
+            }
+            
+            .date-range {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .date-separator {
+                position: relative;
+                transform: none;
+                margin: 0 auto;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4 py-3">
+    <!-- Breadcrumb de navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('employee_dashboard') }}">
+                    <i class="fas fa-home me-1"></i>Tableau de bord
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_employee_leave_request_index') }}">Mes demandes</a>
+            </li>
+            <li class="breadcrumb-item active">Demande #{{ leave_request.id }}</li>
+        </ol>
+    </nav>
+
+    <!-- Carte principale de détail -->
+    <div class="detail-card">
+        <!-- En-tête avec informations principales -->
+        <div class="detail-header">
+            <div class="detail-content">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center mb-3">
+                            {% if leave_request.leaveType.color is defined %}
+                                <span class="leave-type-icon me-3" 
+                                      style="background-color: {{ leave_request.leaveType.color }}; width: 24px; height: 24px;"></span>
+                            {% endif %}
+                            <h1 class="h3 mb-0">{{ leave_request.leaveType.name }}</h1>
+                        </div>
+                        <div class="duration-badge">
+                            <i class="far fa-calendar"></i>
+                            {{ leave_request.numberOfDays }} jour{{ leave_request.numberOfDays > 1 ? 's' : '' }} de congé
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="status-badge status-{{ leave_request.status }}">
+                            {% if leave_request.status == 'pending' %}
+                                <i class="fas fa-clock"></i>En attente
+                            {% elseif leave_request.status == 'approved' %}
+                                <i class="fas fa-check-circle"></i>Approuvée
+                            {% elseif leave_request.status == 'rejected' %}
+                                <i class="fas fa-times-circle"></i>Refusée
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section période de congé -->
+        <div class="info-section">
+            <div class="info-label">
+                <i class="far fa-calendar-alt"></i>
+                Période de congé
+            </div>
+            <div class="date-range d-flex align-items-center position-relative">
+                <div class="date-item">
+                    <div class="date-label">Du</div>
+                    <div class="date-value">{{ leave_request.startDate|date('d/m/Y') }}</div>
+                    <small class="text-muted">{{ leave_request.startDate|date('l') }}</small>
+                </div>
+                {% if leave_request.startDate != leave_request.endDate %}
+                    <div class="date-separator">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                    <div class="date-item">
+                        <div class="date-label">Au</div>
+                        <div class="date-value">{{ leave_request.endDate|date('d/m/Y') }}</div>
+                        <small class="text-muted">{{ leave_request.endDate|date('l') }}</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Section informations détaillées -->
+        <div class="info-section">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-label">
+                        <i class="fas fa-tag"></i>
+                        Type de congé
+                    </div>
+                    <div class="info-value">
+                        <div class="leave-type-badge">
+                            {% if leave_request.leaveType.color is defined %}
+                                <span class="leave-type-icon" style="background-color: {{ leave_request.leaveType.color }}"></span>
+                            {% endif %}
+                            {{ leave_request.leaveType.name }}
+                            {% if leave_request.leaveType.isPaid %}
+                                <span class="badge bg-success ms-2">Payé</span>
+                            {% else %}
+                                <span class="badge bg-secondary ms-2">Non payé</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="info-label">
+                        <i class="fas fa-calendar-day"></i>
+                        Durée
+                    </div>
+                    <div class="info-value">
+                        <strong>{{ leave_request.numberOfDays }}</strong> jour{{ leave_request.numberOfDays > 1 ? 's' : '' }}
+                        {% if leave_request.leaveType.maxDaysPerYear %}
+                            <small class="text-muted d-block">
+                                (Maximum autorisé : {{ leave_request.leaveType.maxDaysPerYear }} jours/an)
+                            </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section motif -->
+        {% if leave_request.reason %}
+        <div class="info-section">
+            <div class="info-label">
+                <i class="fas fa-comment-alt"></i>
+                Motif de la demande
+            </div>
+            <div class="info-value">
+                <div class="bg-light p-3 rounded">
+                    {{ leave_request.reason|nl2br }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Section historique/timeline -->
+        <div class="info-section">
+            <div class="info-label">
+                <i class="fas fa-history"></i>
+                Historique de la demande
+            </div>
+            <div class="timeline">
+                <div class="timeline-item completed">
+                    <div class="timeline-content">
+                        <div class="fw-bold">Demande soumise</div>
+                        <div class="text-muted">{{ leave_request.submittedAt|date('d/m/Y à H:i') }}</div>
+                        <small class="text-muted">Par {{ leave_request.employee.firstName }} {{ leave_request.employee.lastName }}</small>
+                    </div>
+                </div>
+                
+                {% if leave_request.status != 'pending' %}
+                <div class="timeline-item {{ leave_request.status == 'approved' ? 'completed' : 'rejected' }}">
+                    <div class="timeline-content">
+                        <div class="fw-bold">
+                            {% if leave_request.status == 'approved' %}
+                                <i class="fas fa-check-circle text-success me-2"></i>Demande approuvée
+                            {% else %}
+                                <i class="fas fa-times-circle text-danger me-2"></i>Demande refusée
+                            {% endif %}
+                        </div>
+                        <div class="text-muted">{{ leave_request.processedAt|date('d/m/Y à H:i') }}</div>
+                        {% if leave_request.approvedBy %}
+                            <small class="text-muted">Par {{ leave_request.approvedBy.firstName }} {{ leave_request.approvedBy.lastName }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Section commentaire du manager -->
+        {% if leave_request.managerComment and leave_request.status != 'pending' %}
+        <div class="info-section">
+            <div class="info-label">
+                <i class="fas fa-user-tie"></i>
+                Commentaire du manager
+            </div>
+            <div class="comment-box {{ leave_request.status }}">
+                <div class="d-flex align-items-start">
+                    <div class="me-3">
+                        {% if leave_request.status == 'approved' %}
+                            <i class="fas fa-check-circle text-success fs-4"></i>
+                        {% else %}
+                            <i class="fas fa-exclamation-circle text-danger fs-4"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        {{ leave_request.managerComment|nl2br }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex justify-content-between align-items-center mt-4 no-print">
+        <div>
+            <a href="{{ path('app_employee_leave_request_index') }}" class="btn-action btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Retour à la liste
+            </a>
+        </div>
+        
+        <div class="d-flex gap-2">
+            {% if leave_request.status == 'pending' %}
+                <a href="{{ path('app_employee_leave_request_edit', {'id': leave_request.id}) }}" 
+                   class="btn-action btn-warning">
+                    <i class="fas fa-edit"></i>
+                    Modifier
+                </a>
+            {% endif %}
+            
+            <button onclick="window.print()" class="btn-action btn-primary">
+                <i class="fas fa-print"></i>
+                Imprimer
+            </button>
+        </div>
+    </div>
+
+    <!-- Informations supplémentaires pour impression -->
+    <div class="print-section mt-4">
+        <hr>
+        <div class="row">
+            <div class="col-6">
+                <strong>Employé :</strong><br>
+                {{ leave_request.employee.firstName }} {{ leave_request.employee.lastName }}<br>
+                {{ leave_request.employee.email }}
+            </div>
+            <div class="col-6 text-end">
+                <strong>Demande #{{ leave_request.id }}</strong><br>
+                Générée le {{ "now"|date('d/m/Y à H:i') }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertes contextuelles -->
+    {% if leave_request.status == 'pending' %}
+        <div class="alert-info mt-4 no-print">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle me-3"></i>
+                <div>
+                    <strong>En attente de validation</strong><br>
+                    Votre demande est en cours d'examen par votre manager. Vous recevrez une notification dès qu'une décision sera prise.
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Animation d'entrée
+        document.addEventListener('DOMContentLoaded', function() {
+            const card = document.querySelector('.detail-card');
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100);
+            }
+            
+            // Animation des éléments de timeline
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            timelineItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(-20px)';
+                
+                setTimeout(() => {
+                    item.style.transition = 'all 0.4s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateX(0)';
+                }, 300 + (index * 200));
+            });
+        });
+        
+        // Gestion de l'impression
+        window.addEventListener('beforeprint', function() {
+            document.title = 'Demande de congé #{{ leave_request.id }} - {{ leave_request.employee.firstName }} {{ leave_request.employee.lastName }}';
+        });
+        
+        // Confirmation avant modification si changements depuis création
+        function confirmEdit() {
+            return confirm('Êtes-vous sûr de vouloir modifier cette demande ? Les modifications pourront nécessiter une nouvelle validation.');
+        }
+        
+        // Raccourcis clavier
+        document.addEventListener('keydown', function(e) {
+            // Echap pour retourner à la liste
+            if (e.key === 'Escape') {
+                window.location.href = '{{ path('app_employee_leave_request_index') }}';
+            }
+            
+            // Ctrl+P pour imprimer
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+        });
+    </script>
+{% endblock %}

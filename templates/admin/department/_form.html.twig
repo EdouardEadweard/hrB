@@ -1,0 +1,289 @@
+{# templates/admin/department/_form.html.twig #}
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title mb-0">
+            {% if department.id %}
+                <i class="fas fa-edit me-2"></i>Modifier le département
+            {% else %}
+                <i class="fas fa-plus me-2"></i>Nouveau département
+            {% endif %}
+        </h4>
+    </div>
+    <div class="card-body">
+        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+        
+        <div class="row">
+            {# Nom du département #}
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.name, 'Nom du département', {'label_attr': {'class': 'form-label required'}}) }}
+                {{ form_widget(form.name, {
+                    'attr': {
+                        'class': 'form-control',
+                        'placeholder': 'Ex: Ressources Humaines',
+                        'required': true,
+                        'maxlength': 100
+                    }
+                }) }}
+                <div class="invalid-feedback">
+                    Veuillez saisir le nom du département.
+                </div>
+                {{ form_errors(form.name) }}
+            </div>
+
+            {# Code du département #}
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.code, 'Code département', {'label_attr': {'class': 'form-label required'}}) }}
+                {{ form_widget(form.code, {
+                    'attr': {
+                        'class': 'form-control text-uppercase',
+                        'placeholder': 'Ex: RH',
+                        'required': true,
+                        'maxlength': 10,
+                        'style': 'text-transform: uppercase;'
+                    }
+                }) }}
+                <div class="form-text">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Code unique pour identifier le département (2-10 caractères)
+                </div>
+                <div class="invalid-feedback">
+                    Veuillez saisir un code valide pour le département.
+                </div>
+                {{ form_errors(form.code) }}
+            </div>
+        </div>
+
+        <div class="row">
+            {# Chef de département #}
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.manager, 'Chef de département', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.manager, {
+                    'attr': {
+                        'class': 'form-select',
+                        'data-placeholder': 'Sélectionner un chef de département'
+                    }
+                }) }}
+                <div class="form-text">
+                    <i class="fas fa-user-tie me-1"></i>
+                    Optionnel - Responsable hiérarchique du département
+                </div>
+                {{ form_errors(form.manager) }}
+            </div>
+
+            {# Statut actif #}
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Statut</label>
+                <div class="form-check form-switch mt-2">
+                    {{ form_widget(form.isActive, {
+                        'attr': {
+                            'class': 'form-check-input',
+                            'role': 'switch'
+                        }
+                    }) }}
+                    {{ form_label(form.isActive, 'Département actif', {
+                        'label_attr': {'class': 'form-check-label ms-2'}
+                    }) }}
+                </div>
+                <div class="form-text">
+                    <i class="fas fa-toggle-on me-1"></i>
+                    Les départements inactifs ne sont plus visibles dans les sélections
+                </div>
+                {{ form_errors(form.isActive) }}
+            </div>
+        </div>
+
+        {# Description #}
+        <div class="mb-3">
+            {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.description, {
+                'attr': {
+                    'class': 'form-control',
+                    'rows': 4,
+                    'placeholder': 'Description détaillée du département, ses missions et responsabilités...'
+                }
+            }) }}
+            <div class="form-text">
+                <i class="fas fa-align-left me-1"></i>
+                Description optionnelle des missions et responsabilités du département
+            </div>
+            {{ form_errors(form.description) }}
+        </div>
+
+        {# Informations complémentaires pour modification #}
+        {% if department.id %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-info-circle me-1"></i>Informations
+                        </h6>
+                        <small>
+                            <strong>Créé le :</strong> {{ department.createdAt|date('d/m/Y à H:i') }}<br>
+                            {% if department.updatedAt %}
+                                <strong>Modifié le :</strong> {{ department.updatedAt|date('d/m/Y à H:i') }}
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+                {% if department.users|length > 0 %}
+                    <div class="col-md-6">
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-users me-1"></i>Employés rattachés
+                            </h6>
+                            <small>
+                                Ce département compte <strong>{{ department.users|length }}</strong> employé(s).
+                                {% if not department.isActive %}
+                                    <br><span class="text-danger">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        Attention : désactiver ce département affectera les employés rattachés.
+                                    </span>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {# Boutons d'action #}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a href="{{ path('admin_department_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                        </a>
+                    </div>
+                    <div class="btn-group">
+                        {% if department.id %}
+                            <a href="{{ path('admin_department_show', {id: department.id}) }}" 
+                               class="btn btn-outline-info">
+                                <i class="fas fa-eye me-1"></i>Voir
+                            </a>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            {% if department.id %}
+                                Mettre à jour
+                            {% else %}
+                                Créer le département
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+{# Styles CSS personnalisés #}
+<style>
+    .required::after {
+        content: " *";
+        color: #dc3545;
+    }
+    
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem;
+        margin-left: 0.25rem;
+    }
+    
+    .btn-group .btn:first-child {
+        margin-left: 0;
+    }
+    
+    .alert {
+        border: none;
+        border-radius: 0.5rem;
+    }
+    
+    .form-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .invalid-feedback {
+        font-size: 0.875rem;
+    }
+</style>
+
+{# JavaScript pour la validation et l'amélioration UX #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation du formulaire
+    const form = document.querySelector('.needs-validation');
+    
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    }
+    
+    // Auto-formatage du code en majuscules
+    const codeField = document.querySelector('input[name*="[code]"]');
+    if (codeField) {
+        codeField.addEventListener('input', function() {
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+    }
+    
+    // Confirmation avant désactivation si employés rattachés
+    const isActiveSwitch = document.querySelector('input[name*="[isActive]"]');
+    const hasEmployees = {{ department.users|length ?? 0 }};
+    
+    if (isActiveSwitch && hasEmployees > 0) {
+        isActiveSwitch.addEventListener('change', function() {
+            if (!this.checked) {
+                const confirmed = confirm(
+                    'Ce département compte ' + hasEmployees + ' employé(s) rattaché(s).\n' +
+                    'Êtes-vous sûr de vouloir le désactiver ?'
+                );
+                if (!confirmed) {
+                    this.checked = true;
+                }
+            }
+        });
+    }
+    
+    // Animation des alertes
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        alert.style.opacity = '0';
+        alert.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            alert.style.transition = 'all 0.3s ease';
+            alert.style.opacity = '1';
+            alert.style.transform = 'translateY(0)';
+        }, 100);
+    });
+});
+</script>

@@ -1,0 +1,630 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle politique de congés{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.form-section {
+    background: #f8f9fa;
+    border-left: 4px solid #007bff;
+    margin-bottom: 1.5rem;
+}
+
+.form-section h5 {
+    color: #007bff;
+}
+
+.required-field::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.form-help {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.json-editor {
+    min-height: 200px;
+    font-family: 'Courier New', monospace;
+}
+
+.preview-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+
+.step-indicator {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.step {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 10px;
+    background: #e9ecef;
+    color: #6c757d;
+    font-weight: bold;
+}
+
+.step.active {
+    background: #007bff;
+    color: white;
+}
+
+.step.completed {
+    background: #28a745;
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <!-- En-tête avec breadcrumb -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('admin_dashboard') }}" class="text-decoration-none">
+                            <i class="fas fa-home me-1"></i>Administration
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('admin_leave_policy_index') }}" class="text-decoration-none">
+                            Politiques de congés
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Nouvelle politique</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- En-tête principal -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2 text-gray-800">
+                        <i class="fas fa-plus-circle me-2 text-success"></i>
+                        Créer une nouvelle politique de congés
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Définissez les règles et paramètres pour un type de congé spécifique
+                    </p>
+                </div>
+                <div>
+                    <a href="{{ path('admin_leave_policy_index') }}" 
+                       class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicateur d'étapes -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="step-indicator">
+                <div class="step active" id="step1">
+                    <i class="fas fa-info"></i>
+                </div>
+                <div class="step" id="step2">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <div class="step" id="step3">
+                    <i class="fas fa-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire principal -->
+    <form name="leave_policy" method="post" id="leavePolicyForm" novalidate>
+        <div class="row">
+            <!-- Colonne principale du formulaire -->
+            <div class="col-lg-8">
+                <!-- Section 1: Informations générales -->
+                <div class="card shadow mb-4 form-section-card" id="section1">
+                    <div class="card-header form-section">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Informations générales
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.name, {
+                                    'label': 'Nom de la politique',
+                                    'label_attr': {'class': 'form-label fw-bold required-field'},
+                                    'attr': {
+                                        'class': 'form-control form-control-lg',
+                                        'placeholder': 'Ex: Politique congés cadres',
+                                        'autocomplete': 'off'
+                                    }
+                                }) }}
+                                <div class="form-help">
+                                    <i class="fas fa-lightbulb me-1"></i>
+                                    Donnez un nom explicite à votre politique
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.department, {
+                                    'label': 'Département',
+                                    'label_attr': {'class': 'form-label fw-bold'},
+                                    'attr': {'class': 'form-select form-select-lg'},
+                                    'placeholder': 'Sélectionner un département'
+                                }) }}
+                                <div class="form-help">
+                                    <i class="fas fa-info me-1"></i>
+                                    Laissez vide pour appliquer à tous les départements
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.leaveType, {
+                                    'label': 'Type de congé',
+                                    'label_attr': {'class': 'form-label fw-bold required-field'},
+                                    'attr': {'class': 'form-select form-select-lg'},
+                                    'placeholder': 'Sélectionner un type de congé'
+                                }) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch mt-4">
+                                    {{ form_widget(form.isActive, {
+                                        'attr': {
+                                            'class': 'form-check-input',
+                                            'role': 'switch',
+                                            'checked': true
+                                        }
+                                    }) }}
+                                    {{ form_label(form.isActive, 'Politique active', {
+                                        'label_attr': {'class': 'form-check-label fw-bold'}
+                                    }) }}
+                                </div>
+                                <div class="form-help">
+                                    <i class="fas fa-toggle-on me-1"></i>
+                                    Activez cette politique pour qu'elle soit appliquée
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_row(form.description, {
+                                'label': 'Description',
+                                'label_attr': {'class': 'form-label fw-bold'},
+                                'attr': {
+                                    'class': 'form-control',
+                                    'rows': 4,
+                                    'placeholder': 'Décrivez les objectifs et le contexte de cette politique...'
+                                }
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Règles de la politique -->
+                <div class="card shadow mb-4 form-section-card" id="section2" style="display: none;">
+                    <div class="card-header form-section">
+                        <h5 class="mb-0">
+                            <i class="fas fa-cogs me-2"></i>
+                            Règles et paramètres
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Format JSON requis.</strong> Définissez les règles de votre politique au format JSON.
+                            Vous pouvez utiliser l'assistant ci-dessous pour générer automatiquement la structure.
+                        </div>
+
+                        <!-- Assistant de création de règles -->
+                        <div class="card bg-light mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-magic me-2"></i>
+                                    Assistant de création de règles
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-bold">Jours maximum par an</label>
+                                        <input type="number" id="maxDaysPerYear" class="form-control" 
+                                               placeholder="25" min="0" max="365">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-bold">Préavis minimum (jours)</label>
+                                        <input type="number" id="minNotice" class="form-control" 
+                                               placeholder="7" min="0" max="90">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-bold">Durée maximum consécutive</label>
+                                        <input type="number" id="maxConsecutive" class="form-control" 
+                                               placeholder="15" min="1" max="90">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="carryOver">
+                                            <label class="form-check-label fw-bold" for="carryOver">
+                                                Report sur année suivante autorisé
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="weekendIncluded">
+                                            <label class="form-check-label fw-bold" for="weekendIncluded">
+                                                Inclure les week-ends
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-primary" id="generateRules">
+                                    <i class="fas fa-magic me-2"></i>Générer les règles JSON
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Éditeur JSON -->
+                        <div class="mb-3">
+                            {{ form_row(form.rules, {
+                                'label': 'Règles (JSON)',
+                                'label_attr': {'class': 'form-label fw-bold'},
+                                'attr': {
+                                    'class': 'form-control json-editor',
+                                    'placeholder': '{"maxDaysPerYear": 25, "minNotice": 7, "carryOverAllowed": true}'
+                                }
+                            }) }}
+                            <div class="form-help">
+                                <i class="fas fa-code me-1"></i>
+                                Format JSON valide requis. Utilisez l'assistant ci-dessus pour vous aider.
+                            </div>
+                        </div>
+
+                        <!-- Validation JSON en temps réel -->
+                        <div id="jsonValidation" class="alert alert-warning" style="display: none;">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span id="jsonValidationMessage">JSON invalide</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Aperçu et validation -->
+                <div class="card shadow mb-4 form-section-card" id="section3" style="display: none;">
+                    <div class="card-header form-section">
+                        <h5 class="mb-0">
+                            <i class="fas fa-eye me-2"></i>
+                            Aperçu et validation
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="policyPreview">
+                            <!-- Le contenu sera généré dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne de droite - Aide et actions -->
+            <div class="col-lg-4">
+                <!-- Carte d'aide -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-question-circle me-2"></i>
+                            Aide à la création
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6 class="text-primary">
+                                <i class="fas fa-lightbulb me-1"></i>Conseils
+                            </h6>
+                            <ul class="list-unstyled small">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Choisissez un nom explicite pour la politique
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Associez la politique à un type de congé spécifique
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Utilisez l'assistant pour générer les règles JSON
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6 class="text-warning">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Attention
+                            </h6>
+                            <p class="small mb-0">
+                                Une fois créée, cette politique sera appliquée immédiatement 
+                                si elle est activée. Vérifiez bien les paramètres.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aperçu rapide -->
+                <div class="card shadow mb-4 preview-card">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">
+                            <i class="fas fa-eye me-2"></i>Aperçu rapide
+                        </h6>
+                        <div id="quickPreview">
+                            <p class="mb-1"><strong id="previewName">Nom de la politique</strong></p>
+                            <p class="mb-1" id="previewType">Type de congé</p>
+                            <p class="mb-0" id="previewDepartment">Département</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card shadow">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-tools me-2"></i>Actions
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary" id="prevStep" style="display: none;">
+                                <i class="fas fa-arrow-left me-2"></i>Étape précédente
+                            </button>
+                            <button type="button" class="btn btn-primary" id="nextStep">
+                                Étape suivante<i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                            <button type="submit" class="btn btn-success" id="submitBtn" style="display: none;">
+                                <i class="fas fa-save me-2"></i>Créer la politique
+                            </button>
+                            <a href="{{ path('admin_leave_policy_index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{ form_rest(form) }}
+    </form>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentStep = 1;
+    const totalSteps = 3;
+
+    // Éléments DOM
+    const form = document.getElementById('leavePolicyForm');
+    const nextBtn = document.getElementById('nextStep');
+    const prevBtn = document.getElementById('prevStep');
+    const submitBtn = document.getElementById('submitBtn');
+    const generateBtn = document.getElementById('generateRules');
+    const rulesTextarea = document.querySelector('#leave_policy_rules');
+    const jsonValidation = document.getElementById('jsonValidation');
+
+    // Navigation entre les étapes
+    function showStep(step) {
+        // Cacher toutes les sections
+        document.querySelectorAll('.form-section-card').forEach(section => {
+            section.style.display = 'none';
+        });
+
+        // Afficher la section courante
+        document.getElementById(`section${step}`).style.display = 'block';
+
+        // Mettre à jour les indicateurs d'étapes
+        for (let i = 1; i <= totalSteps; i++) {
+            const stepIndicator = document.getElementById(`step${i}`);
+            stepIndicator.classList.remove('active', 'completed');
+            
+            if (i < step) {
+                stepIndicator.classList.add('completed');
+            } else if (i === step) {
+                stepIndicator.classList.add('active');
+            }
+        }
+
+        // Gérer les boutons
+        prevBtn.style.display = step > 1 ? 'block' : 'none';
+        nextBtn.style.display = step < totalSteps ? 'block' : 'none';
+        submitBtn.style.display = step === totalSteps ? 'block' : 'none';
+
+        // Générer l'aperçu à la dernière étape
+        if (step === 3) {
+            generatePreview();
+        }
+    }
+
+    // Navigation
+    nextBtn.addEventListener('click', function() {
+        if (validateCurrentStep()) {
+            currentStep++;
+            showStep(currentStep);
+        }
+    });
+
+    prevBtn.addEventListener('click', function() {
+        currentStep--;
+        showStep(currentStep);
+    });
+
+    // Validation de l'étape courante
+    function validateCurrentStep() {
+        if (currentStep === 1) {
+            const name = document.querySelector('#leave_policy_name').value;
+            const leaveType = document.querySelector('#leave_policy_leaveType').value;
+            
+            if (!name.trim()) {
+                alert('Le nom de la politique est requis');
+                return false;
+            }
+            if (!leaveType) {
+                alert('Le type de congé est requis');
+                return false;
+            }
+        }
+        
+        if (currentStep === 2) {
+            const rules = rulesTextarea.value;
+            if (rules.trim() && !isValidJSON(rules)) {
+                alert('Le format JSON des règles est invalide');
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    // Génération automatique des règles JSON
+    generateBtn.addEventListener('click', function() {
+        const rules = {
+            maxDaysPerYear: parseInt(document.getElementById('maxDaysPerYear').value) || null,
+            minNoticeInDays: parseInt(document.getElementById('minNotice').value) || null,
+            maxConsecutiveDays: parseInt(document.getElementById('maxConsecutive').value) || null,
+            carryOverAllowed: document.getElementById('carryOver').checked,
+            includeWeekends: document.getElementById('weekendIncluded').checked
+        };
+
+        // Supprimer les valeurs null
+        Object.keys(rules).forEach(key => {
+            if (rules[key] === null) {
+                delete rules[key];
+            }
+        });
+
+        rulesTextarea.value = JSON.stringify(rules, null, 2);
+        validateJSON();
+    });
+
+    // Validation JSON en temps réel
+    rulesTextarea.addEventListener('input', validateJSON);
+
+    function validateJSON() {
+        const value = rulesTextarea.value.trim();
+        if (!value) {
+            jsonValidation.style.display = 'none';
+            return;
+        }
+
+        if (isValidJSON(value)) {
+            jsonValidation.style.display = 'none';
+            rulesTextarea.classList.remove('is-invalid');
+            rulesTextarea.classList.add('is-valid');
+        } else {
+            jsonValidation.style.display = 'block';
+            jsonValidation.querySelector('#jsonValidationMessage').textContent = 
+                'Format JSON invalide. Vérifiez la syntaxe.';
+            rulesTextarea.classList.remove('is-valid');
+            rulesTextarea.classList.add('is-invalid');
+        }
+    }
+
+    function isValidJSON(str) {
+        try {
+            JSON.parse(str);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    // Aperçu rapide en temps réel
+    function updateQuickPreview() {
+        const name = document.querySelector('#leave_policy_name').value || 'Nom de la politique';
+        const leaveTypeSelect = document.querySelector('#leave_policy_leaveType');
+        const leaveType = leaveTypeSelect.options[leaveTypeSelect.selectedIndex]?.text || 'Type de congé';
+        const deptSelect = document.querySelector('#leave_policy_department');
+        const department = deptSelect.options[deptSelect.selectedIndex]?.text || 'Tous les départements';
+
+        document.getElementById('previewName').textContent = name;
+        document.getElementById('previewType').textContent = leaveType;
+        document.getElementById('previewDepartment').textContent = department;
+    }
+
+    // Génération de l'aperçu complet
+    function generatePreview() {
+        const previewContainer = document.getElementById('policyPreview');
+        
+        const name = document.querySelector('#leave_policy_name').value;
+        const description = document.querySelector('#leave_policy_description').value;
+        const isActive = document.querySelector('#leave_policy_isActive').checked;
+        const rules = rulesTextarea.value;
+
+        let rulesHtml = '';
+        if (rules.trim()) {
+            try {
+                const rulesObj = JSON.parse(rules);
+                rulesHtml = '<h6 class="text-primary mb-2">Règles définies :</h6><ul class="list-unstyled">';
+                Object.entries(rulesObj).forEach(([key, value]) => {
+                    rulesHtml += `<li><strong>${key}:</strong> ${value}</li>`;
+                });
+                rulesHtml += '</ul>';
+            } catch (e) {
+                rulesHtml = '<div class="alert alert-warning">Règles JSON non valides</div>';
+            }
+        }
+
+        previewContainer.innerHTML = `
+            <div class="alert alert-primary">
+                <h5><i class="fas fa-clipboard-list me-2"></i>${name}</h5>
+                <p class="mb-2">${description || 'Aucune description'}</p>
+                <p class="mb-2">
+                    <span class="badge ${isActive ? 'bg-success' : 'bg-secondary'}">
+                        ${isActive ? 'Active' : 'Inactive'}
+                    </span>
+                </p>
+                ${rulesHtml}
+            </div>
+        `;
+    }
+
+    // Event listeners pour l'aperçu en temps réel
+    document.querySelector('#leave_policy_name').addEventListener('input', updateQuickPreview);
+    document.querySelector('#leave_policy_leaveType').addEventListener('change', updateQuickPreview);
+    document.querySelector('#leave_policy_department').addEventListener('change', updateQuickPreview);
+
+    // Animation des cartes
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    // Initialisation
+    showStep(1);
+    updateQuickPreview();
+});
+</script>
+{% endblock %}

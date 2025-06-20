@@ -1,0 +1,539 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau type de congé - Administration{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <!-- En-tête avec breadcrumb -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-2 text-gray-800">
+                <i class="fas fa-plus-circle me-2 text-success"></i>
+                Nouveau type de congé
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('admin_dashboard') }}" class="text-decoration-none">
+                            <i class="fas fa-home me-1"></i>Administration
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('admin_leave_type_index') }}" class="text-decoration-none">
+                            Types de congés
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Nouveau</li>
+                </ol>
+            </nav>
+        </div>
+        
+        <!-- Actions rapides -->
+        <div class="btn-group" role="group" aria-label="Actions">
+            <a href="{{ path('admin_leave_type_index') }}" 
+               class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Annuler
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages flash -->
+    {% for flash_type, flash_messages in app.flashes %}
+        {% for flash_message in flash_messages %}
+            <div class="alert alert-{{ flash_type == 'error' ? 'danger' : flash_type }} alert-dismissible fade show" role="alert">
+                <i class="fas fa-{{ flash_type == 'success' ? 'check-circle' : (flash_type == 'error' ? 'exclamation-triangle' : 'info-circle') }} me-2"></i>
+                {{ flash_message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Carte principale du formulaire -->
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="card-header-icon bg-white bg-opacity-25 rounded-circle p-3 me-3">
+                            <i class="fas fa-calendar-plus text-white fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Création d'un nouveau type de congé</h5>
+                            <p class="card-subtitle mb-0 opacity-75">
+                                Définissez les paramètres et règles pour ce type de congé
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate', 'id': 'leaveTypeForm'}}) }}
+                    
+                    <!-- Informations de base -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Informations générales
+                            </h6>
+                        </div>
+                        
+                        <div class="col-md-8 mb-3">
+                            <div class="form-floating">
+                                {{ form_widget(form.name, {
+                                    'attr': {
+                                        'class': 'form-control form-control-lg',
+                                        'placeholder': 'Ex: Congés payés, RTT, Congé maladie...',
+                                        'required': true
+                                    }
+                                }) }}
+                                {{ form_label(form.name, null, {'label_attr': {'class': 'form-label'}}) }}
+                                <div class="invalid-feedback">
+                                    Veuillez saisir un nom pour ce type de congé
+                                </div>
+                            </div>
+                            {{ form_errors(form.name) }}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="form-floating">
+                                {{ form_widget(form.code, {
+                                    'attr': {
+                                        'class': 'form-control text-uppercase',
+                                        'placeholder': 'CP, RTT, CM...',
+                                        'maxlength': 10,
+                                        'required': true,
+                                        'style': 'text-transform: uppercase;'
+                                    }
+                                }) }}
+                                {{ form_label(form.code, null, {'label_attr': {'class': 'form-label'}}) }}
+                                <div class="invalid-feedback">
+                                    Code requis (max 10 caractères)
+                                </div>
+                            </div>
+                            {{ form_errors(form.code) }}
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <div class="form-floating">
+                                {{ form_widget(form.description, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'placeholder': 'Description détaillée de ce type de congé...',
+                                        'rows': 4,
+                                        'style': 'height: 100px;'
+                                    }
+                                }) }}
+                                {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                            </div>
+                            {{ form_errors(form.description) }}
+                        </div>
+                    </div>
+
+                    <!-- Paramètres de gestion -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">
+                                <i class="fas fa-cogs me-2"></i>
+                                Paramètres de gestion
+                            </h6>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                {{ form_widget(form.maxDaysPerYear, {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'placeholder': 'Ex: 25, 30...',
+                                        'min': 0,
+                                        'max': 365
+                                    }
+                                }) }}
+                                {{ form_label(form.maxDaysPerYear, null, {'label_attr': {'class': 'form-label'}}) }}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Laisser vide pour un nombre illimité
+                                </div>
+                            </div>
+                            {{ form_errors(form.maxDaysPerYear) }}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                {{ form_widget(form.color, {
+                                    'attr': {
+                                        'class': 'form-control form-control-color',
+                                        'style': 'height: 58px;'
+                                    }
+                                }) }}
+                                {{ form_label(form.color, null, {'label_attr': {'class': 'form-label'}}) }}
+                                <div class="form-text">
+                                    <i class="fas fa-palette me-1"></i>
+                                    Couleur pour l'affichage dans le calendrier
+                                </div>
+                            </div>
+                            {{ form_errors(form.color) }}
+                        </div>
+                    </div>
+
+                    <!-- Options avancées -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">
+                                <i class="fas fa-sliders-h me-2"></i>
+                                Options avancées
+                            </h6>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-light bg-light">
+                                <div class="card-body p-3">
+                                    <div class="form-check form-switch">
+                                        {{ form_widget(form.requiresApproval, {
+                                            'attr': {
+                                                'class': 'form-check-input',
+                                                'role': 'switch'
+                                            }
+                                        }) }}
+                                        {{ form_label(form.requiresApproval, null, {
+                                            'label_attr': {'class': 'form-check-label fw-bold'}
+                                        }) }}
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-user-check me-1"></i>
+                                        Nécessite l'approbation d'un manager
+                                    </small>
+                                </div>
+                            </div>
+                            {{ form_errors(form.requiresApproval) }}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-light bg-light">
+                                <div class="card-body p-3">
+                                    <div class="form-check form-switch">
+                                        {{ form_widget(form.isPaid, {
+                                            'attr': {
+                                                'class': 'form-check-input',
+                                                'role': 'switch'
+                                            }
+                                        }) }}
+                                        {{ form_label(form.isPaid, null, {
+                                            'label_attr': {'class': 'form-check-label fw-bold'}
+                                        }) }}
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-euro-sign me-1"></i>
+                                        Congé rémunéré par l'entreprise
+                                    </small>
+                                </div>
+                            </div>
+                            {{ form_errors(form.isPaid) }}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-light bg-light">
+                                <div class="card-body p-3">
+                                    <div class="form-check form-switch">
+                                        {{ form_widget(form.isActive, {
+                                            'attr': {
+                                                'class': 'form-check-input',
+                                                'role': 'switch',
+                                                'checked': 'checked'
+                                            }
+                                        }) }}
+                                        {{ form_label(form.isActive, null, {
+                                            'label_attr': {'class': 'form-check-label fw-bold'}
+                                        }) }}
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-toggle-on me-1"></i>
+                                        Type de congé disponible
+                                    </small>
+                                </div>
+                            </div>
+                            {{ form_errors(form.isActive) }}
+                        </div>
+                    </div>
+
+                    <!-- Zone d'aperçu -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">
+                                <i class="fas fa-eye me-2"></i>
+                                Aperçu
+                            </h6>
+                            <div class="card border-2" id="previewCard" style="border-color: #007bff !important;">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="preview-color me-3" 
+                                             id="previewColor" 
+                                             style="width: 30px; height: 30px; background-color: #007bff; border-radius: 6px; border: 2px solid #dee2e6;">
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1" id="previewName">Nom du type de congé</h6>
+                                            <div>
+                                                <span class="badge bg-secondary me-2" id="previewCode">CODE</span>
+                                                <span class="badge bg-success" id="previewPaid" style="display: none;">Payé</span>
+                                                <span class="badge bg-warning" id="previewApproval" style="display: none;">Approbation requise</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions du formulaire -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                <a href="{{ path('admin_leave_type_index') }}" 
+                                   class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>
+                                    Annuler
+                                </a>
+                                
+                                <div class="btn-group">
+                                    <button type="submit" name="save" class="btn btn-success btn-lg">
+                                        <i class="fas fa-save me-2"></i>
+                                        Enregistrer
+                                    </button>
+                                    <button type="submit" name="save_and_add" class="btn btn-outline-success btn-lg">
+                                        <i class="fas fa-plus me-2"></i>
+                                        Enregistrer et créer un autre
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panneau d'aide -->
+        <div class="col-lg-4">
+            <div class="card shadow border-0 sticky-top" style="top: 20px;">
+                <div class="card-header bg-info text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Aide et conseils
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            Conseils de saisie
+                        </h6>
+                        <ul class="list-unstyled small">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Utilisez des noms clairs et explicites
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Les codes doivent être courts (2-4 caractères)
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Choisissez des couleurs contrastées
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Exemples courants
+                        </h6>
+                        <div class="small">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Congés payés</span>
+                                <code>CP</code>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>RTT</span>
+                                <code>RTT</code>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Congé maladie</span>
+                                <code>CM</code>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Formation</span>
+                                <code>FORM</code>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning small">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important :</strong> Les modifications ultérieures peuvent affecter les demandes existantes.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts pour l'amélioration UX -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation en temps réel
+    const form = document.getElementById('leaveTypeForm');
+    const nameInput = form.querySelector('input[name*="[name]"]');
+    const codeInput = form.querySelector('input[name*="[code]"]');
+    const colorInput = form.querySelector('input[name*="[color]"]');
+    const paidCheckbox = form.querySelector('input[name*="[isPaid]"]');
+    const approvalCheckbox = form.querySelector('input[name*="[requiresApproval]"]');
+    
+    // Éléments d'aperçu
+    const previewName = document.getElementById('previewName');
+    const previewCode = document.getElementById('previewCode');
+    const previewColor = document.getElementById('previewColor');
+    const previewCard = document.getElementById('previewCard');
+    const previewPaid = document.getElementById('previewPaid');
+    const previewApproval = document.getElementById('previewApproval');
+    
+    // Mise à jour de l'aperçu en temps réel
+    function updatePreview() {
+        // Nom
+        if (nameInput.value.trim()) {
+            previewName.textContent = nameInput.value;
+        } else {
+            previewName.textContent = 'Nom du type de congé';
+        }
+        
+        // Code
+        if (codeInput.value.trim()) {
+            previewCode.textContent = codeInput.value.toUpperCase();
+        } else {
+            previewCode.textContent = 'CODE';
+        }
+        
+        // Couleur
+        if (colorInput.value) {
+            previewColor.style.backgroundColor = colorInput.value;
+            previewCard.style.borderColor = colorInput.value + ' !important';
+        }
+        
+        // Options
+        previewPaid.style.display = paidCheckbox.checked ? 'inline-block' : 'none';
+        previewApproval.style.display = approvalCheckbox.checked ? 'inline-block' : 'none';
+    }
+    
+    // Écouteurs d'événements
+    nameInput.addEventListener('input', updatePreview);
+    codeInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+        updatePreview();
+    });
+    colorInput.addEventListener('change', updatePreview);
+    paidCheckbox.addEventListener('change', updatePreview);
+    approvalCheckbox.addEventListener('change', updatePreview);
+    
+    // Validation du formulaire
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+    
+    // Validation en temps réel des champs
+    nameInput.addEventListener('blur', function() {
+        if (this.value.trim().length < 2) {
+            this.setCustomValidity('Le nom doit contenir au moins 2 caractères');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    codeInput.addEventListener('blur', function() {
+        if (this.value.trim().length < 1) {
+            this.setCustomValidity('Le code est obligatoire');
+        } else if (this.value.trim().length > 10) {
+            this.setCustomValidity('Le code ne peut pas dépasser 10 caractères');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Initialisation de l'aperçu
+    updatePreview();
+});
+</script>
+
+<!-- Styles personnalisés -->
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+}
+
+.card-header-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    opacity: .65;
+    transform: scale(.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+.form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.preview-color {
+    transition: all 0.3s ease;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .sticky-top {
+        position: relative !important;
+        top: auto !important;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Animation pour les erreurs */
+.is-invalid {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+</style>
+{% endblock %}

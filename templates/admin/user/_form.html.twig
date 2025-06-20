@@ -1,0 +1,728 @@
+{{ form_start(form, {'attr': {'class': 'user-form', 'novalidate': 'novalidate'}}) }}
+
+<div class="form-container">
+    <!-- En-tête du formulaire -->
+    <div class="form-header">
+        <h2 class="form-title">
+            {% if form.vars.value.id is defined and form.vars.value.id %}
+                <i class="fas fa-user-edit"></i>
+                Modifier l'utilisateur
+            {% else %}
+                <i class="fas fa-user-plus"></i>
+                Nouvel utilisateur
+            {% endif %}
+        </h2>
+        <p class="form-subtitle">
+            {% if form.vars.value.id is defined and form.vars.value.id %}
+                Modifiez les informations de l'utilisateur ci-dessous
+            {% else %}
+                Renseignez les informations pour créer un nouvel utilisateur
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Messages d'erreur globaux -->
+    {% if not form.vars.valid %}
+        <div class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Erreur :</strong> Veuillez corriger les erreurs ci-dessous avant de continuer.
+        </div>
+    {% endif %}
+
+    <!-- Formulaire principal -->
+    <div class="form-content">
+        <!-- Section Informations personnelles -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3><i class="fas fa-user"></i> Informations personnelles</h3>
+                <small>Informations de base de l'utilisateur</small>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form_label(form.firstName, 'Prénom *', {'label_attr': {'class': 'form-label required'}}) }}
+                    {{ form_widget(form.firstName, {'attr': {
+                        'class': 'form-control',
+                        'placeholder': 'Ex: Jean',
+                        'autocomplete': 'given-name'
+                    }}) }}
+                    {{ form_errors(form.firstName) }}
+                    <small class="form-help">Le prénom de l'utilisateur</small>
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.lastName, 'Nom *', {'label_attr': {'class': 'form-label required'}}) }}
+                    {{ form_widget(form.lastName, {'attr': {
+                        'class': 'form-control',
+                        'placeholder': 'Ex: Dupont',
+                        'autocomplete': 'family-name'
+                    }}) }}
+                    {{ form_errors(form.lastName) }}
+                    <small class="form-help">Le nom de famille de l'utilisateur</small>
+                </div>
+
+                <div class="form-group full-width">
+                    {{ form_label(form.email, 'Adresse e-mail *', {'label_attr': {'class': 'form-label required'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                        {{ form_widget(form.email, {'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Ex: jean.dupont@entreprise.com',
+                            'autocomplete': 'email'
+                        }}) }}
+                    </div>
+                    {{ form_errors(form.email) }}
+                    <small class="form-help">Cette adresse sera utilisée pour la connexion</small>
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.phone, 'Téléphone', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                        {{ form_widget(form.phone, {'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Ex: +229 XX XX XX XX',
+                            'autocomplete': 'tel'
+                        }}) }}
+                    </div>
+                    {{ form_errors(form.phone) }}
+                    <small class="form-help">Numéro de téléphone professionnel</small>
+                </div>
+
+                {% if form.password is defined %}
+                <div class="form-group">
+                    {{ form_label(form.password, 'Mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        {{ form_widget(form.password, {'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Laissez vide pour conserver l\'actuel'
+                        }}) }}
+                        <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {{ form_errors(form.password) }}
+                    <small class="form-help">
+                        {% if form.vars.value.id is defined and form.vars.value.id %}
+                            Laissez vide pour conserver le mot de passe actuel
+                        {% else %}
+                            Minimum 8 caractères recommandés
+                        {% endif %}
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Section Informations professionnelles -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3><i class="fas fa-briefcase"></i> Informations professionnelles</h3>
+                <small>Détails du poste et de l'organisation</small>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form_label(form.position, 'Poste *', {'label_attr': {'class': 'form-label required'}}) }}
+                    {{ form_widget(form.position, {'attr': {
+                        'class': 'form-control',
+                        'placeholder': 'Ex: Développeur Full Stack',
+                        'list': 'position-suggestions'
+                    }}) }}
+                    <datalist id="position-suggestions">
+                        <option value="Développeur Full Stack">
+                        <option value="Chef de projet">
+                        <option value="Analyste">
+                        <option value="Designer UX/UI">
+                        <option value="Responsable RH">
+                        <option value="Comptable">
+                        <option value="Commercial">
+                    </datalist>
+                    {{ form_errors(form.position) }}
+                    <small class="form-help">Intitulé du poste occupé</small>
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.hireDate, 'Date d\'embauche *', {'label_attr': {'class': 'form-label required'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                        {{ form_widget(form.hireDate, {'attr': {
+                            'class': 'form-control',
+                            'max': 'now'|date('Y-m-d')
+                        }}) }}
+                    </div>
+                    {{ form_errors(form.hireDate) }}
+                    <small class="form-help">Date d'entrée dans l'entreprise</small>
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.department, 'Département *', {'label_attr': {'class': 'form-label required'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-building"></i></span>
+                        {{ form_widget(form.department, {'attr': {
+                            'class': 'form-control form-select'
+                        }}) }}
+                    </div>
+                    {{ form_errors(form.department) }}
+                    <small class="form-help">Département d'affectation</small>
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.manager, 'Manager', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user-tie"></i></span>
+                        {{ form_widget(form.manager, {'attr': {
+                            'class': 'form-control form-select'
+                        }}) }}
+                    </div>
+                    {{ form_errors(form.manager) }}
+                    <small class="form-help">Supérieur hiérarchique direct</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Rôles et permissions -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3><i class="fas fa-shield-alt"></i> Rôles et permissions</h3>
+                <small>Définissez les accès et privilèges</small>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    {{ form_label(form.roles, 'Rôles *', {'label_attr': {'class': 'form-label required'}}) }}
+                    <div class="roles-container">
+                        {{ form_widget(form.roles, {'attr': {
+                            'class': 'form-control'
+                        }}) }}
+                    </div>
+                    {{ form_errors(form.roles) }}
+                    <small class="form-help">
+                        <strong>Admin :</strong> Accès complet à l'application<br>
+                        <strong>Manager :</strong> Gestion d'équipe et approbations<br>
+                        <strong>Employee :</strong> Accès standard employé
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.isActive, null, {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="form-switch-container">
+                        {{ form_widget(form.isActive, {'attr': {
+                            'class': 'form-check-input form-switch-input'
+                        }}) }}
+                        <label class="form-switch-label" for="{{ form.isActive.vars.id }}">
+                            <span class="switch-text">Compte actif</span>
+                        </label>
+                    </div>
+                    {{ form_errors(form.isActive) }}
+                    <small class="form-help color-warning">
+                        <i class="fas fa-info-circle"></i>
+                        Un compte inactif ne pourra pas se connecter
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions du formulaire -->
+    <div class="form-actions">
+        <div class="actions-group">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i>
+                {% if form.vars.value.id is defined and form.vars.value.id %}
+                    Mettre à jour
+                {% else %}
+                    Créer l'utilisateur
+                {% endif %}
+            </button>
+            
+            <a href="{{ path('admin_user_index') }}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-times"></i>
+                Annuler
+            </a>
+        </div>
+        
+        {% if form.vars.value.id is defined and form.vars.value.id %}
+            <div class="actions-group">
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="fas fa-trash"></i>
+                    Supprimer
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{{ form_end(form) }}
+
+<!-- Modal de confirmation de suppression -->
+{% if form.vars.value.id is defined and form.vars.value.id %}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                    Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</p>
+                <div class="alert alert-warning">
+                    <strong>Attention :</strong> Cette action est irréversible et supprimera également :
+                    <ul class="mb-0">
+                        <li>Toutes les demandes de congés associées</li>
+                        <li>L'historique des présences</li>
+                        <li>Les notifications liées</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <a href="{{ path('admin_user_delete', {'id': form.vars.value.id}) }}" 
+                   class="btn btn-danger">
+                    <i class="fas fa-trash"></i>
+                    Supprimer définitivement
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+/* Styles pour une excellente UX */
+.user-form {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.form-container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.form-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.form-title {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.form-title i {
+    margin-right: 0.5rem;
+}
+
+.form-subtitle {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+.form-content {
+    padding: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background: #f8f9fa;
+}
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.section-header h3 {
+    margin: 0;
+    color: #495057;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.section-header h3 i {
+    margin-right: 0.5rem;
+    color: #667eea;
+}
+
+.section-header small {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-label.required::after {
+    content: " *";
+    color: #dc3545;
+}
+
+.form-control, .form-select {
+    padding: 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    background-color: white;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-control.is-invalid, .form-select.is-invalid {
+    border-color: #dc3545;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-right: none;
+    color: #6c757d;
+}
+
+.input-group .form-control {
+    border-left: none;
+}
+
+.input-group:focus-within .input-group-text {
+    border-color: #667eea;
+    background-color: #e7f1ff;
+    color: #667eea;
+}
+
+.form-help {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+.form-help.color-warning {
+    color: #f0ad4e;
+}
+
+.form-help i {
+    margin-right: 0.25rem;
+}
+
+.invalid-feedback {
+    display: block;
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.form-switch-container {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.form-switch-input {
+    margin-right: 0.75rem;
+    transform: scale(1.2);
+}
+
+.form-switch-label {
+    cursor: pointer;
+    font-weight: 500;
+    color: #495057;
+}
+
+.switch-text {
+    user-select: none;
+}
+
+.roles-container .form-control {
+    min-height: 120px;
+}
+
+.form-actions {
+    padding: 1.5rem 2rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.actions-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.btn i {
+    margin-right: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+.btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+    background-color: transparent;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    border: 1px solid transparent;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+}
+
+.alert i {
+    margin-right: 0.5rem;
+}
+
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 1px solid #e9ecef;
+    padding: 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 1.5rem;
+}
+
+/* Animations et transitions */
+.form-section {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .actions-group {
+        justify-content: center;
+    }
+    
+    .form-content {
+        padding: 1rem;
+    }
+    
+    .form-header {
+        padding: 1.5rem;
+    }
+}
+
+/* Amélioration de l'accessibilité */
+.form-control:focus,
+.form-select:focus,
+.btn:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+</style>
+
+<script>
+// Amélioration UX avec JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle password visibility
+    const togglePassword = document.getElementById('togglePassword');
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function() {
+            const passwordField = this.parentNode.querySelector('input[type="password"], input[type="text"]');
+            const icon = this.querySelector('i');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    }
+    
+    // Auto-resize textarea
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    });
+    
+    // Form validation feedback
+    const form = document.querySelector('.user-form');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.checkValidity()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            }
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid') && this.checkValidity()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    });
+    
+    // Smooth scroll to first error
+    const firstError = document.querySelector('.is-invalid');
+    if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstError.focus();
+    }
+    
+    // Auto-save draft (simulation)
+    let autoSaveTimer;
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                // Simulation d'auto-sauvegarde
+                console.log('Draft auto-saved');
+            }, 2000);
+        });
+    });
+});
+</script>

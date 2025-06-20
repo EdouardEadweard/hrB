@@ -1,0 +1,548 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la politique de congé - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .card {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 1.25rem;
+            margin-bottom: 0;
+            border-top-left-radius: calc(0.375rem - 1px);
+            border-top-right-radius: calc(0.375rem - 1px);
+        }
+        
+        .card-body {
+            padding: 1.25rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        .form-control:focus {
+            color: #212529;
+            background-color: #fff;
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .form-select {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        .form-select:focus {
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .form-check {
+            display: block;
+            min-height: 1.5rem;
+            padding-left: 1.5em;
+            margin-bottom: 0.125rem;
+        }
+        
+        .form-check-input {
+            width: 1em;
+            height: 1em;
+            margin-top: 0.25em;
+            vertical-align: top;
+            background-color: #fff;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            border: 1px solid rgba(0, 0, 0, 0.25);
+            border-radius: 0.25em;
+            margin-left: -1.5em;
+        }
+        
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            text-align: center;
+            text-decoration: none;
+            vertical-align: middle;
+            cursor: pointer;
+            user-select: none;
+            background-color: transparent;
+            border: 1px solid transparent;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            border-radius: 0.375rem;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        .btn-primary {
+            color: #fff;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        
+        .btn-primary:hover {
+            color: #fff;
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+        }
+        
+        .btn-secondary {
+            color: #fff;
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            color: #fff;
+            background-color: #5c636a;
+            border-color: #565e64;
+        }
+        
+        .btn-danger {
+            color: #fff;
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            color: #fff;
+            background-color: #bb2d3b;
+            border-color: #b02a37;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0 0;
+            margin-bottom: 1rem;
+            list-style: none;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            float: left;
+            padding-right: 0.5rem;
+            color: #6c757d;
+            content: var(--bs-breadcrumb-divider, "/");
+        }
+        
+        .breadcrumb-item.active {
+            color: #6c757d;
+        }
+        
+        .alert {
+            position: relative;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.375rem;
+        }
+        
+        .alert-danger {
+            color: #842029;
+            background-color: #f8d7da;
+            border-color: #f5c2c7;
+        }
+        
+        .text-danger {
+            color: #dc3545;
+        }
+        
+        .mb-3 {
+            margin-bottom: 1rem;
+        }
+        
+        .mb-4 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .me-2 {
+            margin-right: 0.5rem;
+        }
+        
+        .d-flex {
+            display: flex;
+        }
+        
+        .justify-content-between {
+            justify-content: space-between;
+        }
+        
+        .align-items-center {
+            align-items: center;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+        }
+        
+        .rules-container {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .rule-item {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .rule-item:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Tableau de bord</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('admin_leave_policy_index') }}">Politiques de congés</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('admin_leave_policy_show', {'id': leave_policy.id}) }}">{{ leave_policy.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-edit me-2"></i>
+                            Modifier la politique de congé
+                        </h4>
+                        <div>
+                            <a href="{{ path('admin_leave_policy_show', {'id': leave_policy.id}) }}" class="btn btn-secondary me-2">
+                                <i class="fas fa-eye"></i> Voir
+                            </a>
+                            <a href="{{ path('admin_leave_policy_index') }}" class="btn btn-secondary">
+                                <i class="fas fa-list"></i> Retour à la liste
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Informations sur la politique -->
+                    <div class="alert alert-info mb-4">
+                        <strong>Politique :</strong> {{ leave_policy.name }}<br>
+                        <strong>Département :</strong> {{ leave_policy.department ? leave_policy.department.name : 'Aucun' }}<br>
+                        <strong>Type de congé :</strong> {{ leave_policy.leaveType ? leave_policy.leaveType.name : 'Aucun' }}<br>
+                        <strong>Statut :</strong> 
+                        {% if leave_policy.isActive %}
+                            <span class="badge bg-success">Actif</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactif</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Formulaire d'édition -->
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                    
+                    <!-- Gestion des erreurs globales -->
+                    {% if form.vars.errors|length > 0 %}
+                        <div class="alert alert-danger">
+                            <strong>Erreurs détectées :</strong>
+                            <ul class="mb-0">
+                                {% for error in form.vars.errors %}
+                                    <li>{{ error.message }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <!-- Colonne gauche -->
+                        <div class="col-md-6">
+                            <!-- Nom de la politique -->
+                            <div class="form-group mb-3">
+                                {{ form_label(form.name, 'Nom de la politique', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.name, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Politique congés payés développeurs'}}) }}
+                                {% if form.name.vars.errors|length > 0 %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.name.vars.errors %}
+                                            <small>{{ error.message }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Département -->
+                            <div class="form-group mb-3">
+                                {{ form_label(form.department, 'Département', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.department, {'attr': {'class': 'form-select'}}) }}
+                                {% if form.department.vars.errors|length > 0 %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.department.vars.errors %}
+                                            <small>{{ error.message }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">Sélectionnez le département concerné par cette politique</small>
+                            </div>
+
+                            <!-- Type de congé -->
+                            <div class="form-group mb-3">
+                                {{ form_label(form.leaveType, 'Type de congé', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.leaveType, {'attr': {'class': 'form-select'}}) }}
+                                {% if form.leaveType.vars.errors|length > 0 %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.leaveType.vars.errors %}
+                                            <small>{{ error.message }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">Type de congé auquel s'applique cette politique</small>
+                            </div>
+
+                            <!-- Statut actif -->
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                                    {{ form_label(form.isActive, 'Politique active', {'label_attr': {'class': 'form-check-label'}}) }}
+                                </div>
+                                {% if form.isActive.vars.errors|length > 0 %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.isActive.vars.errors %}
+                                            <small>{{ error.message }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">Décochez pour désactiver temporairement cette politique</small>
+                            </div>
+                        </div>
+
+                        <!-- Colonne droite -->
+                        <div class="col-md-6">
+                            <!-- Description -->
+                            <div class="form-group mb-3">
+                                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '4', 'placeholder': 'Décrivez cette politique de congé...'}}) }}
+                                {% if form.description.vars.errors|length > 0 %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.description.vars.errors %}
+                                            <small>{{ error.message }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">Description détaillée de la politique</small>
+                            </div>
+
+                            <!-- Règles JSON -->
+                            <div class="form-group mb-3">
+                                {{ form_label(form.rules, 'Règles (JSON)', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.rules, {'attr': {'class': 'form-control', 'rows': '8', 'placeholder': '{"maxDaysPerRequest": 30, "minDaysNotice": 7, "allowWeekends": false}'}}) }}
+                                {% if form.rules.vars.errors|length > 0 %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.rules.vars.errors %}
+                                            <small>{{ error.message }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">Règles au format JSON (ex: nombre max de jours, préavis minimum, etc.)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exemple de règles -->
+                    <div class="rules-container mb-4">
+                        <h6 class="mb-3"><i class="fas fa-info-circle"></i> Exemples de règles JSON</h6>
+                        <div class="rule-item">
+                            <strong>Règles de base :</strong>
+                            <code>{"maxDaysPerRequest": 30, "minDaysNotice": 7, "allowWeekends": false}</code>
+                        </div>
+                        <div class="rule-item">
+                            <strong>Règles avancées :</strong>
+                            <code>{"maxDaysPerYear": 25, "carryOverDays": 5, "blackoutPeriods": ["2024-12-20", "2024-12-31"]}</code>
+                        </div>
+                        <div class="rule-item">
+                            <strong>Règles d'approbation :</strong>
+                            <code>{"requireManagerApproval": true, "autoApproveUnder": 3, "requireHRApprovalOver": 15}</code>
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-save"></i> Enregistrer les modifications
+                            </button>
+                            <a href="{{ path('admin_leave_policy_show', {'id': leave_policy.id}) }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                        </div>
+                        <div>
+                            <a href="{{ path('admin_leave_policy_delete', {'id': leave_policy.id}) }}" 
+                               class="btn btn-danger"
+                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette politique de congé ?')">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </a>
+                        </div>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations supplémentaires -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informations sur la politique</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Créée le :</strong> {{ leave_policy.createdAt ? leave_policy.createdAt|date('d/m/Y à H:i') : 'Non défini' }}</p>
+                            <p><strong>ID :</strong> {{ leave_policy.id }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Dernière modification :</strong> {{ leave_policy.updatedAt ? leave_policy.updatedAt|date('d/m/Y à H:i') : 'Non défini' }}</p>
+                            <p><strong>Statut :</strong> 
+                                {% if leave_policy.isActive %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Validation JSON en temps réel
+        document.addEventListener('DOMContentLoaded', function() {
+            const rulesTextarea = document.querySelector('textarea[name*="[rules]"]');
+            if (rulesTextarea) {
+                rulesTextarea.addEventListener('blur', function() {
+                    const value = this.value.trim();
+                    if (value) {
+                        try {
+                            JSON.parse(value);
+                            this.classList.remove('is-invalid');
+                            this.classList.add('is-valid');
+                            // Supprimer le message d'erreur s'il existe
+                            const errorDiv = this.parentNode.querySelector('.json-error');
+                            if (errorDiv) {
+                                errorDiv.remove();
+                            }
+                        } catch (e) {
+                            this.classList.remove('is-valid');
+                            this.classList.add('is-invalid');
+                            // Ajouter un message d'erreur
+                            let errorDiv = this.parentNode.querySelector('.json-error');
+                            if (!errorDiv) {
+                                errorDiv = document.createElement('div');
+                                errorDiv.className = 'text-danger mt-1 json-error';
+                                this.parentNode.appendChild(errorDiv);
+                            }
+                            errorDiv.innerHTML = '<small>JSON invalide : ' + e.message + '</small>';
+                        }
+                    } else {
+                        this.classList.remove('is-invalid', 'is-valid');
+                        const errorDiv = this.parentNode.querySelector('.json-error');
+                        if (errorDiv) {
+                            errorDiv.remove();
+                        }
+                    }
+                });
+            }
+
+            // Confirmation avant suppression
+            const deleteBtn = document.querySelector('a[href*="delete"]');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', function(e) {
+                    if (!confirm('Êtes-vous sûr de vouloir supprimer cette politique de congé ? Cette action est irréversible.')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            // Auto-sauvegarde des modifications (optionnel)
+            let formChanged = false;
+            const form = document.querySelector('form');
+            const formElements = form.querySelectorAll('input, select, textarea');
+            
+            formElements.forEach(element => {
+                element.addEventListener('change', function() {
+                    formChanged = true;
+                });
+            });
+
+            // Avertissement avant de quitter la page si des modifications non sauvegardées
+            window.addEventListener('beforeunload', function(e) {
+                if (formChanged) {
+                    e.preventDefault();
+                    e.returnValue = 'Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir quitter cette page ?';
+                }
+            });
+
+            // Marquer comme sauvegardé lors de la soumission
+            form.addEventListener('submit', function() {
+                formChanged = false;
+            });
+        });
+    </script>
+{% endblock %}

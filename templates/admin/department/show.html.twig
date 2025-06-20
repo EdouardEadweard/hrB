@@ -1,0 +1,1343 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ department.name }} - Détails du Département - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .department-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 1rem 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .department-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        }
+        
+        .breadcrumb-custom {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .breadcrumb-custom a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+        }
+        
+        .breadcrumb-custom a:hover {
+            color: white;
+        }
+        
+        .department-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .department-icon {
+            width: 4rem;
+            height: 4rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.75rem;
+        }
+        
+        .status-active {
+            background: rgba(34, 197, 94, 0.2);
+            color: #15803d;
+            border: 2px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: #dc2626;
+            border: 2px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-icon {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-content {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+            transition: transform 0.2s;
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .section-content {
+            padding: 1.5rem;
+        }
+        
+        .employee-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        
+        .employee-card {
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        
+        .employee-card:hover {
+            background: #f1f5f9;
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .employee-avatar {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.125rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .employee-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        
+        .employee-position {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .employee-contact {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b7280;
+            font-size: 0.8125rem;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .team-card {
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        
+        .team-card:hover {
+            background: #f1f5f9;
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .team-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .team-description {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+        
+        .team-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .team-member-count {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-action {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, #5a67d8, #68d391);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary-custom {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        .btn-secondary-custom:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger-custom {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .btn-danger-custom:hover {
+            background: #fecaca;
+            color: #b91c1c;
+            transform: translateY(-1px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 0.5rem;
+            width: 0.75rem;
+            height: 0.75rem;
+            background: #667eea;
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px white, 0 0 0 6px #e5e7eb;
+        }
+        
+        .timeline-content {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .timeline-date {
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .timeline-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0.25rem 0;
+        }
+        
+        .timeline-description {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.8s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .department-title {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn-action {
+                justify-content: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .employee-grid,
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .policy-card {
+                background: #f8fafc;
+                border-radius: 0.75rem;
+                padding: 1.25rem;
+                border: 1px solid #e2e8f0;
+                transition: all 0.2s;
+                height: 100%;
+            }
+
+            .policy-card:hover {
+                background: #f1f5f9;
+                border-color: #667eea;
+                transform: translateY(-1px);
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- En-tête du département -->
+    <div class="department-header fade-in">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb-custom">
+                <a href="{{ path('admin_dashboard') }}">
+                    <i class="fas fa-home me-1"></i>Accueil
+                </a>
+                <span class="mx-2">/</span>
+                <a href="{{ path('admin_department_index') }}">Départements</a>
+                <span class="mx-2">/</span>
+                <span>{{ department.name }}</span>
+            </nav>
+
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="department-title">
+                        <div class="department-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div>
+                            <h1 class="mb-2 fw-bold">{{ department.name }}</h1>
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <span class="badge bg-light text-dark fs-6">
+                                    <i class="fas fa-code me-1"></i>{{ department.code }}
+                                </span>
+                                <span class="status-badge {{ department.isActive ? 'status-active' : 'status-inactive' }}">
+                                    <i class="fas fa-{{ department.isActive ? 'check' : 'times' }} me-1"></i>
+                                    {{ department.isActive ? 'Actif' : 'Inactif' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <div class="text-white-50">
+                        <small>
+                            <i class="fas fa-calendar me-1"></i>
+                            Créé le {{ department.createdAt|date('d/m/Y à H:i') }}
+                        </small>
+                        {% if department.updatedAt != department.createdAt %}
+                            <br>
+                            <small>
+                                <i class="fas fa-edit me-1"></i>
+                                Modifié le {{ department.updatedAt|date('d/m/Y à H:i') }}
+                            </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Boutons d'action -->
+        <div class="action-buttons slide-in">
+            <a href="{{ path('admin_department_edit', {'id': department.id}) }}" 
+               class="btn-action btn-primary-custom">
+                <i class="fas fa-edit"></i>
+                Modifier le département
+            </a>
+            <a href="{{ path('admin_department_index') }}" 
+               class="btn-action btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i>
+                Retour à la liste
+            </a>
+            <button class="btn-action btn-danger-custom" 
+                    onclick="confirmDelete({{ department.id }}, '{{ department.name }}')">
+                <i class="fas fa-trash"></i>
+                Supprimer
+            </button>
+        </div>
+
+        <!-- Statistiques principales -->
+        <div class="stats-grid fade-in">
+            <div class="stat-item">
+                <div class="stat-number">{{ department.employees|length }}</div>
+                <div class="stat-label">Employés</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ department.teams|length|default(0) }}</div>
+                <div class="stat-label">Équipes</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">
+                    {% set activeEmployees = 0 %}
+                    {% for user in department.employees %}
+                        {% if user.isActive %}
+                            {% set activeEmployees = activeEmployees + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ activeEmployees }}
+                </div>
+                <div class="stat-label">Employés Actifs</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">
+                    {{ department.leavePolicies|length|default(0) }}
+                </div>
+                <div class="stat-label">Politiques</div>
+            </div>
+        </div>
+
+        <!-- Cartes d'informations -->
+        <div class="info-cards fade-in">
+            <!-- Informations générales -->
+            <div class="info-card">
+                <div class="card-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h3 class="card-title">Informations générales</h3>
+                <div class="card-content">
+                    {% if department.description %}
+                        <p><strong>Description :</strong><br>{{ department.description|nl2br }}</p>
+                    {% else %}
+                        <p class="text-muted">Aucune description disponible</p>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            Créé le {{ department.createdAt|date('d/m/Y à H:i') }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manager -->
+            <div class="info-card">
+                <div class="card-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h3 class="card-title">Management</h3>
+                <div class="card-content">
+                    {% if department.manager %}
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="employee-avatar me-3" style="width: 2.5rem; height: 2.5rem; font-size: 1rem;">
+                                {{ department.manager.firstName|first }}{{ department.manager.lastName|first }}
+                            </div>
+                            <div>
+                                <div class="fw-semibold">
+                                    {{ department.manager.firstName }} {{ department.manager.lastName }}
+                                </div>
+                                <small class="text-muted">{{ department.manager.position }}</small>
+                            </div>
+                        </div>
+                        {% if department.manager.email %}
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                {{ department.manager.email }}
+                            </div>
+                        {% endif %}
+                        {% if department.manager.phone %}
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                {{ department.manager.phone }}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">
+                            <i class="fas fa-user-slash me-2"></i>
+                            Aucun manager assigné
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Activité récente -->
+            <div class="info-card">
+                <div class="card-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="card-title">Activité récente</h3>
+                <div class="card-content">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-date">{{ department.createdAt|date('d/m/Y') }}</div>
+                                <div class="timeline-title">Département créé</div>
+                                <div class="timeline-description">Création du département {{ department.name }}</div>
+                            </div>
+                        </div>
+                        {% if department.updatedAt != department.createdAt %}
+                            <div class="timeline-item">
+                                <div class="timeline-content">
+                                    <div class="timeline-date">{{ department.updatedAt|date('d/m/Y') }}</div>
+                                    <div class="timeline-title">Dernière modification</div>
+                                    <div class="timeline-description">Informations mises à jour</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Employés -->
+        <div class="section-card slide-in">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-users"></i>
+                    Employés du département
+                    <span class="badge bg-primary ms-2">{{ department.employees|length }}</span>
+                </h2>
+            </div>
+            <div class="section-content">
+                {% if department.employees is not empty %}
+                    <div class="employee-grid">
+                        {% for employee in department.employees %}
+                            <div class="employee-card">
+                                <div class="employee-avatar">
+                                    {{ employee.firstName|first }}{{ employee.lastName|first }}
+                                </div>
+                                <div class="employee-name">
+                                    {{ employee.firstName }} {{ employee.lastName }}
+                                </div>
+                                <div class="employee-position">{{ employee.position|default('Non spécifié') }}</div>
+                                <div class="employee-contact">
+                                    {% if employee.email %}
+                                        <div class="contact-item">
+                                            <i class="fas fa-envelope"></i>
+                                            <span>{{ employee.email }}</span>
+                                        </div>
+                                    {% endif %}
+                                    {% if employee.phone %}
+                                        <div class="contact-item">
+                                            <i class="fas fa-phone"></i>
+                                            <span>{{ employee.phone }}</span>
+                                        </div>
+                                    {% endif %}
+                                    <div class="contact-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>Embauché le {{ employee.hireDate|date('d/m/Y') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4>Aucun employé</h4>
+                        <p>Ce département n'a pas encore d'employés assignés.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Section Équipes -->
+        {% if department.teams is defined and department.teams is not empty %}
+            <div class="section-card slide-in">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-friends"></i>
+                        Équipes du département
+                        <span class="badge bg-primary ms-2">{{ department.teams|length }}</span>
+                    </h2>
+                </div>
+                <div class="section-content">
+                    <div class="team-grid">
+                        {% for team in department.teams %}
+                            <div class="team-card">
+                                <div class="team-name">
+                                    <i class="fas fa-users text-primary"></i>
+                                    {{ team.name }}
+                                </div>
+                                {% if team.description %}
+                                    <div class="team-description">{{ team.description }}</div>
+                                {% endif %}
+                                <div class="team-stats">
+                                    <div>
+                                        {% if team.leader %}
+                                            <small class="text-muted">
+                                                <i class="fas fa-user-tie"></i>
+                                                {{ team.leader.firstName }} {{ team.leader.lastName }}
+                                            </small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="team-member-count">
+                                        {{ team.teamMembers|length }} membres
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Section Politiques de congés -->
+        {% if department.leavePolicies is defined and department.leavePolicies is not empty %}
+            <div class="section-card slide-in">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-clipboard-list"></i>
+                        Politiques de congés
+                        <span class="badge bg-primary ms-2">{{ department.leavePolicies|length }}</span>
+                    </h2>
+                </div>
+                <div class="section-content">
+                    <div class="row">
+                        {% for policy in department.leavePolicies %}
+                            <div class="col-md-6 mb-3">
+                                <div class="policy-card p-3 border rounded">
+                                    <h5 class="text-primary">{{ policy.name }}</h5>
+                                    {% if policy.description %}
+                                        <p class="text-muted small">{{ policy.description }}</p>
+                                    {% endif %}
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge {{ policy.isActive ? 'bg-success' : 'bg-secondary' }}">
+                                            {{ policy.isActive ? 'Active' : 'Inactive' }}
+                                        </span>
+                                        <small class="text-muted">
+                                            {{ policy.createdAt|date('d/m/Y') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+        <!-- Section Politiques de congés -->
+        {% if department.leavePolicies is defined and department.leavePolicies is not empty %}
+            <div class="section-card slide-in">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-file-contract"></i>
+                        Politiques de congés
+                        <span class="badge bg-primary ms-2">{{ department.leavePolicies|length }}</span>
+                    </h2>
+                </div>
+                <div class="section-content">
+                    <div class="row">
+                        {% for policy in department.leavePolicies %}
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="policy-card p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="mb-0">{{ policy.name }}</h5>
+                                        {% if policy.isActive %}
+                                            <span class="badge bg-success">Actif</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactif</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if policy.description %}
+                                        <p class="text-muted mb-2" style="font-size: 0.875rem;">
+                                            {{ policy.description|length > 100 ? policy.description|slice(0, 100) ~ '...' : policy.description }}
+                                        </p>
+                                    {% endif %}
+                                    {% if policy.leaveType %}
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag me-1"></i>
+                                                Type: {{ policy.leaveType.name }}
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                    {% if policy.rules %}
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <i class="fas fa-cog me-1"></i>
+                                                {{ policy.rules|json_encode|length }} règle(s) configurée(s)
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>
+                                            Créée le {{ policy.createdAt|date('d/m/Y') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="section-card slide-in">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-file-contract"></i>
+                        Politiques de congés
+                        <span class="badge bg-secondary ms-2">0</span>
+                    </h2>
+                </div>
+                <div class="section-content">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-file-contract"></i>
+                        </div>
+                        <h4>Aucune politique</h4>
+                        <p>Ce département n'a pas encore de politiques de congés définies.</p>
+                        <a href="{{ path('admin_leave_policy_new') }}" class="btn btn-primary mt-3">
+                            <i class="fas fa-plus me-1"></i>
+                            Créer une politique
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Section Résumé des congés récents -->
+        <div class="section-card slide-in">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    Demandes de congés récentes
+                </h2>
+            </div>
+            <div class="section-content">
+                {% set recentLeaveRequests = [] %}
+                {% for employee in department.employees %}
+                    {% for request in employee.leaveRequests|slice(0, 5) %}
+                        {% set recentLeaveRequests = recentLeaveRequests|merge([request]) %}
+                    {% endfor %}
+                {% endfor %}
+                
+                {% if recentLeaveRequests is not empty %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Employé</th>
+                                    <th>Type</th>
+                                    <th>Période</th>
+                                    <th>Durée</th>
+                                    <th>Statut</th>
+                                    <th>Date demande</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in recentLeaveRequests|slice(0, 10) %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="employee-avatar me-2" style="width: 2rem; height: 2rem; font-size: 0.75rem;">
+                                                    {{ request.employee.firstName|first }}{{ request.employee.lastName|first }}
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold">{{ request.employee.firstName }} {{ request.employee.lastName }}</div>
+                                                    <small class="text-muted">{{ request.employee.position }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge" style="background-color: {{ request.leaveType.color|default('#6c757d') }};">
+                                                {{ request.leaveType.name }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small>
+                                                {{ request.startDate|date('d/m/Y') }}
+                                                {% if request.startDate != request.endDate %}
+                                                    → {{ request.endDate|date('d/m/Y') }}
+                                                {% endif %}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark">
+                                                {{ request.numberOfDays }} jour{{ request.numberOfDays > 1 ? 's' : '' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if request.status == 'pending' %}
+                                                <span class="badge bg-warning">En attente</span>
+                                            {% elseif request.status == 'approved' %}
+                                                <span class="badge bg-success">Approuvé</span>
+                                            {% elseif request.status == 'rejected' %}
+                                                <span class="badge bg-danger">Rejeté</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ request.status|title }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ request.submittedAt|date('d/m/Y H:i') }}
+                                            </small>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if recentLeaveRequests|length > 10 %}
+                        <div class="text-center mt-3">
+                            <a href="{{ path('admin_leave_request_index', {'department': department.id}) }}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>
+                                Voir toutes les demandes
+                            </a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h4>Aucune demande récente</h4>
+                        <p>Aucune demande de congé récente dans ce département.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Section Statistiques détaillées -->
+        <div class="section-card slide-in">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Statistiques détaillées
+                </h2>
+            </div>
+            <div class="section-content">
+                <div class="row">
+                    <!-- Répartition par statut -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-user-check me-1"></i>
+                                    Répartition des employés
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                {% set activeCount = 0 %}
+                                {% set inactiveCount = 0 %}
+                                {% for employee in department.employees %}
+                                    {% if employee.isActive %}
+                                        {% set activeCount = activeCount + 1 %}
+                                    {% else %}
+                                        {% set inactiveCount = inactiveCount + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Employés actifs</span>
+                                        <span class="fw-bold text-success">{{ activeCount }}</span>
+                                    </div>
+                                    <div class="progress mb-2" style="height: 8px;">
+                                        <div class="progress-bar bg-success" style="width: {{ department.employees|length > 0 ? (activeCount / department.employees|length * 100) : 0 }}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Employés inactifs</span>
+                                        <span class="fw-bold text-danger">{{ inactiveCount }}</span>
+                                    </div>
+                                    <div class="progress mb-2" style="height: 8px;">
+                                        <div class="progress-bar bg-danger" style="width: {{ department.employees|length > 0 ? (inactiveCount / department.employees|length * 100) : 0 }}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center mt-3">
+                                    <span class="badge bg-primary fs-5">
+                                        Total: {{ department.employees|length }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ancienneté moyenne -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Ancienneté des employés
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                {% if department.employees|length > 0 %}
+                                    {% set totalMonths = 0 %}
+                                    {% set now = date() %}
+                                    {% for employee in department.employees %}
+                                        {% if employee.hireDate %}
+                                            {% set diff = date(employee.hireDate).diff(now) %}
+                                            {% set months = (diff.y * 12) + diff.m %}
+                                            {% set totalMonths = totalMonths + months %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% set avgMonths = totalMonths / department.employees|length %}
+                                    {% set avgYears = (avgMonths / 12)|round(1) %}
+                                    
+                                    <div class="text-center">
+                                        <div class="display-4 text-primary mb-2">{{ avgYears }}</div>
+                                        <p class="mb-3">Années d'ancienneté moyenne</p>
+                                        
+                                        {% set recentHires = 0 %}
+                                        {% set experiencedEmployees = 0 %}
+                                        {% for employee in department.employees %}
+                                            {% if employee.hireDate %}
+                                                {% set diff = date(employee.hireDate).diff(now) %}
+                                                {% set employeeMonths = (diff.y * 12) + diff.m %}
+                                                {% if employeeMonths < 12 %}
+                                                    {% set recentHires = recentHires + 1 %}
+                                                {% elseif employeeMonths >= 24 %}
+                                                    {% set experiencedEmployees = experiencedEmployees + 1 %}
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        <div class="row text-center">
+                                            <div class="col-6">
+                                                <div class="text-info fw-bold">{{ recentHires }}</div>
+                                                <small class="text-muted">Nouvelles recrues<br>(< 1 an)</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-success fw-bold">{{ experiencedEmployees }}</div>
+                                                <small class="text-muted">Employés expérimentés<br>(≥ 2 ans)</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-user-slash fa-2x mb-2"></i>
+                                        <p>Aucun employé pour calculer l'ancienneté</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i class="fas fa-exclamation-triangle text-danger fa-3x mb-3"></i>
+                    <h5>Êtes-vous sûr de vouloir supprimer ce département ?</h5>
+                    <p class="text-muted mb-0">
+                        Cette action est irréversible. Le département "<span id="departmentNameToDelete" class="fw-bold"></span>" 
+                        et toutes ses données associées seront définitivement supprimés.
+                    </p>
+                    {% if department.employees|length > 0 %}
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-users me-1"></i>
+                            <strong>Attention :</strong> Ce département contient {{ department.employees|length }} employé(s). 
+                            Vous devez d'abord les réassigner ou les supprimer.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    Annuler
+                </button>
+                {% if department.employees|length == 0 %}
+                    <form id="deleteForm" method="post" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ department.id) }}">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>
+                            Supprimer définitivement
+                        </button>
+                    </form>
+                {% else %}
+                    <button type="button" class="btn btn-danger" disabled>
+                        <i class="fas fa-ban me-1"></i>
+                        Suppression impossible
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Animation au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation des cartes au scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observer tous les éléments animés
+            document.querySelectorAll('.slide-in, .fade-in').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'all 0.6s ease-out';
+                observer.observe(el);
+            });
+
+            // Animation des statistiques
+            document.querySelectorAll('.stat-number').forEach(stat => {
+                const finalValue = parseInt(stat.textContent);
+                let currentValue = 0;
+                const increment = Math.ceil(finalValue / 30);
+                const timer = setInterval(() => {
+                    currentValue += increment;
+                    if (currentValue >= finalValue) {
+                        currentValue = finalValue;
+                        clearInterval(timer);
+                    }
+                    stat.textContent = currentValue;
+                }, 50);
+            });
+
+            // Effet hover sur les cartes employés
+            document.querySelectorAll('.employee-card, .team-card, .policy-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.transition = 'transform 0.3s ease';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Tooltips pour les badges de statut
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // Fonction de confirmation de suppression
+        function confirmDelete(departmentId, departmentName) {
+            document.getElementById('departmentNameToDelete').textContent = departmentName;
+            const deleteForm = document.getElementById('deleteForm');
+            if (deleteForm) {
+                deleteForm.action = `{{ path('admin_department_delete', {'id': '__ID__'}) }}`.replace('__ID__', departmentId);
+            }
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+
+        // Fonction pour copier les informations de contact
+        function copyToClipboard(text, element) {
+            navigator.clipboard.writeText(text).then(function() {
+                const originalText = element.innerHTML;
+                element.innerHTML = '<i class="fas fa-check text-success"></i> Copié!';
+                setTimeout(() => {
+                    element.innerHTML = originalText;
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Erreur lors de la copie: ', err);
+            });
+        }
+
+        // Ajout des listeners pour les informations de contact
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.contact-item').forEach(item => {
+                const emailOrPhone = item.querySelector('span');
+                if (emailOrPhone && (emailOrPhone.textContent.includes('@') || emailOrPhone.textContent.match(/\d/))) {
+                    item.style.cursor = 'pointer';
+                    item.title = 'Cliquer pour copier';
+                    item.addEventListener('click', function() {
+                        copyToClipboard(emailOrPhone.textContent, this);
+                    });
+                }
+            });
+        });
+
+        // Recherche rapide dans les listes
+        function filterList(searchInput, listSelector, itemSelector) {
+            const searchTerm = searchInput.value.toLowerCase();
+            const items = document.querySelectorAll(`${listSelector} ${itemSelector}`);
+            
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = '';
+                    item.style.opacity = '1';
+                } else {
+                    item.style.display = 'none';
+                    item.style.opacity = '0.5';
+                }
+            });
+        }
+
+        // Auto-refresh des données (optionnel)
+        function refreshDepartmentData() {
+            // Implement if needed for real-time updates
+            console.log('Refreshing department data...');
+        }
+
+        // Gestion des erreurs JavaScript
+        window.addEventListener('error', function(e) {
+            console.error('Erreur JavaScript:', e.error);
+        });
+
+        // Performance monitoring
+        window.addEventListener('load', function() {
+            const loadTime = performance.now();
+            if (loadTime > 3000) {
+                console.warn('Page loading took more than 3 seconds:', loadTime);
+            }
+        });
+    </script>
+{% endblock %}

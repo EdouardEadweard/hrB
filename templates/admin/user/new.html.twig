@@ -1,0 +1,758 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un nouvel utilisateur{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .page-header h1 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .page-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: #495057;
+        }
+        
+        .section-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-label .required {
+            color: #dc3545;
+        }
+        
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            outline: none;
+        }
+        
+        .form-control.is-invalid {
+            border-color: #dc3545;
+        }
+        
+        .form-control.is-valid {
+            border-color: #28a745;
+        }
+        
+        .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+        }
+        
+        .invalid-feedback {
+            display: block;
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .form-help {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .checkbox-item:hover {
+            background: #e9ecef;
+        }
+        
+        .checkbox-item.checked {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            margin: 0;
+        }
+        
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .form-row {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: 1fr;
+        }
+        
+        .form-row.two-cols {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .form-row.three-cols {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+            flex-wrap: wrap;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .breadcrumb-item a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        #password-strength {
+            margin-top: 0.5rem;
+        }
+        
+        .password-strength-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: #e9ecef;
+            overflow: hidden;
+            margin-top: 0.25rem;
+        }
+        
+        .password-strength-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+        
+        .strength-weak .password-strength-fill { background: #dc3545; width: 25%; }
+        .strength-fair .password-strength-fill { background: #ffc107; width: 50%; }
+        .strength-good .password-strength-fill { background: #17a2b8; width: 75%; }
+        .strength-strong .password-strength-fill { background: #28a745; width: 100%; }
+        
+        .form-floating {
+            position: relative;
+        }
+        
+        .form-floating input,
+        .form-floating select {
+            padding-top: 1.625rem;
+            padding-bottom: 0.625rem;
+        }
+        
+        .form-floating label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            overflow: hidden;
+            text-align: start;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            pointer-events: none;
+            border: 1px solid transparent;
+            transform-origin: 0 0;
+            transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+            color: #6c757d;
+        }
+        
+        .form-floating input:focus ~ label,
+        .form-floating input:not(:placeholder-shown) ~ label,
+        .form-floating select:focus ~ label,
+        .form-floating select:not([value=""]) ~ label {
+            opacity: 0.65;
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+        }
+        
+        @media (max-width: 768px) {
+            .form-row.two-cols,
+            .form-row.three-cols {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                justify-content: center;
+            }
+            
+            .checkbox-group {
+                flex-direction: column;
+            }
+        }
+        
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .btn-primary.loading .loading-spinner {
+            display: inline-block;
+        }
+        
+        .btn-primary.loading .btn-text {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <!-- Fil d'Ariane -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('admin_dashboard') }}">
+                    <i class="fas fa-home"></i> Tableau de bord
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ path('admin_user_index') }}">
+                    <i class="fas fa-users"></i> Utilisateurs
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                Nouvel utilisateur
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Messages Flash -->
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                <i class="fas fa-{{ label == 'success' ? 'check-circle' : (label == 'error' ? 'exclamation-triangle' : 'info-circle') }}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- En-tête de page -->
+    <div class="page-header">
+        <h1>
+            <div class="page-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            Créer un nouvel utilisateur
+        </h1>
+        <p class="mb-0 mt-2 opacity-75">Remplissez les informations ci-dessous pour créer un nouveau compte utilisateur</p>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="form-container">
+        {{ form_start(form, {'attr': {'id': 'user-form', 'novalidate': 'novalidate'}}) }}
+        
+        <!-- Section Informations personnelles -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                Informations personnelles
+            </h3>
+            
+            <div class="form-row two-cols">
+                <div class="form-group">
+                    {{ form_label(form.firstName, 'Prénom', {'label_attr': {'class': 'form-label'}}) }}
+                    <span class="required">*</span>
+                    {{ form_widget(form.firstName, {'attr': {'class': 'form-control', 'placeholder': 'Entrez le prénom'}}) }}
+                    {{ form_errors(form.firstName) }}
+                </div>
+                
+                <div class="form-group">
+                    {{ form_label(form.lastName, 'Nom de famille', {'label_attr': {'class': 'form-label'}}) }}
+                    <span class="required">*</span>
+                    {{ form_widget(form.lastName, {'attr': {'class': 'form-control', 'placeholder': 'Entrez le nom de famille'}}) }}
+                    {{ form_errors(form.lastName) }}
+                </div>
+            </div>
+            
+            <div class="form-row two-cols">
+                <div class="form-group">
+                    {{ form_label(form.email, 'Adresse email', {'label_attr': {'class': 'form-label'}}) }}
+                    <span class="required">*</span>
+                    {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'exemple@entreprise.com'}}) }}
+                    {{ form_errors(form.email) }}
+                    <div class="form-help">
+                        <i class="fas fa-info-circle"></i>
+                        Cette adresse sera utilisée pour la connexion
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    {{ form_label(form.phone, 'Téléphone', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.phone, {'attr': {'class': 'form-control', 'placeholder': '+33 1 23 45 67 89'}}) }}
+                    {{ form_errors(form.phone) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Informations professionnelles -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                Informations professionnelles
+            </h3>
+            
+            <div class="form-row two-cols">
+                <div class="form-group">
+                    {{ form_label(form.position, 'Poste', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.position, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Développeur, Manager, etc.'}}) }}
+                    {{ form_errors(form.position) }}
+                </div>
+                
+                <div class="form-group">
+                    {{ form_label(form.hireDate, 'Date d\'embauche', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.hireDate, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.hireDate) }}
+                </div>
+            </div>
+            
+            <div class="form-row two-cols">
+                <div class="form-group">
+                    {{ form_label(form.department, 'Département', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.department, {'attr': {'class': 'form-control form-select'}}) }}
+                    {{ form_errors(form.department) }}
+                </div>
+                
+                <div class="form-group">
+                    {{ form_label(form.manager, 'Manager', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.manager, {'attr': {'class': 'form-control form-select'}}) }}
+                    {{ form_errors(form.manager) }}
+                    <div class="form-help">
+                        <i class="fas fa-info-circle"></i>
+                        Manager direct de cet utilisateur
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Sécurité -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                Sécurité et accès
+            </h3>
+            
+            <div class="form-row two-cols">
+                <div class="form-group">
+                    {{ form_label(form.plainPassword, 'Mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+                    <span class="required">*</span>
+                    {{ form_widget(form.plainPassword, {'attr': {'class': 'form-control', 'placeholder': 'Mot de passe sécurisé', 'id': 'password-input'}}) }}
+                    {{ form_errors(form.plainPassword) }}
+                    <div id="password-strength" style="display: none;">
+                        <div class="password-strength-bar">
+                            <div class="password-strength-fill"></div>
+                        </div>
+                        <small class="form-help" id="password-help">Force du mot de passe</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-toggle-on"></i>
+                        Statut du compte
+                    </label>
+                    <div class="checkbox-item">
+                        {{ form_widget(form.isActive, {'attr': {'id': 'isActive'}}) }}
+                        <label for="isActive">Compte actif</label>
+                    </div>
+                    {{ form_errors(form.isActive) }}
+                    <div class="form-help">
+                        <i class="fas fa-info-circle"></i>
+                        Un compte inactif ne peut pas se connecter
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                {{ form_label(form.roles, 'Rôles', {'label_attr': {'class': 'form-label'}}) }}
+                <div class="checkbox-group">
+                    {% for role in form.roles %}
+                        <div class="checkbox-item" data-role="{{ role.vars.value }}">
+                            {{ form_widget(role) }}
+                            {{ form_label(role) }}
+                        </div>
+                    {% endfor %}
+                </div>
+                {{ form_errors(form.roles) }}
+                <div class="form-help">
+                    <i class="fas fa-info-circle"></i>
+                    Sélectionnez un ou plusieurs rôles pour définir les permissions
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="action-buttons">
+            <button type="submit" class="btn-primary" id="submit-btn">
+                <span class="btn-text">
+                    <i class="fas fa-save"></i>
+                    Créer l'utilisateur
+                </span>
+                <div class="loading-spinner"></div>
+            </button>
+            
+            <a href="{{ path('admin_user_index') }}" class="btn-secondary">
+                <i class="fas fa-times"></i>
+                Annuler
+            </a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation d'apparition des sections
+            const sections = document.querySelectorAll('.form-section');
+            sections.forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    section.style.transition = 'all 0.6s ease';
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, index * 150);
+            });
+
+            // Validation en temps réel
+            const form = document.getElementById('user-form');
+            const inputs = form.querySelectorAll('input[required], select[required]');
+            
+            inputs.forEach(input => {
+                input.addEventListener('blur', validateField);
+                input.addEventListener('input', clearErrors);
+            });
+
+            function validateField(e) {
+                const field = e.target;
+                const value = field.value.trim();
+                
+                // Nettoyage des erreurs précédentes
+                field.classList.remove('is-invalid', 'is-valid');
+                
+                if (field.hasAttribute('required') && !value) {
+                    field.classList.add('is-invalid');
+                    return false;
+                }
+                
+                // Validation email
+                if (field.type === 'email' && value) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) {
+                        field.classList.add('is-invalid');
+                        return false;
+                    }
+                }
+                
+                if (value) {
+                    field.classList.add('is-valid');
+                }
+                
+                return true;
+            }
+
+            function clearErrors(e) {
+                e.target.classList.remove('is-invalid');
+            }
+
+            // Vérification de la force du mot de passe
+            const passwordInput = document.getElementById('password-input');
+            const passwordStrength = document.getElementById('password-strength');
+            const passwordHelp = document.getElementById('password-help');
+
+            if (passwordInput) {
+                passwordInput.addEventListener('input', function() {
+                    const password = this.value;
+                    
+                    if (password.length > 0) {
+                        passwordStrength.style.display = 'block';
+                        const strength = checkPasswordStrength(password);
+                        updatePasswordStrengthUI(strength);
+                    } else {
+                        passwordStrength.style.display = 'none';
+                    }
+                });
+            }
+
+            function checkPasswordStrength(password) {
+                let score = 0;
+                let feedback = [];
+
+                if (password.length >= 8) score++;
+                else feedback.push('au moins 8 caractères');
+
+                if (/[a-z]/.test(password)) score++;
+                else feedback.push('des lettres minuscules');
+
+                if (/[A-Z]/.test(password)) score++;
+                else feedback.push('des lettres majuscules');
+
+                if (/\d/.test(password)) score++;
+                else feedback.push('des chiffres');
+
+                if (/[^a-zA-Z\d]/.test(password)) score++;
+                else feedback.push('des caractères spéciaux');
+
+                return { score, feedback };
+            }
+
+            function updatePasswordStrengthUI(strength) {
+                const strengthClasses = ['strength-weak', 'strength-fair', 'strength-good', 'strength-strong'];
+                const strengthTexts = ['Faible', 'Acceptable', 'Bon', 'Fort'];
+                
+                // Nettoyage des classes précédentes
+                passwordStrength.className = '';
+                
+                let strengthLevel = Math.min(Math.floor(strength.score / 1.25), 3);
+                passwordStrength.classList.add(strengthClasses[strengthLevel]);
+                
+                let helpText = `Force: ${strengthTexts[strengthLevel]}`;
+                if (strength.feedback.length > 0) {
+                    helpText += ` - Ajoutez: ${strength.feedback.join(', ')}`;
+                }
+                passwordHelp.textContent = helpText;
+            }
+
+            // Gestion des checkboxes de rôles
+            const roleCheckboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]');
+            roleCheckboxes.forEach(checkbox => {
+                const item = checkbox.closest('.checkbox-item');
+                
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        item.classList.add('checked');
+                    } else {
+                        item.classList.remove('checked');
+                    }
+                });
+                
+                // État initial
+                if (checkbox.checked) {
+                    item.classList.add('checked');
+                }
+            });
+
+            // Gestion de la soumission du formulaire
+            const submitBtn = document.getElementById('submit-btn');
+            form.addEventListener('submit', function(e) {
+                // Validation globale
+                let isValid = true;
+                inputs.forEach(input => {
+                    if (!validateField({ target: input })) {
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Veuillez corriger les erreurs dans le formulaire');
+                    return;
+                }
+
+                // Animation de chargement
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+            });
+
+            // Prévention de la double soumission
+            let isSubmitting = false;
+            form.addEventListener('submit', function(e) {
+                if (isSubmitting) {
+                    e.preventDefault();
+                    return;
+                }
+                isSubmitting = true;
+            });
+
+            // Auto-capitalisation des noms
+            const nameFields = document.querySelectorAll('input[name*="firstName"], input[name*="lastName"]');
+            nameFields.forEach(field => {
+                field.addEventListener('blur', function() {
+                    this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1).toLowerCase();
+                });
+            });
+
+            // Formatage du téléphone
+            const phoneField = document.querySelector('input[name*="phone"]');
+            if (phoneField) {
+                phoneField.addEventListener('input', function() {
+                    let value = this.value.replace(/\D/g, '');
+                    if (value.startsWith('33')) {
+                        value = '+' + value;
+                    } else if (value.startsWith('0') && value.length === 10) {
+                        value = '+33' + value.substring(1);
+                    }
+                    this.value = value;
+                });
+            }
+        });
+    </script>
+{% endblock %}

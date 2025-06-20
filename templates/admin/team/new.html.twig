@@ -1,0 +1,782 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Équipe{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .form-header {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .form-body {
+            padding: 2rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            color: #343a40;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
+        }
+        
+        .form-control.is-valid {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .invalid-feedback {
+            display: block;
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .form-text {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(45deg, #1e7e34, #1aa085);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #545b62;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid #007bff;
+            color: #007bff;
+            background: transparent;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: #007bff;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .form-actions {
+            background: #f8f9fa;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+        
+        .breadcrumb-item a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item.active {
+            color: #6c757d;
+        }
+        
+        .form-check {
+            margin-bottom: 1rem;
+        }
+        
+        .form-check-input {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.5rem;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+        }
+        
+        .form-check-input:checked {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        
+        .form-check-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .info-box {
+            background: linear-gradient(45deg, #e3f2fd, #f3e5f5);
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-box .icon {
+            color: #1976d2;
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+        
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            right: -50%;
+            height: 2px;
+            background: #dee2e6;
+            z-index: 1;
+        }
+        
+        .progress-step:last-child::before {
+            display: none;
+        }
+        
+        .progress-step.active::before {
+            background: #28a745;
+        }
+        
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #dee2e6;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .progress-step.active .step-circle {
+            background: #28a745;
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .progress-step.active .step-label {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 1rem;
+            }
+            
+            .form-body {
+                padding: 1rem;
+            }
+            
+            .form-actions {
+                padding: 1rem;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .btn {
+                justify-content: center;
+                margin-bottom: 0.5rem;
+            }
+            
+            .progress-indicator {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .progress-step::before {
+                display: none;
+            }
+        }
+        
+        /* Animations */
+        .form-container {
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-control:focus {
+            animation: focusGlow 0.3s ease-out;
+        }
+        
+        @keyframes focusGlow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Fil d'Ariane -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Administration</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('admin_team_index') }}">Équipes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Nouvelle équipe</li>
+        </ol>
+    </nav>
+
+    <!-- En-tête de la page -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-2">
+                    <i class="fas fa-users-cog"></i> Créer une nouvelle équipe
+                </h1>
+                <p class="mb-0">Organisez vos employés en équipes pour une meilleure gestion</p>
+            </div>
+            <div>
+                <a href="{{ path('admin_team_index') }}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicateur de progression -->
+    <div class="progress-indicator">
+        <div class="progress-step active">
+            <div class="step-circle">1</div>
+            <div class="step-label">Informations</div>
+        </div>
+        <div class="progress-step">
+            <div class="step-circle">2</div>
+            <div class="step-label">Configuration</div>
+        </div>
+        <div class="progress-step">
+            <div class="step-circle">3</div>
+            <div class="step-label">Finalisation</div>
+        </div>
+    </div>
+
+    <!-- Boîte d'information -->
+    <div class="info-box">
+        <i class="fas fa-info-circle icon"></i>
+        <strong>Conseil :</strong> Une équipe bien structurée améliore la collaboration et la productivité. 
+        Choisissez un nom descriptif et assignez un chef d'équipe expérimenté.
+    </div>
+
+    <!-- Formulaire -->
+    <div class="form-container">
+        <div class="form-header">
+            <h2 class="mb-0">
+                <i class="fas fa-edit"></i> Informations de l'équipe
+            </h2>
+            <p class="text-muted mb-0">Remplissez les informations nécessaires pour créer une nouvelle équipe</p>
+        </div>
+
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'team-form'}}) }}
+        
+        <div class="form-body">
+            <!-- Section : Informations de base -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="fas fa-info-circle text-primary"></i>
+                    Informations de base
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-floating">
+                            {{ form_widget(form.name, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'placeholder': 'Nom de l\'équipe',
+                                    'required': true
+                                }
+                            }) }}
+                            {{ form_label(form.name, 'Nom de l\'équipe', {'label_attr': {'class': 'required-field'}}) }}
+                            {{ form_errors(form.name) }}
+                            <div class="form-text">
+                                <i class="fas fa-lightbulb"></i> 
+                                Choisissez un nom clair et descriptif (ex: "Équipe Marketing Digital", "Dev Team Frontend")
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-check mt-3">
+                            {{ form_widget(form.isActive, {
+                                'attr': {
+                                    'class': 'form-check-input',
+                                    'checked': true
+                                }
+                            }) }}
+                            {{ form_label(form.isActive, 'Équipe active', {'label_attr': {'class': 'form-check-label'}}) }}
+                            {{ form_errors(form.isActive) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-floating">
+                    {{ form_widget(form.description, {
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Description de l\'équipe',
+                            'rows': 4,
+                            'style': 'min-height: 120px;'
+                        }
+                    }) }}
+                    {{ form_label(form.description, 'Description') }}
+                    {{ form_errors(form.description) }}
+                    <div class="form-text">
+                        <i class="fas fa-info"></i> 
+                        Décrivez le rôle et les responsabilités de cette équipe (optionnel)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section : Organisation -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="fas fa-sitemap text-success"></i>
+                    Organisation
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form_widget(form.department, {
+                                'attr': {
+                                    'class': 'form-select',
+                                    'required': true
+                                }
+                            }) }}
+                            {{ form_label(form.department, 'Département', {'label_attr': {'class': 'required-field'}}) }}
+                            {{ form_errors(form.department) }}
+                            <div class="form-text">
+                                <i class="fas fa-building"></i> 
+                                Sélectionnez le département auquel appartient cette équipe
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form_widget(form.leader, {
+                                'attr': {
+                                    'class': 'form-select'
+                                }
+                            }) }}
+                            {{ form_label(form.leader, 'Chef d\'équipe') }}
+                            {{ form_errors(form.leader) }}
+                            <div class="form-text">
+                                <i class="fas fa-user-tie"></i> 
+                                Optionnel : Vous pourrez ajouter un chef d'équipe plus tard
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section : Configuration avancée -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="fas fa-cogs text-info"></i>
+                    Configuration avancée
+                </div>
+                
+                <div class="info-box">
+                    <i class="fas fa-magic icon"></i>
+                    <strong>Prochaines étapes :</strong> Après création, vous pourrez ajouter des membres à cette équipe 
+                    et configurer des politiques de congés spécifiques.
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-text">
+                            <i class="fas fa-users"></i> 
+                            <strong>Membres de l'équipe :</strong> Vous pourrez ajouter des membres après avoir créé l'équipe.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions du formulaire -->
+        <div class="form-actions">
+            <div>
+                <a href="{{ path('admin_team_index') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Annuler
+                </a>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary" id="preview-btn">
+                    <i class="fas fa-eye"></i> Aperçu
+                </button>
+                <button type="submit" class="btn btn-success" id="submit-btn">
+                    <i class="fas fa-save"></i> Créer l'équipe
+                </button>
+            </div>
+        </div>
+        
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<!-- Modal d'aperçu -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">
+                    <i class="fas fa-eye"></i> Aperçu de l'équipe
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-content">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 id="preview-name">Nom de l'équipe</h4>
+                            <p id="preview-description" class="text-muted">Description de l'équipe</p>
+                        </div>
+                        <div class="col-md-4">
+                            <span id="preview-status" class="badge bg-success">Active</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Département :</strong>
+                            <span id="preview-department">-</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Chef d'équipe :</strong>
+                            <span id="preview-leader">À définir</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continuer la modification</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('team-form');
+            const submitBtn = document.getElementById('submit-btn');
+            const previewBtn = document.getElementById('preview-btn');
+            
+            // Validation en temps réel
+            const nameInput = document.querySelector('input[name="team[name]"]');
+            const departmentSelect = document.querySelector('select[name="team[department]"]');
+            
+            function validateForm() {
+                let isValid = true;
+                
+                // Validation du nom
+                if (nameInput.value.trim() === '') {
+                    nameInput.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    nameInput.classList.remove('is-invalid');
+                    nameInput.classList.add('is-valid');
+                }
+                
+                // Validation du département
+                if (departmentSelect.value === '') {
+                    departmentSelect.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    departmentSelect.classList.remove('is-invalid');
+                    departmentSelect.classList.add('is-valid');
+                }
+                
+                return isValid;
+            }
+            
+            // Validation en temps réel
+            nameInput.addEventListener('input', validateForm);
+            departmentSelect.addEventListener('change', validateForm);
+            
+            // Aperçu
+            previewBtn.addEventListener('click', function() {
+                const name = nameInput.value || 'Nom de l\'équipe';
+                const description = document.querySelector('textarea[name="team[description]"]').value || 'Aucune description';
+                const department = departmentSelect.options[departmentSelect.selectedIndex].text || '-';
+                const leader = document.querySelector('select[name="team[leader]"]');
+                const leaderText = leader.options[leader.selectedIndex].text || 'À définir';
+                const isActive = document.querySelector('input[name="team[isActive]"]').checked;
+                
+                document.getElementById('preview-name').textContent = name;
+                document.getElementById('preview-description').textContent = description;
+                document.getElementById('preview-department').textContent = department;
+                document.getElementById('preview-leader').textContent = leaderText;
+                
+                const statusBadge = document.getElementById('preview-status');
+                if (isActive) {
+                    statusBadge.textContent = 'Active';
+                    statusBadge.className = 'badge bg-success';
+                } else {
+                    statusBadge.textContent = 'Inactive';
+                    statusBadge.className = 'badge bg-secondary';
+                }
+                
+                const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+                modal.show();
+            });
+            
+            // Soumission du formulaire
+            form.addEventListener('submit', function(e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                    
+                    // Scroll vers le premier champ invalide
+                    const firstInvalid = document.querySelector('.is-invalid');
+                    if (firstInvalid) {
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstInvalid.focus();
+                    }
+                    
+                    // Notification d'erreur
+                    showNotification('Veuillez corriger les erreurs dans le formulaire', 'error');
+                    return;
+                }
+                
+                // Animation du bouton de soumission
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création en cours...';
+                submitBtn.disabled = true;
+            });
+            
+            // Mise à jour des indicateurs de progression
+            function updateProgressIndicator(step) {
+                const steps = document.querySelectorAll('.progress-step');
+                steps.forEach((stepEl, index) => {
+                    if (index < step) {
+                        stepEl.classList.add('active');
+                    } else {
+                        stepEl.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Simulation de progression basée sur la completion du formulaire
+            function checkFormCompletion() {
+                let step = 1;
+                
+                if (nameInput.value.trim() !== '' && departmentSelect.value !== '') {
+                    step = 2;
+                }
+                
+                if (step === 2 && document.querySelector('textarea[name="team[description]"]').value.trim() !== '') {
+                    step = 3;
+                }
+                
+                updateProgressIndicator(step);
+            }
+            
+            // Écouter les changements pour mettre à jour la progression
+            nameInput.addEventListener('input', checkFormCompletion);
+            departmentSelect.addEventListener('change', checkFormCompletion);
+            document.querySelector('textarea[name="team[description]"]').addEventListener('input', checkFormCompletion);
+            
+            // Auto-sauvegarde en brouillon (localStorage)
+            function saveDraft() {
+                const formData = {
+                    name: nameInput.value,
+                    description: document.querySelector('textarea[name="team[description]"]').value,
+                    department: departmentSelect.value,
+                    leader: document.querySelector('select[name="team[leader]"]').value,
+                    isActive: document.querySelector('input[name="team[isActive]"]').checked
+                };
+                localStorage.setItem('team_draft', JSON.stringify(formData));
+            }
+            
+            function loadDraft() {
+                const draft = localStorage.getItem('team_draft');
+                if (draft) {
+                    const formData = JSON.parse(draft);
+                    nameInput.value = formData.name || '';
+                    document.querySelector('textarea[name="team[description]"]').value = formData.description || '';
+                    departmentSelect.value = formData.department || '';
+                    document.querySelector('select[name="team[leader]"]').value = formData.leader || '';
+                    document.querySelector('input[name="team[isActive]"]').checked = formData.isActive !== false;
+                    
+                    checkFormCompletion();
+                }
+            }
+            
+            // Charger le brouillon au chargement de la page
+            loadDraft();
+            
+            // Sauvegarder le brouillon à chaque modification
+            const formElements = form.querySelectorAll('input, select, textarea');
+            formElements.forEach(element => {
+                element.addEventListener('input', saveDraft);
+                element.addEventListener('change', saveDraft);
+            });
+            
+            // Nettoyer le brouillon après soumission réussie
+            form.addEventListener('submit', function() {
+                if (validateForm()) {
+                    localStorage.removeItem('team_draft');
+                }
+            });
+            
+            // Fonction pour afficher les notifications
+            function showNotification(message, type = 'info') {
+                // Cette fonction peut être étendue avec une bibliothèque de notifications
+                console.log(`${type.toUpperCase()}: ${message}`);
+            }
+            
+            // Animation d'entrée pour les éléments du formulaire
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateX(-20px)';
+                setTimeout(() => {
+                    section.style.transition = 'all 0.5s ease';
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateX(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+{% endblock %}

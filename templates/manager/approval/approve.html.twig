@@ -1,0 +1,378 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Approuver la demande de congé - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .approval-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .approval-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+        }
+        
+        .approval-card {
+            background: white;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .request-details {
+            padding: 2rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            flex: 0 0 30%;
+        }
+        
+        .detail-value {
+            flex: 1;
+            color: #212529;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .leave-type-badge {
+            background-color: #e7f3ff;
+            color: #0066cc;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .employee-info {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .employee-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.5rem;
+        }
+        
+        .employee-details {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+        
+        .reason-section {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        
+        .reason-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.75rem;
+        }
+        
+        .reason-text {
+            color: #212529;
+            line-height: 1.6;
+            font-style: italic;
+        }
+        
+        .approval-form {
+            padding: 2rem;
+            background-color: #f8f9fa;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-control.textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+        
+        .btn-approve {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .btn-approve:hover {
+            background: linear-gradient(135deg, #218838, #1ab394);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .duration-highlight {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        @media (max-width: 768px) {
+            .approval-container {
+                margin: 1rem;
+                padding: 0;
+            }
+            
+            .approval-header {
+                padding: 1.5rem;
+            }
+            
+            .request-details {
+                padding: 1.5rem;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+            
+            .detail-label {
+                flex: none;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="approval-container">
+    <div class="approval-card">
+        <div class="approval-header">
+            <h1><i class="fas fa-check-circle"></i> Approbation de demande de congé</h1>
+            <p>Examinez et approuvez cette demande de congé</p>
+        </div>
+        
+        <div class="request-details">
+            <!-- Informations de l'employé -->
+            <div class="employee-info">
+                <div class="employee-name">
+                    <i class="fas fa-user"></i> {{ leaveRequest.employee.firstName }} {{ leaveRequest.employee.lastName }}
+                </div>
+                <div class="employee-details">
+                    <strong>Département :</strong> {{ leaveRequest.employee.department.name }} | 
+                    <strong>Poste :</strong> {{ leaveRequest.employee.position }}
+                </div>
+            </div>
+            
+            <!-- Détails de la demande -->
+            <div class="detail-row">
+                <span class="detail-label"><i class="fas fa-tag"></i> Type de congé</span>
+                <span class="detail-value">
+                    <span class="leave-type-badge">{{ leaveRequest.leaveType.name }}</span>
+                </span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label"><i class="fas fa-calendar-alt"></i> Date de début</span>
+                <span class="detail-value">{{ leaveRequest.startDate|date('d/m/Y') }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label"><i class="fas fa-calendar-alt"></i> Date de fin</span>
+                <span class="detail-value">{{ leaveRequest.endDate|date('d/m/Y') }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label"><i class="fas fa-clock"></i> Durée</span>
+                <span class="detail-value">
+                    <span class="duration-highlight">{{ leaveRequest.numberOfDays }} jour(s)</span>
+                </span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label"><i class="fas fa-info-circle"></i> Statut</span>
+                <span class="detail-value">
+                    <span class="status-badge status-pending">{{ leaveRequest.status }}</span>
+                </span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label"><i class="fas fa-calendar-plus"></i> Date de soumission</span>
+                <span class="detail-value">{{ leaveRequest.submittedAt|date('d/m/Y à H:i') }}</span>
+            </div>
+            
+            <!-- Motif de la demande -->
+            {% if leaveRequest.reason %}
+            <div class="reason-section">
+                <div class="reason-title"><i class="fas fa-comment"></i> Motif de la demande</div>
+                <div class="reason-text">"{{ leaveRequest.reason }}"</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Formulaire d'approbation -->
+        <div class="approval-form">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Attention :</strong> En approuvant cette demande, vous confirmez que l'employé peut s'absenter aux dates spécifiées. Cette action est irréversible.
+            </div>
+            
+            {{ form_start(form, {'attr': {'class': 'approval-form-container'}}) }}
+                <div class="form-group">
+                    {{ form_label(form.managerComment, 'Commentaire du manager', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.managerComment, {'attr': {'class': 'form-control textarea', 'placeholder': 'Ajoutez un commentaire (optionnel)...', 'rows': 4}}) }}
+                    <small class="form-text text-muted">
+                        <i class="fas fa-lightbulb"></i> 
+                        Vous pouvez ajouter des instructions ou des conditions particulières.
+                    </small>
+                </div>
+                
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-approve">
+                        <i class="fas fa-check"></i> Approuver la demande
+                    </button>
+                    <a href="{{ path('manager_approval_index') }}" class="btn btn-cancel">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Confirmation avant approbation
+        document.querySelector('.btn-approve').addEventListener('click', function(e) {
+            if (!confirm('Êtes-vous sûr de vouloir approuver cette demande de congé ? Cette action ne pourra pas être annulée.')) {
+                e.preventDefault();
+            }
+        });
+        
+        // Animation d'entrée
+        document.addEventListener('DOMContentLoaded', function() {
+            const card = document.querySelector('.approval-card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
+        });
+        
+        // Focus automatique sur le champ commentaire
+        const commentField = document.querySelector('textarea[name*="managerComment"]');
+        if (commentField) {
+            commentField.focus();
+        }
+    </script>
+{% endblock %}

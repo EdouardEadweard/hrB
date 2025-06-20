@@ -1,0 +1,339 @@
+{# templates/admin/holiday/_form.html.twig #}
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-calendar-day me-2"></i>
+            {% if holiday.id is defined and holiday.id %}
+                Modifier le jour férié
+            {% else %}
+                Nouveau jour férié
+            {% endif %}
+        </h5>
+    </div>
+    
+    <div class="card-body">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'needs-validation'}}) }}
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.name, 'Nom du jour férié', {'label_attr': {'class': 'form-label required'}}) }}
+                    {{ form_widget(form.name, {'attr': {
+                        'class': 'form-control',
+                        'placeholder': 'Ex: Jour de l\'An, Fête du Travail...'
+                    }}) }}
+                    {{ form_errors(form.name) }}
+                    <div class="form-text">
+                        <i class="fas fa-info-circle"></i>
+                        Saisissez le nom complet du jour férié
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.date, 'Date', {'label_attr': {'class': 'form-label required'}}) }}
+                    {{ form_widget(form.date, {'attr': {
+                        'class': 'form-control',
+                        'type': 'date'
+                    }}) }}
+                    {{ form_errors(form.date) }}
+                    <div class="form-text">
+                        <i class="fas fa-calendar"></i>
+                        Date du jour férié pour l'année en cours
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="mb-3">
+                    {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.description, {'attr': {
+                        'class': 'form-control',
+                        'rows': '3',
+                        'placeholder': 'Description optionnelle du jour férié...'
+                    }}) }}
+                    {{ form_errors(form.description) }}
+                    <div class="form-text">
+                        <i class="fas fa-align-left"></i>
+                        Description détaillée (optionnelle)
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        {{ form_widget(form.isRecurring, {'attr': {
+                            'class': 'form-check-input',
+                            'role': 'switch'
+                        }}) }}
+                        {{ form_label(form.isRecurring, 'Jour férié récurrent', {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                    {{ form_errors(form.isRecurring) }}
+                    <div class="form-text">
+                        <i class="fas fa-redo"></i>
+                        Cochez si ce jour férié se répète chaque année à la même date
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        {{ form_widget(form.isActive, {'attr': {
+                            'class': 'form-check-input',
+                            'role': 'switch'
+                        }}) }}
+                        {{ form_label(form.isActive, 'Actif', {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                    {{ form_errors(form.isActive) }}
+                    <div class="form-text">
+                        <i class="fas fa-toggle-on"></i>
+                        Désactivez pour masquer ce jour férié du planning
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {# Affichage d'informations supplémentaires si on modifie un jour férié existant #}
+        {% if holiday.id is defined and holiday.id %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small>
+                                    <i class="fas fa-clock"></i>
+                                    <strong>Créé le :</strong> 
+                                    {{ holiday.createdAt|date('d/m/Y à H:i') }}
+                                </small>
+                            </div>
+                            {% if holiday.createdAt != holiday.updatedAt %}
+                                <div class="col-md-6">
+                                    <small>
+                                        <i class="fas fa-edit"></i>
+                                        <strong>Modifié le :</strong> 
+                                        {{ holiday.updatedAt|date('d/m/Y à H:i') }}
+                                    </small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        {# Boutons d'action #}
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a href="{{ path('admin_holiday_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Retour à la liste
+                        </a>
+                    </div>
+                    
+                    <div>
+                        {% if holiday.id is defined and holiday.id %}
+                            <button type="submit" name="action" value="save" class="btn btn-primary me-2">
+                                <i class="fas fa-save"></i>
+                                Mettre à jour
+                            </button>
+                            <button type="submit" name="action" value="save_and_list" class="btn btn-success">
+                                <i class="fas fa-check"></i>
+                                Mettre à jour et retourner à la liste
+                            </button>
+                        {% else %}
+                            <button type="submit" name="action" value="save" class="btn btn-primary me-2">
+                                <i class="fas fa-plus"></i>
+                                Créer le jour férié
+                            </button>
+                            <button type="submit" name="action" value="save_and_new" class="btn btn-info me-2">
+                                <i class="fas fa-plus-circle"></i>
+                                Créer et nouveau
+                            </button>
+                            <button type="submit" name="action" value="save_and_list" class="btn btn-success">
+                                <i class="fas fa-check"></i>
+                                Créer et retourner à la liste
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {{ form_end(form) }}
+    </div>
+</div>
+
+{# Script JavaScript pour améliorer l'expérience utilisateur #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation côté client
+    const form = document.querySelector('.needs-validation');
+    const nameInput = document.querySelector('#holiday_name');
+    const dateInput = document.querySelector('#holiday_date');
+    const isRecurringCheckbox = document.querySelector('#holiday_isRecurring');
+    
+    // Validation en temps réel du nom
+    if (nameInput) {
+        nameInput.addEventListener('input', function() {
+            if (this.value.trim().length < 2) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    }
+    
+    // Validation de la date
+    if (dateInput) {
+        dateInput.addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                // Avertissement pour les dates passées mais ne pas bloquer
+                this.classList.add('is-warning');
+                showTooltip(this, 'Cette date est dans le passé');
+            } else {
+                this.classList.remove('is-warning');
+                this.classList.add('is-valid');
+                hideTooltip(this);
+            }
+        });
+    }
+    
+    // Feedback visuel pour le switch récurrent
+    if (isRecurringCheckbox) {
+        isRecurringCheckbox.addEventListener('change', function() {
+            const helpText = this.parentElement.nextElementSibling;
+            if (this.checked) {
+                helpText.innerHTML = '<i class="fas fa-redo text-success"></i> Ce jour férié se répétera automatiquement chaque année';
+                helpText.classList.add('text-success');
+            } else {
+                helpText.innerHTML = '<i class="fas fa-calendar"></i> Ce jour férié est unique pour cette année';
+                helpText.classList.remove('text-success');
+            }
+        });
+    }
+    
+    // Validation avant soumission
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // Trouver le premier champ invalide et le mettre en focus
+                const firstInvalid = form.querySelector(':invalid');
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                    firstInvalid.scrollIntoView({behavior: 'smooth', block: 'center'});
+                }
+            }
+            form.classList.add('was-validated');
+        });
+    }
+    
+    // Fonctions utilitaires pour les tooltips
+    function showTooltip(element, message) {
+        // Implémentation simple de tooltip
+        element.setAttribute('title', message);
+        element.setAttribute('data-bs-toggle', 'tooltip');
+    }
+    
+    function hideTooltip(element) {
+        element.removeAttribute('title');
+        element.removeAttribute('data-bs-toggle');
+    }
+    
+    // Auto-focus sur le premier champ lors du chargement
+    if (nameInput && !nameInput.value) {
+        nameInput.focus();
+    }
+    
+    // Confirmation avant de quitter si le formulaire a été modifié
+    let formModified = false;
+    const formInputs = form.querySelectorAll('input, textarea, select');
+    
+    formInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            formModified = true;
+        });
+    });
+    
+    window.addEventListener('beforeunload', function(e) {
+        if (formModified) {
+            e.preventDefault();
+            e.returnValue = 'Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir quitter ?';
+        }
+    });
+    
+    // Désactiver l'avertissement lors de la soumission
+    form.addEventListener('submit', function() {
+        formModified = false;
+    });
+});
+</script>
+
+<style>
+/* Styles personnalisés pour améliorer l'UX */
+.form-control.is-warning {
+    border-color: #ffc107;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23ffc107'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='M6 3v3M6 9h.01'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: #007bff;
+}
+
+.form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.btn {
+    transition: all 0.15s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.required::after {
+    content: " *";
+    color: #dc3545;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+</style>

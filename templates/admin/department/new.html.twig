@@ -1,0 +1,328 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau département - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1.5rem;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            border: 2px solid #6c757d;
+            border-radius: 8px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+        }
+        
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+        
+        .breadcrumb-item a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+        
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .form-help {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            color: #2d3748;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .page-subtitle {
+            color: #718096;
+            margin-top: 0.5rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_dashboard') }}">
+                    <i class="fas fa-home me-1"></i>Tableau de bord
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ path('admin_department_index') }}">Départements</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Nouveau département</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-building me-3"></i>Créer un nouveau département
+        </h1>
+        <p class="page-subtitle">
+            Ajoutez un nouveau département à votre organisation
+        </p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Informations du département
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Messages d'erreur -->
+                    {% for flashError in app.flashes('error') %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {{ flashError }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'needs-validation'}}) }}
+                    
+                    <!-- Nom du département -->
+                    <div class="mb-4">
+                        {{ form_label(form.name, 'Nom du département', {'label_attr': {'class': 'form-label required-field'}}) }}
+                        {{ form_widget(form.name, {'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Ex: Ressources Humaines',
+                            'required': true
+                        }}) }}
+                        <div class="form-help">
+                            Le nom complet du département tel qu'il apparaîtra dans l'application
+                        </div>
+                        {{ form_errors(form.name) }}
+                    </div>
+
+                    <!-- Code du département -->
+                    <div class="mb-4">
+                        {{ form_label(form.code, 'Code du département', {'label_attr': {'class': 'form-label required-field'}}) }}
+                        {{ form_widget(form.code, {'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Ex: RH',
+                            'maxlength': 10,
+                            'style': 'text-transform: uppercase;',
+                            'required': true
+                        }}) }}
+                        <div class="form-help">
+                            Code court et unique du département (maximum 10 caractères)
+                        </div>
+                        {{ form_errors(form.code) }}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.description, {'attr': {
+                            'class': 'form-control',
+                            'rows': 4,
+                            'placeholder': 'Description détaillée du département et de ses responsabilités...'
+                        }}) }}
+                        <div class="form-help">
+                            Description optionnelle du rôle et des responsabilités du département
+                        </div>
+                        {{ form_errors(form.description) }}
+                    </div>
+
+                    <!-- Chef de département -->
+                    <div class="mb-4">
+                        {{ form_label(form.manager, 'Chef de département', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.manager, {'attr': {
+                            'class': 'form-select'
+                        }}) }}
+                        <div class="form-help">
+                            Sélectionnez le responsable qui dirigera ce département (optionnel)
+                        </div>
+                        {{ form_errors(form.manager) }}
+                    </div>
+
+                    <!-- Statut actif -->
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            {{ form_widget(form.isActive, {'attr': {
+                                'class': 'form-check-input',
+                                'role': 'switch'
+                            }}) }}
+                            {{ form_label(form.isActive, 'Département actif', {'label_attr': {'class': 'form-check-label'}}) }}
+                        </div>
+                        <div class="form-help">
+                            Un département inactif ne sera pas visible aux employés
+                        </div>
+                        {{ form_errors(form.isActive) }}
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="d-flex justify-content-between align-items-center mt-5">
+                        <a href="{{ path('admin_department_index') }}" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Annuler
+                        </a>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Créer le département
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Aide contextuelle -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1000;">
+    <div class="toast" id="helpToast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="fas fa-question-circle text-primary me-2"></i>
+            <strong class="me-auto">Aide</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            Besoin d'aide ? Les champs marqués d'un astérisque (*) sont obligatoires.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-génération du code basé sur le nom
+            const nameField = document.querySelector('#department_name');
+            const codeField = document.querySelector('#department_code');
+            
+            if (nameField && codeField) {
+                nameField.addEventListener('input', function() {
+                    if (codeField.value === '') {
+                        let code = this.value
+                            .toUpperCase()
+                            .replace(/[^A-Z0-9\s]/g, '')
+                            .split(' ')
+                            .map(word => word.charAt(0))
+                            .join('')
+                            .substring(0, 10);
+                        codeField.value = code;
+                    }
+                });
+            }
+            
+            // Validation en temps réel
+            const form = document.querySelector('.needs-validation');
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                });
+            }
+            
+            // Toast d'aide
+            const helpToast = new bootstrap.Toast(document.getElementById('helpToast'));
+            setTimeout(() => {
+                helpToast.show();
+            }, 2000);
+            
+            // Animation de focus sur les champs
+            const formControls = document.querySelectorAll('.form-control, .form-select');
+            formControls.forEach(control => {
+                control.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'scale(1.02)';
+                    this.parentElement.style.transition = 'transform 0.2s ease';
+                });
+                
+                control.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+{% endblock %}

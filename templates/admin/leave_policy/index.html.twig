@@ -1,0 +1,620 @@
+{# templates/admin/leave_policy/index.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Politiques de congés - Administration{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .policy-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border-left: 4px solid #007bff;
+        }
+        .policy-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .policy-card.inactive {
+            border-left-color: #6c757d;
+            opacity: 0.7;
+        }
+        .badge-custom {
+            font-size: 0.75em;
+            padding: 0.25em 0.5em;
+        }
+        .table-responsive {
+            border-radius: 0.375rem;
+            overflow: hidden;
+        }
+        .btn-action {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        .search-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        .stats-card {
+            background: linear-gradient(45deg, #f8f9fa, #ffffff);
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+        }
+        .filter-chip {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            margin: 0.25rem;
+            background-color: #e9ecef;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-chip.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    {# En-tête de la page #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-file-contract text-primary me-2"></i>
+                Politiques de congés
+            </h1>
+            <p class="text-muted mb-0">Gestion des règles et politiques de congés par département</p>
+        </div>
+        <div>
+            <a href="{{ path('admin_leave_policy_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                Nouvelle politique
+            </a>
+        </div>
+    </div>
+
+    {# Section de recherche et filtres #}
+    <div class="search-section p-4 mb-4">
+        <form method="GET" action="{{ path('admin_leave_policy_index') }}" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Rechercher</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" 
+                           class="form-control border-start-0" 
+                           id="search" 
+                           name="search" 
+                           placeholder="Nom de la politique..."
+                           value="{{ app.request.query.get('search') }}">
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <label for="department" class="form-label">Département</label>
+                <select class="form-select" id="department" name="department">
+                    <option value="">Tous les départements</option>
+                    {% for department in departments %}
+                        <option value="{{ department.id }}" 
+                                {% if app.request.query.get('department') == department.id|lower|default('') %}selected{% endif %}>
+                            {{ department.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label for="leave_type" class="form-label">Type de congé</label>
+                <select class="form-select" id="leave_type" name="leave_type">
+                    <option value="">Tous les types</option>
+                    {% for leaveType in leaveTypes %}
+                        <option value="{{ leaveType.id }}" 
+                                {% if app.request.query.get('leave_type') == leaveType.id|lower|default('') %}selected{% endif %}>
+                            {{ leaveType.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label for="status" class="form-label">Statut</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Tous</option>
+                    <option value="active" {% if app.request.query.get('status') == 'active' %}selected{% endif %}>
+                        Actives
+                    </option>
+                    <option value="inactive" {% if app.request.query.get('status') == 'inactive' %}selected{% endif %}>
+                        Inactives
+                    </option>
+                </select>
+            </div>
+            
+            <div class="col-12">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-light">
+                        <i class="fas fa-filter"></i>
+                        Filtrer
+                    </button>
+                    <a href="{{ path('admin_leave_policy_index') }}" class="btn btn-outline-light">
+                        <i class="fas fa-times"></i>
+                        Réinitialiser
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {# Statistiques rapides #}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="text-primary mb-2">
+                        <i class="fas fa-file-contract fa-2x"></i>
+                    </div>
+                    <h4 class="mb-0">{{ leavePolicies|length }}</h4>
+                    <small class="text-muted">Total des politiques</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="text-success mb-2">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                    <h4 class="mb-0">{{ activePoliciesCount ?? 0 }}</h4>
+                    <small class="text-muted">Politiques actives</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="text-warning mb-2">
+                        <i class="fas fa-building fa-2x"></i>
+                    </div>
+                    <h4 class="mb-0">{{ departments|length }}</h4>
+                    <small class="text-muted">Départements couverts</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="text-info mb-2">
+                        <i class="fas fa-calendar-alt fa-2x"></i>
+                    </div>
+                    <h4 class="mb-0">{{ leaveTypes|length }}</h4>
+                    <small class="text-muted">Types de congés</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Messages flash #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'success' ? 'success' : (label == 'error' ? 'danger' : label) }} alert-dismissible fade show" role="alert">
+                <i class="fas fa-{{ label == 'success' ? 'check-circle' : (label == 'error' ? 'exclamation-triangle' : 'info-circle') }} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# Filtres rapides #}
+    {% if app.request.query.count > 0 %}
+        <div class="mb-3">
+            <small class="text-muted">Filtres actifs :</small>
+            {% if app.request.query.get('search') %}
+                <span class="filter-chip">
+                    <i class="fas fa-search"></i>
+                    "{{ app.request.query.get('search') }}"
+                    <a href="{{ path('admin_leave_policy_index', app.request.query.all|merge({'search': null})) }}" class="ms-1 text-decoration-none">×</a>
+                </span>
+            {% endif %}
+            {% if app.request.query.get('department') %}
+                <span class="filter-chip">
+                    <i class="fas fa-building"></i>
+                    Département
+                    <a href="{{ path('admin_leave_policy_index', app.request.query.all|merge({'department': null})) }}" class="ms-1 text-decoration-none">×</a>
+                </span>
+            {% endif %}
+            {% if app.request.query.get('status') %}
+                <span class="filter-chip">
+                    <i class="fas fa-toggle-on"></i>
+                    {{ app.request.query.get('status')|title }}
+                    <a href="{{ path('admin_leave_policy_index', app.request.query.all|merge({'status': null})) }}" class="ms-1 text-decoration-none">×</a>
+                </span>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {# Contenu principal #}
+    {% if leavePolicies is empty %}
+        <div class="empty-state">
+            <div class="mb-4">
+                <i class="fas fa-file-contract fa-4x text-muted"></i>
+            </div>
+            <h4>Aucune politique de congé trouvée</h4>
+            <p class="mb-4">
+                {% if app.request.query.count > 0 %}
+                    Aucune politique ne correspond à vos critères de recherche.
+                    <br><a href="{{ path('admin_leave_policy_index') }}">Voir toutes les politiques</a>
+                {% else %}
+                    Commencez par créer votre première politique de congé pour définir les règles de votre organisation.
+                {% endif %}
+            </p>
+            <a href="{{ path('admin_leave_policy_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                Créer la première politique
+            </a>
+        </div>
+    {% else %}
+        {# Vue tableau pour écrans larges #}
+        <div class="d-none d-lg-block">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">
+                                <i class="fas fa-file-contract"></i>
+                                Politique
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-building"></i>
+                                Département
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-calendar-alt"></i>
+                                Type de congé
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-cogs"></i>
+                                Règles
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-toggle-on"></i>
+                                Statut
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-calendar"></i>
+                                Créée le
+                            </th>
+                            <th scope="col" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for policy in leavePolicies %}
+                            <tr>
+                                <td>
+                                    <div>
+                                        <strong class="d-block">{{ policy.name }}</strong>
+                                        {% if policy.description %}
+                                            <small class="text-muted">{{ policy.description|slice(0, 80) }}{% if policy.description|length > 80 %}...{% endif %}</small>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if policy.department %}
+                                        <span class="badge bg-info badge-custom">
+                                            {{ policy.department.name }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">Global</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if policy.leaveType %}
+                                        <span class="badge badge-custom" style="background-color: {{ policy.leaveType.color ?? '#6c757d' }};">
+                                            {{ policy.leaveType.name }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">Tous types</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if policy.rules %}
+                                        {% set rulesCount = policy.rules|json_encode|length %}
+                                        <span class="badge bg-secondary badge-custom">
+                                            {{ rulesCount }} règle{{ rulesCount > 1 ? 's' : '' }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">Aucune règle</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if policy.isActive %}
+                                        <span class="badge bg-success badge-custom">
+                                            <i class="fas fa-check"></i>
+                                            Active
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary badge-custom">
+                                            <i class="fas fa-pause"></i>
+                                            Inactive
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ policy.createdAt|date('d/m/Y') }}
+                                    </small>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ path('admin_leave_policy_show', {'id': policy.id}) }}" 
+                                           class="btn btn-outline-info btn-action"
+                                           title="Voir les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('admin_leave_policy_edit', {'id': policy.id}) }}" 
+                                           class="btn btn-outline-primary btn-action"
+                                           title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-outline-danger btn-action"
+                                                title="Supprimer"
+                                                onclick="confirmDelete('{{ policy.name }}', '{{ path('admin_leave_policy_delete', {'id': policy.id}) }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {# Vue cartes pour écrans mobiles et tablettes #}
+        <div class="d-lg-none">
+            <div class="row">
+                {% for policy in leavePolicies %}
+                    <div class="col-12 mb-3">
+                        <div class="card policy-card {% if not policy.isActive %}inactive{% endif %}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">{{ policy.name }}</h6>
+                                    {% if policy.isActive %}
+                                        <span class="badge bg-success badge-custom">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary badge-custom">Inactive</span>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if policy.description %}
+                                    <p class="card-text text-muted small mb-2">
+                                        {{ policy.description|slice(0, 100) }}{% if policy.description|length > 100 %}...{% endif %}
+                                    </p>
+                                {% endif %}
+                                
+                                <div class="row mb-2">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Département</small>
+                                        {% if policy.department %}
+                                            <span class="badge bg-info badge-custom">{{ policy.department.name }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Global</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Type de congé</small>
+                                        {% if policy.leaveType %}
+                                            <span class="badge badge-custom" style="background-color: {{ policy.leaveType.color ?? '#6c757d' }};">
+                                                {{ policy.leaveType.name }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">Tous types</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i>
+                                        {{ policy.createdAt|date('d/m/Y') }}
+                                    </small>
+                                    
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ path('admin_leave_policy_show', {'id': policy.id}) }}" 
+                                           class="btn btn-outline-info btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('admin_leave_policy_edit', {'id': policy.id}) }}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-outline-danger btn-sm"
+                                                onclick="confirmDelete('{{ policy.name }}', '{{ path('admin_leave_policy_delete', {'id': policy.id}) }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Pagination (si nécessaire) #}
+        {% if pagination is defined and pagination.totalPages > 1 %}
+            <div class="pagination-wrapper">
+                <nav aria-label="Navigation des politiques">
+                    <ul class="pagination">
+                        {% if pagination.currentPage > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('admin_leave_policy_index', app.request.query.all|merge({'page': pagination.currentPage - 1})) }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page in pagination.pages %}
+                            <li class="page-item {{ page == pagination.currentPage ? 'active' : '' }}">
+                                <a class="page-link" href="{{ path('admin_leave_policy_index', app.request.query.all|merge({'page': page})) }}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                        
+                        {% if pagination.currentPage < pagination.totalPages %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('admin_leave_policy_index', app.request.query.all|merge({'page': pagination.currentPage + 1})) }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+{# Modal de confirmation de suppression #}
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer la politique de congé <strong id="policyName"></strong> ?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Cette action est irréversible et pourrait affecter les demandes de congés en cours.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i>
+                    Annuler
+                </button>
+                <form id="deleteForm" method="POST" class="d-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i>
+                        Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Fonction de confirmation de suppression
+        function confirmDelete(policyName, deleteUrl) {
+            document.getElementById('policyName').textContent = policyName;
+            document.getElementById('deleteForm').action = deleteUrl;
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+        
+        // Auto-soumission des filtres
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search');
+            const departmentSelect = document.getElementById('department');
+            const leaveTypeSelect = document.getElementById('leave_type');
+            const statusSelect = document.getElementById('status');
+            
+            let searchTimeout;
+            
+            // Recherche avec délai
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        this.form.submit();
+                    }, 500);
+                });
+            }
+            
+            // Soumission immédiate pour les sélects
+            [departmentSelect, leaveTypeSelect, statusSelect].forEach(select => {
+                if (select) {
+                    select.addEventListener('change', function() {
+                        this.form.submit();
+                    });
+                }
+            });
+            
+            // Animation des cartes au scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animation = 'slideInUp 0.5s ease-out';
+                    }
+                });
+            }, observerOptions);
+            
+            document.querySelectorAll('.policy-card').forEach(card => {
+                observer.observe(card);
+            });
+        });
+        
+        // Raccourcis clavier
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + N pour nouvelle politique
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                window.location.href = '{{ path('admin_leave_policy_new') }}';
+            }
+            
+            // Escape pour fermer les modals
+            if (e.key === 'Escape') {
+                const modals = document.querySelectorAll('.modal.show');
+                modals.forEach(modal => {
+                    bootstrap.Modal.getInstance(modal)?.hide();
+                });
+            }
+        });
+    </script>
+    
+    <style>
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+{% endblock %}

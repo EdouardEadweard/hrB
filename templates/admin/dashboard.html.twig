@@ -1,0 +1,1743 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de Bord - Administration | HR Flow{% endblock %}
+
+
+
+{% block body %}
+
+{# Ou mieux encore, ajoutez cette protection au début de votre template : #}
+{% set total_employees = total_employees|default(0) %}
+{% set total_departments = total_departments|default(0) %}
+{% set total_teams = total_teams|default(0) %}
+{% set pending_leave_count = pending_leave_count|default(0) %}
+{% set leave_status_stats = leave_status_stats|default({
+    'APPROVED': 0,
+    'PENDING': 0,
+    'REJECTED': 0,
+    'total': 0
+}) %}
+{% set monthly_leaves_trends = monthly_leaves_trends|default([]) %}
+{% set advanced_attendance_stats = advanced_attendance_stats|default({
+    'current_month': {'avg_hours': 0, 'total_hours': 0, 'active_employees': 0, 'total_days': 0},
+    'last_month': {'avg_hours': 0, 'total_hours': 0},
+    'variations': {'avg_hours_variation': 0, 'total_hours_variation': 0}
+}) %}
+{% set department_absenteeism_stats = department_absenteeism_stats|default([]) %}
+{% set leave_type_distribution = leave_type_distribution|default([]) %}
+{% set employees_with_pending_requests = employees_with_pending_requests|default([]) %}
+
+<div class="admin-dashboard">
+    <!-- En-tête du dashboard -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <div class="welcome-section">
+                <h1 class="dashboard-title animate__animated animate__fadeInDown">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Tableau de Bord Administrateur
+                </h1>
+                <p class="welcome-text">
+                    <i class="fas fa-calendar-day"></i>
+                    Bienvenue, <strong>{{ app.user.firstName }} {{ app.user.lastName }}</strong> - 
+                    {{ 'now'|date('l d F Y') }}
+                </p>
+            </div>
+            <div class="quick-actions">
+                <a href="{{ path('admin_user_new') }}" class="quick-action-btn">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Nouvel utilisateur</span>
+                </a>
+                <a href="{{ path('admin_department_new') }}" class="quick-action-btn">
+                    <i class="fas fa-building"></i>
+                    <span>Nouveau département</span>
+                </a>
+                <button class="quick-action-btn" id="refreshData">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Actualiser</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cartes de métriques principales -->
+    <div class="metrics-grid">
+        <div class="metric-card total-users animate__animated animate__fadeInUp" style="animation-delay: 0.1s">
+            <div class="metric-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-number" data-target="{{ stats.totalUsers ?? 0 }}">0</div>
+                <div class="metric-label">Utilisateurs Total</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    +{{ stats.newUsersThisMonth ?? 0 }} ce mois
+                </div>
+            </div>
+            <div class="metric-chart">
+                <canvas id="usersChart" width="60" height="40"></canvas>
+            </div>
+        </div>
+
+        <div class="metric-card active-employees animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+            <div class="metric-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-number" data-target="{{ stats.activeEmployees ?? 0 }}">0</div>
+                <div class="metric-label">Employés Actifs</div>
+                <div class="metric-change positive">
+                    <i class="fas fa-percentage"></i>
+                    {{ stats.activePercentage ?? 100 }}% du total
+                </div>
+            </div>
+            <div class="metric-progress">
+                <div class="progress-bar" style="width: {{ stats.activePercentage ?? 100 }}%"></div>
+            </div>
+        </div>
+
+        <div class="metric-card pending-requests animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+            <div class="metric-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-number" data-target="{{ stats.pendingRequests ?? 0 }}">0</div>
+                <div class="metric-label">Demandes en Attente</div>
+                <div class="metric-change {% if (stats.pendingRequests ?? 0) > 10 %}warning{% else %}neutral{% endif %}">
+                    <i class="fas fa-hourglass-half"></i>
+                    À traiter rapidement
+                </div>
+            </div>
+            <div class="metric-action">
+                <a href="{{ path('manager_approval_index') }}" class="btn-sm">
+                    <i class="fas fa-eye"></i> Voir tout
+                </a>
+            </div>
+        </div>
+
+        <div class="metric-card departments animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
+            <div class="metric-icon">
+                <i class="fas fa-sitemap"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-number" data-target="{{ stats.totalDepartments ?? 0 }}">0</div>
+                <div class="metric-label">Départements</div>
+                <div class="metric-change neutral">
+                    <i class="fas fa-building"></i>
+                    {{ stats.avgEmployeesPerDept ?? 0 }} emp./dept.
+                </div>
+            </div>
+            <div class="metric-visual">
+                <div class="department-dots">
+                    {% for i in 1..8 %}
+                    <div class="dot {% if i <= (stats.totalDepartments ?? 0) %}active{% endif %}"></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section graphiques et analyses -->
+    <div class="analytics-section">
+        <div class="analytics-grid">
+            <!-- Graphique des demandes de congés -->
+            <div class="chart-card animate__animated animate__fadeInLeft" style="animation-delay: 0.5s">
+                <div class="chart-header">
+                    <h3>
+                        <i class="fas fa-chart-line"></i>
+                        Évolution des Demandes de Congés
+                    </h3>
+                    <div class="chart-controls">
+                        <select id="leaveChartPeriod" class="form-select-sm">
+                            <option value="6months">6 derniers mois</option>
+                            <option value="year" selected>Cette année</option>
+                            <option value="lastYear">Année dernière</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="leaveRequestsChart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color approved"></span>
+                        <span>Approuvées</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color pending"></span>
+                        <span>En attente</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color rejected"></span>
+                        <span>Refusées</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Répartition par département -->
+            <div class="chart-card animate__animated animate__fadeInRight" style="animation-delay: 0.6s">
+                <div class="chart-header">
+                    <h3>
+                        <i class="fas fa-chart-pie"></i>
+                        Répartition par Département
+                    </h3>
+                    <div class="chart-info">
+                        <i class="fas fa-info-circle" title="Nombre d'employés par département"></i>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="departmentChart"></canvas>
+                </div>
+                <!-- Correction complète pour la section départements : -->
+                <div class="department-stats">
+                    {% set departmentColors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'] %}
+                    
+                    {% if stats is defined and stats.departmentBreakdown is defined %}
+                        {% for department in stats.departmentBreakdown %}
+                        <div class="dept-stat">
+                            <div class="dept-color" style="background-color: {{ departmentColors[loop.index0 % departmentColors|length] }}"></div>
+                            <div class="dept-info">
+                                <span class="dept-name">{{ department.name }}</span>
+                                <span class="dept-count">{{ department.count }} employés</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section activités récentes et alertes -->
+    <div class="activity-section">
+        <div class="activity-grid">
+            <!-- Activités récentes -->
+            <div class="activity-card animate__animated animate__fadeInUp" style="animation-delay: 0.7s">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-history"></i>
+                        Activités Récentes
+                    </h3>
+                    <a href="#" class="view-all-link">Voir tout</a>
+                </div>
+                <!-- Correction pour les activités récentes : -->
+                <div class="activity-list">
+                    {% if recentActivities is defined and recentActivities|length > 0 %}
+                        {% for activity in recentActivities %}
+                        <div class="activity-item">
+                            <div class="activity-icon {{ activity.type }}">
+                                <i class="fas {{ activity.icon }}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-text">{{ activity.message }}</div>
+                                <div class="activity-time">
+                                    <i class="fas fa-clock"></i>
+                                    {{ activity.createdAt|date('d/m/Y à H:i') }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Aucune activité récente</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Alertes et notifications -->
+            <div class="alerts-card animate__animated animate__fadeInUp" style="animation-delay: 0.8s">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-bell"></i>
+                        Alertes & Notifications
+                    </h3>
+                    <div class="notification-badge">{{ alerts is defined ? alerts|length : 0 }}</div>
+                </div>
+                <div class="alerts-list">
+                {% if alerts is defined and alerts|length > 0 %}
+                    {% for alert in alerts %}
+                    <div class="alert-item {{ alert.priority }}">
+                        <div class="alert-icon">
+                            <i class="fas {{ alert.icon }}"></i>
+                        </div>
+                        <div class="alert-content">
+                            <div class="alert-title">{{ alert.title }}</div>
+                            <div class="alert-description">{{ alert.message }}</div>
+                            <div class="alert-actions">
+                                <button class="btn-action primary">Traiter</button>
+                                <button class="btn-action secondary">Reporter</button>
+                            </div>
+                        </div>
+                        <button class="alert-dismiss">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <p>Aucune alerte en cours</p>
+                </div>
+                {% endif %}
+            </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Section liens rapides -->
+    <div class="quick-links-section animate__animated animate__fadeInUp" style="animation-delay: 0.9s">
+        <h3>
+            <i class="fas fa-rocket"></i>
+            Accès Rapides
+        </h3>
+        <div class="quick-links-grid">
+            <a href="{{ path('admin_user_index') }}" class="quick-link-card users">
+                <div class="link-icon">
+                    <i class="fas fa-users-cog"></i>
+                </div>
+                <div class="link-content">
+                    <h4>Gestion Utilisateurs</h4>
+                    <p>Créer, modifier et gérer les comptes utilisateurs</p>
+                </div>
+                <div class="link-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="{{ path('admin_department_index') }}" class="quick-link-card departments">
+                <div class="link-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="link-content">
+                    <h4>Départements</h4>
+                    <p>Organisation et structure des départements</p>
+                </div>
+                <div class="link-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="{{ path('admin_leave_type_index') }}" class="quick-link-card leave-types">
+                <div class="link-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="link-content">
+                    <h4>Types de Congés</h4>
+                    <p>Configuration des différents types de congés</p>
+                </div>
+                <div class="link-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="{{ path('admin_team_index') }}" class="quick-link-card teams">
+                <div class="link-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="link-content">
+                    <h4>Équipes</h4>
+                    <p>Gestion des équipes et affectations</p>
+                </div>
+                <div class="link-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="{{ path('admin_holiday_index') }}" class="quick-link-card holidays">
+                <div class="link-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="link-content">
+                    <h4>Jours Fériés</h4>
+                    <p>Configuration du calendrier des jours fériés</p>
+                </div>
+                <div class="link-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="{{ path('admin_leave_policy_index') }}" class="quick-link-card policies">
+                <div class="link-icon">
+                    <i class="fas fa-scroll"></i>
+                </div>
+                <div class="link-content">
+                    <h4>Politiques RH</h4>
+                    <p>Règles et politiques de gestion des congés</p>
+                </div>
+                <div class="link-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Chargement des données...</p>
+    </div>
+</div>
+
+
+<!-- Section Analytics Dashboard Admin -->
+<div class="row mb-4">
+    <!-- Statistiques générales -->
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Employés Actifs</h5>
+                <h2>{{ total_employees|default(0) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Départements</h5>
+                <h2>{{ total_departments }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Équipes</h5>
+                <h2>{{ total_teams }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">Demandes en Attente</h5>
+                <h2>{{ pending_leave_count }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques des congés par statut -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Répartition des Demandes de Congés</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-success">{{ leave_status_stats.APPROVED }}</h4>
+                        <p>Approuvées</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-warning">{{ leave_status_stats.PENDING }}</h4>
+                        <p>En Attente</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-danger">{{ leave_status_stats.REJECTED }}</h4>
+                        <p>Rejetées</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-secondary">{{ leave_status_stats.total }}</h4>
+                        <p>Total</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tendances mensuelles -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Tendances des Demandes (6 derniers mois)</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Mois</th>
+                                <th>Total</th>
+                                <th>Approuvées</th>
+                                <th>Rejetées</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trend in monthly_leaves_trends %}
+                            <tr>
+                                <td>{{ trend.month }}</td>
+                                <td><span class="badge badge-primary">{{ trend.total_requests }}</span></td>
+                                <td><span class="badge badge-success">{{ trend.approved_requests }}</span></td>
+                                <td><span class="badge badge-danger">{{ trend.rejected_requests }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques de présence -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Statistiques de Présence</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <strong>Mois en cours:</strong>
+                    </div>
+                    <div class="col-6">
+                        <strong>Mois précédent:</strong>
+                    </div>
+                </div>
+                
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <small>Heures moyennes:</small><br>
+                        <span class="h6">{{ advanced_attendance_stats.current_month.avg_hours }}h</span>
+                        {% if advanced_attendance_stats.variations.avg_hours_variation > 0 %}
+                            <small class="text-success">↗ {{ advanced_attendance_stats.variations.avg_hours_variation }}%</small>
+                        {% elseif advanced_attendance_stats.variations.avg_hours_variation < 0 %}
+                            <small class="text-danger">↘ {{ advanced_attendance_stats.variations.avg_hours_variation|abs }}%</small>
+                        {% endif %}
+                    </div>
+                    <div class="col-6">
+                        <small>Heures moyennes:</small><br>
+                        <span class="h6">{{ advanced_attendance_stats.last_month.avg_hours }}h</span>
+                    </div>
+                </div>
+                
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <small>Total heures:</small><br>
+                        <span class="h6">{{ advanced_attendance_stats.current_month.total_hours }}h</span>
+                    </div>
+                    <div class="col-6">
+                        <small>Total heures:</small><br>
+                        <span class="h6">{{ advanced_attendance_stats.last_month.total_hours }}h</span>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <small>Employés actifs:</small><br>
+                        <span class="h6">{{ advanced_attendance_stats.current_month.active_employees }}</span>
+                    </div>
+                    <div class="col-6">
+                        <small>Jours travaillés:</small><br>
+                        <span class="h6">{{ advanced_attendance_stats.current_month.total_days }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Absentéisme par département -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Top 5 - Absentéisme par Département</h5>
+            </div>
+            <div class="card-body">
+                {% for dept in department_absenteeism_stats %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <strong>{{ dept.department_name }}</strong><br>
+                        <small>{{ dept.total_employees }} employés - {{ dept.approved_leaves }} congés</small>
+                    </div>
+                    <div>
+                        <span class="badge {% if dept.absenteeism_rate > 20 %}badge-danger{% elseif dept.absenteeism_rate > 10 %}badge-warning{% else %}badge-success{% endif %}">
+                            {{ dept.absenteeism_rate }}%
+                        </span>
+                    </div>
+                </div>
+                <div class="progress mb-3" style="height: 5px;">
+                    <div class="progress-bar {% if dept.absenteeism_rate > 20 %}bg-danger{% elseif dept.absenteeism_rate > 10 %}bg-warning{% else %}bg-success{% endif %}" 
+                         style="width: {{ dept.absenteeism_rate }}%"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Répartition par type de congé -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Répartition par Type de Congé</h5>
+            </div>
+            <div class="card-body">
+                {% for type in leave_type_distribution %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <strong>{{ type.type }}</strong>
+                    </div>
+                    <div>
+                        <span class="badge badge-info">{{ type.count }} ({{ type.percentage }}%)</span>
+                    </div>
+                </div>
+                <div class="progress mb-3" style="height: 5px;">
+                    <div class="progress-bar bg-info" style="width: {{ type.percentage }}%"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Employés avec demandes en attente -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Employés avec le Plus de Demandes en Attente</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Employé</th>
+                                <th>Email</th>
+                                <th>Demandes en Attente</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in employees_with_pending_requests %}
+                            <tr>
+                                <td>{{ employee.firstName }} {{ employee.lastName }}</td>
+                                <td>{{ employee.email }}</td>
+                                <td><span class="badge badge-warning">{{ employee.pending_count }}</span></td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">Voir demandes</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des compteurs
+    function animateCounters() {
+        const counters = document.querySelectorAll('.metric-number[data-target]');
+        
+        counters.forEach(counter => {
+            const target = parseInt(counter.getAttribute('data-target'));
+            const duration = 2000;
+            const step = target / (duration / 16);
+            let current = 0;
+            
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                counter.textContent = Math.floor(current);
+            }, 16);
+        });
+    }
+    
+    // Initialisation des graphiques
+    function initCharts() {
+        // Graphique des demandes de congés
+        const leaveCtx = document.getElementById('leaveRequestsChart');
+        if (leaveCtx) {
+            new Chart(leaveCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
+                    datasets: [{
+                        label: 'Approuvées',
+                        data: [12, 19, 15, 25, 22, 30, 28, 35, 32, 38, 42, 45],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'En attente',
+                        data: [5, 8, 12, 6, 9, 15, 11, 8, 14, 10, 16, 12],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Refusées',
+                        data: [2, 3, 1, 4, 2, 3, 5, 2, 4, 3, 1, 2],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Graphique des départements
+        const deptCtx = document.getElementById('departmentChart');
+        if (deptCtx) {
+            new Chart(deptCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Développement', 'Marketing', 'RH', 'Finance', 'Commercial'],
+                    datasets: [{
+                        data: [35, 25, 15, 15, 10],
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#f5576c',
+                            '#4facfe'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+    }
+    
+    // Gestion du rafraîchissement
+    const refreshBtn = document.getElementById('refreshData');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            icon.classList.add('fa-spin');
+            
+            // Simulation du rechargement
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+                showNotification('Données actualisées avec succès', 'success');
+            }, 1500);
+        });
+    }
+    
+    // Gestion des alertes
+    const alertDismissButtons = document.querySelectorAll('.alert-dismiss');
+    alertDismissButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const alertItem = this.closest('.alert-item');
+            alertItem.style.transform = 'translateX(100%)';
+            alertItem.style.opacity = '0';
+            setTimeout(() => {
+                alertItem.remove();
+            }, 300);
+        });
+    });
+    
+    // Fonction de notification
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            <span>${message}</span>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+    
+    // Initialisation
+    setTimeout(animateCounters, 500);
+    setTimeout(initCharts, 1000);
+    
+    // Intersection Observer pour les animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.chart-card, .activity-card, .alerts-card').forEach(el => {
+        observer.observe(el);
+    });
+});
+    </script>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+/* Styles pour le dashboard administrateur */
+.admin-dashboard {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    padding: 0;
+}
+
+.dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.dashboard-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-title i {
+    margin-right: 0.75rem;
+    color: #fbbf24;
+}
+
+.welcome-text {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+    font-size: 1.1rem;
+}
+
+.welcome-text i {
+    margin-right: 0.5rem;
+}
+
+.quick-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.quick-action-btn {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.quick-action-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    color: white;
+}
+
+/* Grille des métriques */
+.metrics-grid {
+    max-width: 1200px;
+    margin: 0 auto 2rem auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.metric-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.metric-card.total-users::before { background: linear-gradient(90deg, #4facfe, #00f2fe); }
+.metric-card.active-employees::before { background: linear-gradient(90deg, #43e97b, #38f9d7); }
+.metric-card.pending-requests::before { background: linear-gradient(90deg, #fa709a, #fee140); }
+.metric-card.departments::before { background: linear-gradient(90deg, #a8edea, #fed6e3); }
+
+.metric-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.total-users .metric-icon { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.active-employees .metric-icon { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.pending-requests .metric-icon { background: linear-gradient(135deg, #fa709a, #fee140); }
+.departments .metric-icon { background: linear-gradient(135deg, #a8edea, #fed6e3); color: #666; }
+
+.metric-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.metric-change {
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.metric-change.positive { color: #10b981; }
+.metric-change.warning { color: #f59e0b; }
+.metric-change.neutral { color: #6b7280; }
+
+.metric-progress {
+    margin-top: 0.75rem;
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #43e97b, #38f9d7);
+    border-radius: 2px;
+    transition: width 2s ease;
+}
+
+.metric-action {
+    margin-top: 0.75rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    background: #f3f4f6;
+    color: #374151;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-sm:hover {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+.department-dots {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.dot.active {
+    background: linear-gradient(135deg, #a8edea, #fed6e3);
+}
+
+/* Section analytics */
+.analytics-section {
+    max-width: 1200px;
+    margin: 0 auto 2rem auto;
+    padding: 0 1rem;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.chart-header h3 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.chart-header h3 i {
+    margin-right: 0.5rem;
+    color: #667eea;
+}
+
+.form-select-sm {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: white;
+}
+
+.chart-container {
+    height: 300px;
+    position: relative;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.legend-color.approved { background: #10b981; }
+.legend-color.pending { background: #f59e0b; }
+.legend-color.rejected { background: #ef4444; }
+
+.department-stats {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.dept-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    background: #f9fafb;
+}
+
+.dept-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.dept-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.dept-name {
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.dept-count {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* Section activités */
+.activity-section {
+    max-width: 1200px;
+    margin: 0 auto 2rem auto;
+    padding: 0 1rem;
+}
+
+.activity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.activity-card, .alerts-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    height: fit-content;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.card-header h3 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.card-header h3 i {
+    margin-right: 0.5rem;
+    color: #667eea;
+}
+
+.view-all-link {
+    color: #667eea;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.view-all-link:hover {
+    color: #5a67d8;
+}
+
+.notification-badge {
+    background: #ef4444;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.activity-list, .alerts-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.activity-icon.user { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.activity-icon.leave { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.activity-icon.system { background: rgba(102, 126, 234, 0.1); color: #667eea; }
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-text {
+    color: #374151;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+
+.activity-time {
+    color: #6b7280;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.alert-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    position: relative;
+    transition: all 0.3s ease;
+    border-left: 4px solid;
+}
+
+.alert-item.high {
+    background: #fef2f2;
+    border-left-color: #ef4444;
+}
+
+.alert-item.medium {
+    background: #fffbeb;
+    border-left-color: #f59e0b;
+}
+
+.alert-item.low {
+    background: #f0f9ff;
+    border-left-color: #3b82f6;
+}
+
+.alert-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.alert-item.high .alert-icon {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.alert-item.medium .alert-icon {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.alert-item.low .alert-icon {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.alert-description {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+}
+
+.alert-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-action.primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-action.primary:hover {
+    background: #5a67d8;
+}
+
+.btn-action.secondary {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-action.secondary:hover {
+    background: #e5e7eb;
+}
+
+.alert-dismiss {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.alert-dismiss:hover {
+    color: #6b7280;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #9ca3af;
+}
+
+.empty-state i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Section liens rapides */
+.quick-links-section {
+    max-width: 1200px;
+    margin: 0 auto 2rem auto;
+    padding: 0 1rem;
+}
+
+.quick-links-section h3 {
+    color: #1f2937;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.quick-links-section h3 i {
+    margin-right: 0.5rem;
+    color: #667eea;
+}
+
+.quick-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.quick-link-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.quick-link-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.quick-link-card.users::before { background: linear-gradient(90deg, #4facfe, #00f2fe); }
+.quick-link-card.departments::before { background: linear-gradient(90deg, #43e97b, #38f9d7); }
+.quick-link-card.leave-types::before { background: linear-gradient(90deg, #fa709a, #fee140); }
+.quick-link-card.teams::before { background: linear-gradient(90deg, #667eea, #764ba2); }
+.quick-link-card.holidays::before { background: linear-gradient(90deg, #f093fb, #f5576c); }
+.quick-link-card.policies::before { background: linear-gradient(90deg, #a8edea, #fed6e3); }
+
+.quick-link-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    color: inherit;
+}
+
+.link-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+.quick-link-card.users .link-icon { background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; }
+.quick-link-card.departments .link-icon { background: linear-gradient(135deg, #43e97b, #38f9d7); color: white; }
+.quick-link-card.leave-types .link-icon { background: linear-gradient(135deg, #fa709a, #fee140); color: white; }
+.quick-link-card.teams .link-icon { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+.quick-link-card.holidays .link-icon { background: linear-gradient(135deg, #f093fb, #f5576c); color: white; }
+.quick-link-card.policies .link-icon { background: linear-gradient(135deg, #a8edea, #fed6e3); color: #666; }
+
+.link-content {
+    flex: 1;
+}
+
+.link-content h4 {
+    margin: 0 0 0.5rem 0;
+    color: #1f2937;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.link-content p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.link-arrow {
+    color: #9ca3af;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.quick-link-card:hover .link-arrow {
+    color: #667eea;
+    transform: translateX(4px);
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    text-align: center;
+    color: #667eea;
+}
+
+.loading-spinner i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+/* Notifications */
+.notification {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    border-left: 4px solid #10b981;
+    min-width: 300px;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    border-left-color: #10b981;
+    color: #065f46;
+}
+
+.notification.success i {
+    color: #10b981;
+}
+
+.notification.error {
+    border-left-color: #ef4444;
+    color: #991b1b;
+}
+
+.notification.error i {
+    color: #ef4444;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .activity-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        padding: 1.5rem 1rem;
+    }
+    
+    .dashboard-title {
+        font-size: 1.8rem;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .quick-links-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+    
+    .chart-legend {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .metric-card {
+        padding: 1rem;
+    }
+    
+    .chart-card, .activity-card, .alerts-card {
+        padding: 1rem;
+    }
+    
+    .quick-link-card {
+        padding: 1rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .link-arrow {
+        display: none;
+    }
+    
+    .alert-actions {
+        flex-direction: column;
+    }
+    
+    .notification {
+        right: 1rem;
+        left: 1rem;
+        min-width: auto;
+    }
+}
+
+/* Animations personnalisées */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Scrollbar personnalisée */
+.activity-list::-webkit-scrollbar,
+.alerts-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.activity-list::-webkit-scrollbar-track,
+.alerts-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.activity-list::-webkit-scrollbar-thumb,
+.alerts-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.activity-list::-webkit-scrollbar-thumb:hover,
+.alerts-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* États de focus pour l'accessibilité */
+.quick-action-btn:focus,
+.btn-action:focus,
+.alert-dismiss:focus,
+.quick-link-card:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* Effet de hover sur les cartes métriques */
+.metric-card:hover .metric-icon {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+/* Animation des graphiques */
+.chart-container canvas {
+    opacity: 0;
+    animation: fadeInChart 1s ease forwards 1s;
+}
+
+@keyframes fadeInChart {
+    to {
+        opacity: 1;
+    }
+}
+    </style>
+{% endblock %}

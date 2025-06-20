@@ -1,0 +1,793 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord Manager - {{ app.user.firstName }} {{ app.user.lastName }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --warning-gradient: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --info-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --card-hover-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .dashboard-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 2.5rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 30px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .dashboard-header::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 150px;
+            height: 150px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .welcome-text {
+            position: relative;
+            z-index: 2;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .stat-card.success::before {
+            background: var(--success-gradient);
+        }
+
+        .stat-card.warning::before {
+            background: var(--warning-gradient);
+        }
+
+        .stat-card.danger::before {
+            background: var(--danger-gradient);
+        }
+
+        .stat-card.info::before {
+            background: var(--info-gradient);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .stat-card.success .stat-icon {
+            background: var(--success-gradient);
+        }
+
+        .stat-card.warning .stat-icon {
+            background: var(--warning-gradient);
+        }
+
+        .stat-card.danger .stat-icon {
+            background: var(--danger-gradient);
+        }
+
+        .stat-card.info .stat-icon {
+            background: var(--info-gradient);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .stat-change.positive {
+            color: #27ae60;
+        }
+
+        .stat-change.negative {
+            color: #e74c3c;
+        }
+
+        .dashboard-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-section:hover {
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .section-action {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            border: 2px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .section-action:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            text-decoration: none;
+            color: #495057;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .action-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .action-btn i {
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+        }
+
+        .recent-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .recent-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .recent-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .recent-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .recent-content {
+            flex: 1;
+        }
+
+        .recent-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+
+        .recent-meta {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+
+        .recent-time {
+            font-size: 0.8rem;
+            color: #95a5a6;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-gradient);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .team-member:hover {
+            background: #e9ecef;
+            transform: translateX(3px);
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 0.75rem;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.1rem;
+        }
+
+        .member-role {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+
+        .member-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #27ae60;
+        }
+
+        .member-status.offline {
+            background: #95a5a6;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #7f8c8d;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #bdc3c7;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header {
+                padding: 2rem 0;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+
+        .notification-dot {
+            position: relative;
+        }
+
+        .notification-dot::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 10px;
+            height: 10px;
+            background: #e74c3c;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+{# DEBUG - à supprimer après #}
+<!--<div style="background: red; color: white; padding: 10px;">
+    team_members_count: {{ team_members_count is defined ? team_members_count : 'NON DÉFINI' }}<br>
+    pending_requests_count: {{ pending_requests_count is defined ? pending_requests_count : 'NON DÉFINI' }}<br>
+    approved_this_month: {{ approved_this_month is defined ? approved_this_month : 'NON DÉFINI' }}<br>
+    absent_today: {{ absent_today is defined ? absent_today : 'NON DÉFINI' }}
+</div>-->
+
+<div class="dashboard-header">
+    <div class="container">
+        <div class="welcome-text">
+            <h1 class="mb-2">Bonjour, {{ app.user.firstName }} ! 👋</h1>
+            <p class="mb-0">Voici un aperçu de votre équipe et des activités récentes</p>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid py-4">
+    <!-- Statistiques principales -->
+    <div class="stats-grid">
+        <div class="stat-card success">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-number">{{ team_members_count ?? 12 }}</div>
+            <div class="stat-label">Membres d'équipe</div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> +2 ce mois
+            </div>
+        </div>
+
+        <div class="stat-card warning">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-number">{{ pending_requests_count ?? 5 }}</div>
+            <div class="stat-label">Demandes en attente</div>
+            <div class="stat-change negative">
+                <i class="fas fa-exclamation-triangle"></i> Action requise
+            </div>
+        </div>
+
+        <div class="stat-card info">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-number">{{ approved_this_month ?? 18 }}</div>
+            <div class="stat-label">Approuvées ce mois</div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> +3 vs mois dernier
+            </div>
+        </div>
+
+        <div class="stat-card danger">
+            <div class="stat-icon">
+                <i class="fas fa-user-times"></i>
+            </div>
+            <div class="stat-number">{{ absent_today ?? 3 }}</div>
+            <div class="stat-label">Absents aujourd'hui</div>
+            <div class="stat-change">
+                <i class="fas fa-info-circle"></i> Normal
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2 class="section-title">Actions rapides</h2>
+        </div>
+        
+        <div class="quick-actions">
+            <a href="{{ path('manager_approval_index') }}" class="action-btn notification-dot">
+                <i class="fas fa-check-circle"></i>
+                Traiter les demandes
+            </a>
+            
+            <a href="{{ path('manager_team_member_index') }}" class="action-btn">
+                <i class="fas fa-users-cog"></i>
+                Gérer l'équipe
+            </a>
+            
+            <a href="{{ path('manager_report_index') }}" class="action-btn">
+                <i class="fas fa-chart-bar"></i>
+                Voir les rapports
+            </a>
+            
+            <a href="{{ path('manager_team_member_new') }}" class="action-btn">
+                <i class="fas fa-user-plus"></i>
+                Ajouter un membre
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Demandes récentes -->
+        <div class="col-lg-8">
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h2 class="section-title">Demandes récentes</h2>
+                    <a href="{{ path('manager_approval_index') }}" class="section-action">
+                        Voir toutes
+                    </a>
+                </div>
+                
+                {% if recent_requests is defined and recent_requests|length > 0 %}
+                    {% for request in recent_requests %}
+                    <div class="recent-item">
+                        <div class="recent-icon" style="background: 
+                            {% if request.status == 'pending' %}#ffc107
+                            {% elseif request.status == 'approved' %}#28a745
+                            {% else %}#dc3545{% endif %}; color: white;">
+                            <i class="fas fa-{% if request.status == 'pending' %}clock
+                                {% elseif request.status == 'approved' %}check
+                                {% else %}times{% endif %}"></i>
+                        </div>
+                        <div class="recent-content">
+                            <div class="recent-title">
+                                {{ request.employee.firstName }} {{ request.employee.lastName }}
+                            </div>
+                            <div class="recent-meta">
+                                {{ request.leaveType.name }} - 
+                                {{ request.startDate|date('d/m/Y') }} au {{ request.endDate|date('d/m/Y') }}
+                                ({{ request.numberOfDays }} jour{{ request.numberOfDays > 1 ? 's' : '' }})
+                            </div>
+                        </div>
+                        <div class="recent-time">
+                            {{ request.submittedAt|date('d/m à H:i') }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h4>Aucune demande récente</h4>
+                        <p>Les nouvelles demandes de congés apparaîtront ici</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Équipe -->
+        <div class="col-lg-4">
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h2 class="section-title">Mon équipe</h2>
+                    <a href="{{ path('manager_team_member_index') }}" class="section-action">
+                        Gérer
+                    </a>
+                </div>
+                
+                {% if team_members is defined and team_members|length > 0 %}
+                    {% for member in team_members|slice(0, 6) %}
+                    <div class="team-member">
+                        <div class="member-avatar">
+                            {{ member.user.firstName|first|upper }}{{ member.user.lastName|first|upper }}
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">
+                                {{ member.user.firstName }} {{ member.user.lastName }}
+                            </div>
+                            <div class="member-role">{{ member.user.position }}</div>
+                        </div>
+                        <div class="member-status {{ member.isActive ? '' : 'offline' }}"></div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if team_members|length > 6 %}
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            Et {{ team_members|length - 6 }} autre{{ team_members|length - 6 > 1 ? 's' : '' }} membre{{ team_members|length - 6 > 1 ? 's' : '' }}
+                        </small>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h5>Aucun membre</h5>
+                        <p>Commencez par ajouter des membres à votre équipe</p>
+                        <a href="{{ path('manager_team_member_new') }}" class="btn btn-primary btn-sm">
+                            Ajouter un membre
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques avancées -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h2 class="section-title">Utilisation des congés</h2>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Congés payés</span>
+                        <span class="text-muted">68%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 68%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Congés maladie</span>
+                        <span class="text-muted">23%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 23%; background: var(--warning-gradient)"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Formation</span>
+                        <span class="text-muted">12%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 12%; background: var(--info-gradient)"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h2 class="section-title">Prochaines échéances</h2>
+                </div>
+                
+                <div class="recent-item">
+                    <div class="recent-icon" style="background: var(--warning-gradient); color: white;">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="recent-content">
+                        <div class="recent-title">Réunion équipe mensuelle</div>
+                        <div class="recent-meta">Salle de conférence A</div>
+                    </div>
+                    <div class="recent-time">Demain 14h</div>
+                </div>
+                
+                <div class="recent-item">
+                    <div class="recent-icon" style="background: var(--info-gradient); color: white;">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="recent-content">
+                        <div class="recent-title">Rapport mensuel</div>
+                        <div class="recent-meta">À remettre à la DRH</div>
+                    </div>
+                    <div class="recent-time">Dans 3 jours</div>
+                </div>
+                
+                <div class="recent-item">
+                    <div class="recent-icon" style="background: var(--success-gradient); color: white;">
+                        <i class="fas fa-birthday-cake"></i>
+                    </div>
+                    <div class="recent-content">
+                        <div class="recent-title">Anniversaire Marie Dupont</div>
+                        <div class="recent-meta">Marketing</div>
+                    </div>
+                    <div class="recent-time">Vendredi</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation d'entrée pour les cartes statistiques
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 150);
+            });
+
+            // Animation des barres de progression
+            const progressBars = document.querySelectorAll('.progress-fill');
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const progressObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const progressBar = entry.target;
+                        const width = progressBar.style.width;
+                        progressBar.style.width = '0%';
+                        
+                        setTimeout(() => {
+                            progressBar.style.transition = 'width 1.5s ease-out';
+                            progressBar.style.width = width;
+                        }, 300);
+                        
+                        progressObserver.unobserve(progressBar);
+                    }
+                });
+            }, observerOptions);
+
+            progressBars.forEach(bar => {
+                progressObserver.observe(bar);
+            });
+
+            // Animation des nombres dans les statistiques
+            const statNumbers = document.querySelectorAll('.stat-number');
+            statNumbers.forEach(number => {
+                const finalValue = parseInt(number.textContent);
+                if (isNaN(finalValue)) return;
+                
+                let currentValue = 0;
+                const increment = finalValue / 30;
+                const timer = setInterval(() => {
+                    currentValue += increment;
+                    if (currentValue >= finalValue) {
+                        currentValue = finalValue;
+                        clearInterval(timer);
+                    }
+                    number.textContent = Math.floor(currentValue);
+                }, 50);
+            });
+
+            // Mise à jour automatique des heures relatives
+            function updateRelativeTimes() {
+                const timeElements = document.querySelectorAll('.recent-time');
+                timeElements.forEach(element => {
+                    // Cette fonction pourrait être étendue pour calculer des temps relatifs réels
+                    // Ex: "il y a 2 minutes", "il y a 1 heure", etc.
+                });
+            }
+
+            // Actualisation des données toutes les 5 minutes
+            setInterval(() => {
+                // Ici on pourrait faire un appel AJAX pour rafraîchir les données
+                console.log('Actualisation des données du dashboard...');
+                updateRelativeTimes();
+            }, 300000); // 5 minutes
+
+            // Effet de pulsation pour les notifications
+            const notificationDots = document.querySelectorAll('.notification-dot');
+            notificationDots.forEach(dot => {
+                setInterval(() => {
+                    dot.style.animation = 'pulse 1s ease-in-out';
+                    setTimeout(() => {
+                        dot.style.animation = '';
+                    }, 1000);
+                }, 3000);
+            });
+        });
+
+        // Style pour l'animation de pulsation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+{% endblock %}

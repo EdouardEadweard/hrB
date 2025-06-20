@@ -1,0 +1,314 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Politique de congés - {{ leave_policy.name }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <!-- En-tête avec breadcrumb -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('admin_dashboard') }}" class="text-decoration-none">
+                            <i class="fas fa-home me-1"></i>Administration
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ path('admin_leave_policy_index') }}" class="text-decoration-none">
+                            Politiques de congés
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ leave_policy.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- En-tête principal -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2 text-gray-800">
+                        <i class="fas fa-clipboard-list me-2 text-primary"></i>
+                        {{ leave_policy.name }}
+                    </div>
+                    {% if leave_policy.isActive %}
+                        <span class="badge bg-success fs-6">Active</span>
+                    {% else %}
+                        <span class="badge bg-secondary fs-6">Inactive</span>
+                    {% endif %}
+                </div>
+                <div class="btn-group" role="group">
+                    <a href="{{ path('admin_leave_policy_edit', {'id': leave_policy.id}) }}" 
+                       class="btn btn-warning">
+                        <i class="fas fa-edit me-1"></i>Modifier
+                    </a>
+                    <a href="{{ path('admin_leave_policy_index') }}" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="row">
+        <!-- Informations générales -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Informations générales
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Nom de la politique</label>
+                            <p class="fs-5 mb-0">{{ leave_policy.name }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Département</label>
+                            <p class="fs-5 mb-0">
+                                {% if leave_policy.department %}
+                                    <a href="{{ path('admin_department_show', {'id': leave_policy.department.id}) }}" 
+                                       class="text-decoration-none">
+                                        <i class="fas fa-building me-1"></i>
+                                        {{ leave_policy.department.name }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Non défini</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Type de congé</label>
+                            <p class="fs-5 mb-0">
+                                {% if leave_policy.leaveType %}
+                                    <a href="{{ path('admin_leave_type_show', {'id': leave_policy.leaveType.id}) }}" 
+                                       class="text-decoration-none">
+                                        <span class="badge rounded-pill" 
+                                              style="background-color: {{ leave_policy.leaveType.color ?? '#6c757d' }};">
+                                            {{ leave_policy.leaveType.name }}
+                                        </span>
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Non défini</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Statut</label>
+                            <p class="fs-5 mb-0">
+                                {% if leave_policy.isActive %}
+                                    <span class="badge bg-success fs-6">
+                                        <i class="fas fa-check-circle me-1"></i>Active
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary fs-6">
+                                        <i class="fas fa-pause-circle me-1"></i>Inactive
+                                    </span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if leave_policy.description %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-muted">Description</label>
+                            <div class="bg-light p-3 rounded">
+                                <p class="mb-0">{{ leave_policy.description|nl2br }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations complémentaires -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Informations système
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted">ID</label>
+                        <p class="mb-0">
+                            <code>#{{ leave_policy.id }}</code>
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted">Date de création</label>
+                        <p class="mb-0">
+                            <i class="fas fa-clock me-1 text-muted"></i>
+                            {{ leave_policy.createdAt|date('d/m/Y à H:i') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Règles de la politique -->
+    {% if leave_policy.rules %}
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        Règles de la politique
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% set rules = leave_policy.rules|json_encode %}
+                    {% if rules %}
+                        <div class="row">
+                            {% for key, value in rules %}
+                            <div class="col-md-6 mb-3">
+                                <div class="border rounded p-3 bg-light">
+                                    <h6 class="fw-bold text-primary mb-2">
+                                        {{ key|replace({'_': ' '})|title }}
+                                    </h6>
+                                    {% if value is iterable %}
+                                        <ul class="list-unstyled mb-0">
+                                            {% for item in value %}
+                                            <li class="mb-1">
+                                                <i class="fas fa-check text-success me-2"></i>
+                                                {{ item }}
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="mb-0">{{ value }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Aucune règle spécifique n'a été définie pour cette politique.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Actions supplémentaires -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools me-2"></i>
+                        Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ path('admin_leave_policy_edit', {'id': leave_policy.id}) }}" 
+                               class="btn btn-warning w-100">
+                                <i class="fas fa-edit me-2"></i>
+                                Modifier cette politique
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ path('admin_leave_policy_new') }}" 
+                               class="btn btn-success w-100">
+                                <i class="fas fa-plus me-2"></i>
+                                Nouvelle politique
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <button type="button" 
+                                    class="btn btn-danger w-100" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#deleteModal">
+                                <i class="fas fa-trash me-2"></i>
+                                Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">
+                    Êtes-vous sûr de vouloir supprimer la politique de congés 
+                    <strong>"{{ leave_policy.name }}"</strong> ?
+                </p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Attention :</strong> Cette action est irréversible et pourrait affecter 
+                    les demandes de congés existantes associées à cette politique.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Annuler
+                </button>
+                <form method="post" action="{{ path('admin_leave_policy_delete', {'id': leave_policy.id}) }}" class="d-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ leave_policy.id) }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes au chargement
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    // Tooltip pour les badges
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

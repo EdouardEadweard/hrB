@@ -1,0 +1,525 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Présences - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .attendance-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .filters-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .attendance-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead th {
+            background: #f8fafc;
+            border: none;
+            font-weight: 600;
+            color: #374151;
+            padding: 1rem;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-present {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-absent {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-late {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-partial {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .time-badge {
+            background: #f3f4f6;
+            padding: 0.3rem 0.6rem;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            color: #374151;
+        }
+        
+        .btn-action {
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-view {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .btn-view:hover {
+            background-color: #2563eb;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .btn-edit {
+            background-color: #f59e0b;
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background-color: #d97706;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            padding: 0.5rem 0.75rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1.2rem;
+            font-weight: 500;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        }
+        
+        .pagination .page-link {
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            color: #374151;
+            padding: 0.5rem 0.75rem;
+            margin: 0 2px;
+        }
+        
+        .pagination .page-link:hover {
+            background-color: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .attendance-header {
+                padding: 1.5rem;
+                text-align: center;
+            }
+            
+            .table-responsive {
+                border-radius: 12px;
+            }
+            
+            .stats-row {
+                text-align: center;
+            }
+            
+            .stats-card {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <!-- En-tête avec statistiques -->
+    <div class="attendance-header">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="h2 mb-1">
+                    <i class="fas fa-clock me-2"></i>
+                    Mes Présences
+                </h1>
+                <p class="mb-0 opacity-75">Consultez et gérez vos horaires de travail</p>
+            </div>
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <a href="{{ path('app_employee_attendance_new') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus me-2"></i>
+                    Pointer
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="row stats-row mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">{{ attendances|length }}</div>
+                <div class="stats-label">Jours ce mois</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">
+                    {% set totalHours = 0 %}
+                    {% for attendance in attendances %}
+                        {% set totalHours = totalHours + attendance.workedHours %}
+                    {% endfor %}
+                    {{ totalHours }}h
+                </div>
+                <div class="stats-label">Heures travaillées</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">
+                    {% set presentDays = 0 %}
+                    {% for attendance in attendances %}
+                        {% if attendance.status == 'present' %}
+                            {% set presentDays = presentDays + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ presentDays }}
+                </div>
+                <div class="stats-label">Jours présents</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stats-card">
+                <div class="stats-number">
+                    {% set lateDays = 0 %}
+                    {% for attendance in attendances %}
+                        {% if attendance.status == 'late' %}
+                            {% set lateDays = lateDays + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ lateDays }}
+                </div>
+                <div class="stats-label">Retards</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters-card">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="month" class="form-label fw-semibold">Mois</label>
+                <select name="month" id="month" class="form-select">
+                    <option value="">Tous les mois</option>
+                     {% for i in 1..12 %}
+                        <option value="{{ i }}" {% if app.request.query.get('month') == i ~ '' %}selected{% endif %}>
+                            {{ ('2024-' ~ i ~ '-01')|date('F') }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="year" class="form-label fw-semibold">Année</label>
+                <select name="year" id="year" class="form-select">
+                    <option value="">Toutes les années</option>
+                    {% for year in 2023..2025 %}
+                        <option value="{{ year }}" {% if app.request.query.get('year') == year ~ '' %}selected{% endif %}>
+                            {{ year }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label fw-semibold">Statut</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="present" {% if app.request.query.get('status') == 'present' %}selected{% endif %}>Présent</option>
+                    <option value="absent" {% if app.request.query.get('status') == 'absent' %}selected{% endif %}>Absent</option>
+                    <option value="late" {% if app.request.query.get('status') == 'late' %}selected{% endif %}>En retard</option>
+                    <option value="partial" {% if app.request.query.get('status') == 'partial' %}selected{% endif %}>Partiel</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-2"></i>
+                    Filtrer
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table des présences -->
+    <div class="attendance-table">
+        {% if attendances is empty %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h3>Aucune présence enregistrée</h3>
+                <p class="mb-3">Vous n'avez pas encore de présences enregistrées pour cette période.</p>
+                <a href="{{ path('app_employee_attendance_new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Enregistrer ma première présence
+                </a>
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Arrivée</th>
+                            <th>Départ</th>
+                            <th>Heures</th>
+                            <th>Statut</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attendance in attendances %}
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">
+                                        {{ attendance.workDate|date('d/m/Y') }}
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ attendance.workDate|date('l') }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if attendance.checkIn %}
+                                        <span class="time-badge">
+                                            {{ attendance.checkIn|date('H:i') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if attendance.checkOut %}
+                                        <span class="time-badge">
+                                            {{ attendance.checkOut|date('H:i') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">En cours...</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="fw-semibold">
+                                        {{ attendance.workedHours }}h
+                                    </span>
+                                </td>
+                                <td>
+                                    {% set statusClass = 'status-present' %}
+                                    {% set statusText = 'Présent' %}
+                                    {% if attendance.status == 'absent' %}
+                                        {% set statusClass = 'status-absent' %}
+                                        {% set statusText = 'Absent' %}
+                                    {% elseif attendance.status == 'late' %}
+                                        {% set statusClass = 'status-late' %}
+                                        {% set statusText = 'Retard' %}
+                                    {% elseif attendance.status == 'partial' %}
+                                        {% set statusClass = 'status-partial' %}
+                                        {% set statusText = 'Partiel' %}
+                                    {% endif %}
+                                    
+                                    <span class="status-badge {{ statusClass }}">
+                                        {{ statusText }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if attendance.notes %}
+                                        <span class="text-truncate d-inline-block" style="max-width: 150px;" 
+                                              title="{{ attendance.notes }}">
+                                            {{ attendance.notes }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ path('employee_attendance_show', {'id': attendance.id}) }}" 
+                                           class="btn-action btn-view" title="Voir les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if attendance.workDate|date('Y-m-d') == 'now'|date('Y-m-d') %}
+                                            <a href="{{ path('employee_attendance_edit', {'id': attendance.id}) }}" 
+                                               class="btn-action btn-edit" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination (si nécessaire) -->
+            {% if attendances|length > 20 %}
+                <div class="d-flex justify-content-center mt-4 mb-3">
+                    <nav aria-label="Navigation des pages">
+                        <ul class="pagination">
+                            <li class="page-item">
+                                <a class="page-link" href="#" aria-label="Précédent">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item active">
+                                <a class="page-link" href="#">1</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">2</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">3</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#" aria-label="Suivant">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Animation d'entrée pour les cartes de statistiques
+        document.addEventListener('DOMContentLoaded', function() {
+            const statsCards = document.querySelectorAll('.stats-card');
+            statsCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+            
+            // Auto-submit du formulaire de filtre au changement
+            const filterSelects = document.querySelectorAll('#month, #year, #status');
+            filterSelects.forEach(select => {
+                select.addEventListener('change', function() {
+                    // Optionnel : auto-submit du formulaire
+                    // this.form.submit();
+                });
+            });
+            
+            // Tooltip pour les notes tronquées
+            const truncatedTexts = document.querySelectorAll('.text-truncate');
+            truncatedTexts.forEach(text => {
+                if (text.scrollWidth > text.clientWidth) {
+                    text.style.cursor = 'help';
+                }
+            });
+        });
+    </script>
+{% endblock %}

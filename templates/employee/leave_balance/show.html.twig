@@ -1,0 +1,362 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon solde de congés - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .balance-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+        
+        .balance-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .balance-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .balance-content {
+            padding: 25px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-item.remaining {
+            border-left-color: #28a745;
+        }
+        
+        .stat-item.used {
+            border-left-color: #ffc107;
+        }
+        
+        .stat-item.total {
+            border-left-color: #17a2b8;
+        }
+        
+        .progress-section {
+            margin: 30px 0;
+        }
+        
+        .progress-bar-custom {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-weight: bold;
+            font-size: 0.85rem;
+            z-index: 1;
+        }
+        
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .info-value {
+            color: #6c757d;
+        }
+        
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .alert-custom {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .balance-content {
+                padding: 20px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <!-- En-tête de page -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    Mon solde de congés
+                </h1>
+                <a href="{{ path('employee_leave_balance_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Retour à la liste
+                </a>
+            </div>
+
+            <!-- Alerte si peu de congés restants -->
+            {% if leave_balance.remainingDays <= 5 and leave_balance.remainingDays > 0 %}
+                <div class="alert-custom alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Attention :</strong> Il ne vous reste que {{ leave_balance.remainingDays }} jour(s) de congés pour cette année.
+                </div>
+            {% elseif leave_balance.remainingDays <= 0 %}
+                <div class="alert-custom alert-warning">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Quota épuisé :</strong> Vous avez utilisé tous vos jours de congés pour cette année.
+                </div>
+            {% endif %}
+
+            <!-- Carte principale du solde -->
+            <div class="balance-card">
+                <div class="balance-header">
+                    <h2 class="mb-1">{{ leave_balance.leaveType.name }}</h2>
+                    <p class="mb-0 opacity-75">Année {{ leave_balance.year }}</p>
+                </div>
+                
+                <div class="balance-content">
+                    <!-- Statistiques principales -->
+                    <div class="stats-grid">
+                        <div class="stat-item total">
+                            <div class="stat-number">{{ leave_balance.totalDays }}</div>
+                            <div class="stat-label">Jours alloués</div>
+                        </div>
+                        
+                        <div class="stat-item used">
+                            <div class="stat-number">{{ leave_balance.usedDays }}</div>
+                            <div class="stat-label">Jours utilisés</div>
+                        </div>
+                        
+                        <div class="stat-item remaining">
+                            <div class="stat-number">{{ leave_balance.remainingDays }}</div>
+                            <div class="stat-label">Jours restants</div>
+                        </div>
+                    </div>
+
+                    <!-- Barre de progression -->
+                    <div class="progress-section">
+                        <h5 class="mb-3">Utilisation des congés</h5>
+                        <div class="progress-bar-custom">
+                            {% set progressPercent = leave_balance.totalDays > 0 ? (leave_balance.usedDays / leave_balance.totalDays * 100) : 0 %}
+                            <div class="progress-fill" style="width: {{ progressPercent }}%">
+                                <span class="progress-text">{{ progressPercent|number_format(1) }}% utilisé</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations détaillées -->
+                    <div class="info-section">
+                        <h5 class="mb-3">Détails du solde</h5>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Type de congé :</span>
+                            <span class="info-value">
+                                <span class="badge" style="background-color: {{ leave_balance.leaveType.color ?? '#007bff' }}; color: white;">
+                                    {{ leave_balance.leaveType.name }}
+                                </span>
+                            </span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Code du type :</span>
+                            <span class="info-value">{{ leave_balance.leaveType.code }}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Employé :</span>
+                            <span class="info-value">{{ leave_balance.employee.firstName }} {{ leave_balance.employee.lastName }}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Département :</span>
+                            <span class="info-value">{{ leave_balance.employee.department.name }}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Année de référence :</span>
+                            <span class="info-value">{{ leave_balance.year }}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Dernière mise à jour :</span>
+                            <span class="info-value">
+                                {{ leave_balance.lastUpdated ? leave_balance.lastUpdated|date('d/m/Y à H:i') : 'Non défini' }}
+                            </span>
+                        </div>
+                        
+                        {% if leave_balance.leaveType.description %}
+                            <div class="info-row">
+                                <span class="info-label">Description :</span>
+                                <span class="info-value">{{ leave_balance.leaveType.description }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="info-row">
+                            <span class="info-label">Congé payé :</span>
+                            <span class="info-value">
+                                {% if leave_balance.leaveType.isPaid %}
+                                    <span class="badge bg-success">Oui</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Non</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Approbation requise :</span>
+                            <span class="info-value">
+                                {% if leave_balance.leaveType.requiresApproval %}
+                                    <span class="badge bg-warning">Oui</span>
+                                {% else %}
+                                    <span class="badge bg-info">Non</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="text-center mt-4">
+                        {% if leave_balance.remainingDays > 0 %}
+                            <a href="{{ path('employee_leave_request_new') }}" class="btn btn-custom me-2">
+                                <i class="fas fa-plus me-1"></i>
+                                Faire une demande de congé
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{{ path('employee_leave_request_index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-list me-1"></i>
+                            Mes demandes de congés
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Information complémentaire -->
+            {% if leave_balance.leaveType.maxDaysPerYear %}
+                <div class="alert-custom alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Information :</strong> 
+                    Le maximum autorisé pour ce type de congé est de {{ leave_balance.leaveType.maxDaysPerYear }} jours par an.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Animation de la barre de progression au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressFill = document.querySelector('.progress-fill');
+            if (progressFill) {
+                const targetWidth = progressFill.style.width;
+                progressFill.style.width = '0%';
+                setTimeout(() => {
+                    progressFill.style.width = targetWidth;
+                }, 500);
+            }
+        });
+    </script>
+{% endblock %}

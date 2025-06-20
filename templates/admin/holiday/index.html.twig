@@ -1,0 +1,571 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Jours Fériés - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .holiday-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid #e9ecef;
+        }
+        .holiday-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .holiday-card.recurring {
+            border-left-color: #28a745;
+        }
+        .holiday-card.one-time {
+            border-left-color: #007bff;
+        }
+        .holiday-card.inactive {
+            border-left-color: #dc3545;
+            opacity: 0.7;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+        }
+        .badge-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .badge-inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .badge-recurring {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .badge-one-time {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        .search-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .stats-card {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        .stats-card:hover {
+            transform: translateY(-1px);
+        }
+        .holiday-actions {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .holiday-card:hover .holiday-actions {
+            opacity: 1;
+        }
+        .filter-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 1.5rem;
+        }
+        .filter-tab {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: none;
+            color: #6c757d;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .filter-tab.active {
+            color: #495057;
+            border-bottom-color: #007bff;
+        }
+        .holiday-date {
+            font-weight: 600;
+            color: #495057;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        .loading-spinner {
+            display: none;
+        }
+        .table-responsive {
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4 py-3">
+    <!-- En-tête avec titre et statistiques -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h1 class="h3 mb-1 text-gray-800">
+                        <i class="fas fa-calendar-day text-primary me-2"></i>
+                        Gestion des Jours Fériés
+                    </h1>
+                    <p class="text-muted mb-0">Administration des jours de fermeture et événements spéciaux</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ path('admin_holiday_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>
+                        Nouveau Jour Férié
+                    </a>
+                    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
+                        <i class="fas fa-file-import me-1"></i>
+                        Importer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-calendar-check text-success fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="small text-muted">Total Actifs</div>
+                        <div class="h5 mb-0">{{ holidays|filter(h => h.isActive)|length }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-redo text-info fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="small text-muted">Récurrents</div>
+                        <div class="h5 mb-0">{{ holidays|filter(h => h.isRecurring)|length }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-calendar-times text-warning fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="small text-muted">Cette Année</div>
+                        <div class="h5 mb-0">{{ holidays|filter(h => h.date|date('Y') == 'now'|date('Y'))|length }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clock text-primary fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="small text-muted">Prochains</div>
+                        <div class="h5 mb-0">{{ holidays|filter(h => h.date > date())|length }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche et filtres -->
+    <div class="search-container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" 
+                           class="form-control border-start-0 ps-0" 
+                           id="searchInput"
+                           placeholder="Rechercher par nom, description ou date..."
+                           autocomplete="off">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" id="yearFilter">
+                    <option value="">Toutes les années</option>
+                    {% for year in range(date().format('Y')|number_format(0, '', '') - 2, date().format('Y')|number_format(0, '', '') + 3) %}
+                        <option value="{{ year }}" {% if year == date().format('Y')|number_format(0, '', '') %}selected{% endif %}>
+                            {{ year }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres par onglets -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">
+            Tous ({{ holidays|length }})
+        </button>
+        <button class="filter-tab" data-filter="active">
+            Actifs ({{ holidays|filter(h => h.isActive)|length }})
+        </button>
+        <button class="filter-tab" data-filter="recurring">
+            Récurrents ({{ holidays|filter(h => h.isRecurring)|length }})
+        </button>
+        <button class="filter-tab" data-filter="upcoming">
+            À venir ({{ holidays|filter(h => h.date > date())|length }})
+        </button>
+    </div>
+
+    <!-- Liste des jours fériés -->
+    <div class="row" id="holidaysContainer">
+        {% if holidays is empty %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">Aucun jour férié configuré</h4>
+                    <p class="text-muted mb-4">Commencez par ajouter des jours fériés pour votre organisation</p>
+                    <a href="{{ path('admin_holiday_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>
+                        Créer le premier jour férié
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            {% for holiday in holidays %}
+                <div class="col-md-6 col-lg-4 mb-3 holiday-item" 
+                     data-name="{{ holiday.name|lower }}"
+                     data-description="{{ holiday.description|lower }}"
+                     data-date="{{ holiday.date|date('Y-m-d') }}"
+                     data-year="{{ holiday.date|date('Y') }}"
+                     data-active="{{ holiday.isActive ? 'true' : 'false' }}"
+                     data-recurring="{{ holiday.isRecurring ? 'true' : 'false' }}"
+                     data-upcoming="{{ holiday.date > date() ? 'true' : 'false' }}">
+                    
+                    <div class="card holiday-card h-100 {% if holiday.isRecurring %}recurring{% else %}one-time{% endif %} {% if not holiday.isActive %}inactive{% endif %}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-1">{{ holiday.name }}</h5>
+                                    <div class="holiday-date mb-2">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        {{ holiday.date|date('d/m/Y') }}
+                                        <small class="text-muted">({{ holiday.date|date('l')|capitalize }})</small>
+                                    </div>
+                                </div>
+                                <div class="holiday-actions">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ path('admin_holiday_show', {'id': holiday.id}) }}">
+                                                    <i class="fas fa-eye me-1"></i> Voir
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ path('admin_holiday_edit', {'id': holiday.id}) }}">
+                                                    <i class="fas fa-edit me-1"></i> Modifier
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <button class="dropdown-item text-danger" onclick="deleteHoliday({{ holiday.id }}, '{{ holiday.name }}')">
+                                                    <i class="fas fa-trash me-1"></i> Supprimer
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if holiday.description %}
+                                <p class="card-text text-muted small mb-3">{{ holiday.description }}</p>
+                            {% endif %}
+
+                            <div class="d-flex flex-wrap gap-1">
+                                <span class="badge status-badge {% if holiday.isActive %}badge-active{% else %}badge-inactive{% endif %}">
+                                    {% if holiday.isActive %}
+                                        <i class="fas fa-check-circle me-1"></i>Actif
+                                    {% else %}
+                                        <i class="fas fa-times-circle me-1"></i>Inactif
+                                    {% endif %}
+                                </span>
+                                
+                                <span class="badge status-badge {% if holiday.isRecurring %}badge-recurring{% else %}badge-one-time{% endif %}">
+                                    {% if holiday.isRecurring %}
+                                        <i class="fas fa-redo me-1"></i>Récurrent
+                                    {% else %}
+                                        <i class="fas fa-calendar-day me-1"></i>Ponctuel
+                                    {% endif %}
+                                </span>
+
+                                {% if holiday.date > date() %}
+                                    {% set daysUntil = (holiday.date.timestamp - date().timestamp) // (24*3600) %}
+                                    <span class="badge badge-primary status-badge">
+                                        <i class="fas fa-clock me-1"></i>Dans {{ daysUntil }} jour{% if daysUntil > 1 %}s{% endif %}
+                                    </span>
+                                {% elseif holiday.date < date() %}
+                                    <span class="badge bg-secondary status-badge">
+                                        <i class="fas fa-history me-1"></i>Passé
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning status-badge">
+                                        <i class="fas fa-star me-1"></i>Aujourd'hui
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                <i class="fas fa-plus-circle me-1"></i>
+                                Créé le {{ holiday.createdAt|date('d/m/Y à H:i') }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Message quand aucun résultat -->
+    <div id="noResults" class="col-12 d-none">
+        <div class="empty-state">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">Aucun résultat trouvé</h4>
+            <p class="text-muted">Essayez de modifier vos critères de recherche</p>
+        </div>
+    </div>
+
+    <!-- Indicateur de chargement -->
+    <div class="text-center loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer le jour férié <strong id="holidayNameToDelete"></strong> ?</p>
+                <p class="text-muted small">Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'import -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Importer des jours fériés</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">Importez les jours fériés officiels pour une année donnée.</p>
+                <form>
+                    <div class="mb-3">
+                        <label for="importYear" class="form-label">Année</label>
+                        <select class="form-select" id="importYear">
+                            {% for year in range(date().format('Y')|number_format(0, '', ''), date().format('Y')|number_format(0, '', '') + 3) %}
+                                <option value="{{ year }}">{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="importCountry" class="form-label">Pays</label>
+                        <select class="form-select" id="importCountry">
+                            <option value="FR">France</option>
+                            <option value="BJ">Bénin</option>
+                            <option value="SN">Sénégal</option>
+                            <option value="CI">Côte d'Ivoire</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="fas fa-download me-1"></i>Importer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const yearFilter = document.getElementById('yearFilter');
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            const holidayItems = document.querySelectorAll('.holiday-item');
+            const noResults = document.getElementById('noResults');
+            const holidaysContainer = document.getElementById('holidaysContainer');
+
+            let currentFilter = 'all';
+
+            // Fonction de filtrage
+            function filterHolidays() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedYear = yearFilter.value;
+                let visibleCount = 0;
+
+                holidayItems.forEach(item => {
+                    const name = item.dataset.name;
+                    const description = item.dataset.description;
+                    const date = item.dataset.date;
+                    const year = item.dataset.year;
+                    const isActive = item.dataset.active === 'true';
+                    const isRecurring = item.dataset.recurring === 'true';
+                    const isUpcoming = item.dataset.upcoming === 'true';
+
+                    // Vérifier les filtres de recherche
+                    const matchesSearch = !searchTerm || 
+                                        name.includes(searchTerm) || 
+                                        description.includes(searchTerm) ||
+                                        date.includes(searchTerm);
+                    
+                    const matchesYear = !selectedYear || year === selectedYear;
+
+                    // Vérifier le filtre par onglet
+                    let matchesTab = true;
+                    switch(currentFilter) {
+                        case 'active':
+                            matchesTab = isActive;
+                            break;
+                        case 'recurring':
+                            matchesTab = isRecurring;
+                            break;
+                        case 'upcoming':
+                            matchesTab = isUpcoming;
+                            break;
+                        default:
+                            matchesTab = true;
+                    }
+
+                    const shouldShow = matchesSearch && matchesYear && matchesTab;
+                    
+                    if (shouldShow) {
+                        item.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                // Afficher le message "aucun résultat" si nécessaire
+                if (visibleCount === 0 && holidayItems.length > 0) {
+                    noResults.classList.remove('d-none');
+                } else {
+                    noResults.classList.add('d-none');
+                }
+            }
+
+            // Événements de recherche
+            searchInput.addEventListener('input', filterHolidays);
+            yearFilter.addEventListener('change', filterHolidays);
+
+            // Gestion des onglets de filtre
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Mettre à jour l'onglet actif
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Mettre à jour le filtre actuel
+                    currentFilter = this.dataset.filter;
+                    
+                    // Appliquer le filtre
+                    filterHolidays();
+                });
+            });
+
+            // Animation d'apparition des cartes
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '0';
+                        entry.target.style.transform = 'translateY(20px)';
+                        entry.target.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                        
+                        setTimeout(() => {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        }, 100);
+                        
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            holidayItems.forEach(item => {
+                observer.observe(item);
+            });
+        });
+
+        // Fonction de suppression
+        function deleteHoliday(id, name) {
+            document.getElementById('holidayNameToDelete').textContent = name;
+            document.getElementById('deleteForm').action = `/admin/holiday/${id}/delete`;
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+
+        // Feedback visuel pour les actions
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.btn-primary')) {
+                const btn = e.target.closest('.btn-primary');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Chargement...';
+                btn.disabled = true;
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 1000);
+            }
+        });
+    </script>
+{% endblock %}

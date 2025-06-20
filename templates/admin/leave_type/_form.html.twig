@@ -1,0 +1,616 @@
+{# templates/admin/leave_type/_form.html.twig #}
+
+{# Styles spécifiques au formulaire #}
+<style>
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #667eea;
+    }
+    
+    .section-title {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #34495e;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .required-indicator {
+        color: #e74c3c;
+        font-weight: bold;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+        background-color: white;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        outline: none;
+    }
+    
+    .form-control:invalid {
+        border-color: #dc3545;
+    }
+    
+    .form-control:valid {
+        border-color: #28a745;
+    }
+    
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .form-check {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+    
+    .form-check:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+    
+    .form-check-input {
+        width: 1.25em;
+        height: 1.25em;
+        margin-right: 0.75rem;
+        cursor: pointer;
+    }
+    
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+    
+    .form-check-label {
+        font-weight: 500;
+        color: #495057;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .color-picker-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .color-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .color-input {
+        width: 50px;
+        height: 50px;
+        border: 2px solid #dee2e6;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: none;
+        padding: 0;
+    }
+    
+    .color-input:hover {
+        border-color: #667eea;
+        transform: scale(1.05);
+    }
+    
+    .color-preview {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid #dee2e6;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .color-presets {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+    }
+    
+    .color-preset {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid #dee2e6;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .color-preset:hover {
+        transform: scale(1.1);
+        border-color: #667eea;
+    }
+    
+    .input-group {
+        position: relative;
+    }
+    
+    .input-group-text {
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 8px 0 0 8px;
+    }
+    
+    .input-group .form-control {
+        border-radius: 0 8px 8px 0;
+        border-left: none;
+    }
+    
+    .validation-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+    }
+    
+    .invalid-feedback {
+        color: #dc3545;
+    }
+    
+    .valid-feedback {
+        color: #28a745;
+    }
+    
+    .character-counter {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-align: right;
+        margin-top: 0.25rem;
+    }
+    
+    .character-counter.warning {
+        color: #f39c12;
+    }
+    
+    .character-counter.danger {
+        color: #e74c3c;
+    }
+    
+    .form-help {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .form-help-title {
+        font-weight: 600;
+        color: #1976d2;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-help-text {
+        color: #424242;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+        .form-section {
+            padding: 1rem;
+        }
+        
+        .color-picker-group {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .color-presets {
+            justify-content: center;
+        }
+    }
+</style>
+
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'needs-validation', 'id': 'leaveTypeForm'}}) }}
+
+{# Section d'aide #}
+<div class="form-help">
+    <div class="form-help-title">
+        <i class="fas fa-lightbulb"></i> Conseils pour créer un type de congé
+    </div>
+    <div class="form-help-text">
+        Définissez clairement les paramètres de ce type de congé. Le code doit être unique et facilement identifiable. 
+        La couleur choisie apparaîtra dans les calendriers et les rapports.
+    </div>
+</div>
+
+{# Section Informations générales #}
+<div class="form-section">
+    <div class="section-title">
+        <i class="fas fa-info-circle"></i>
+        Informations générales
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(form.name, null, {
+                    'label_attr': {'class': 'form-label'},
+                    'label': 'Nom du type de congé'
+                }) }}
+                <span class="required-indicator">*</span>
+                {{ form_widget(form.name, {
+                    'attr': {
+                        'class': 'form-control',
+                        'placeholder': 'Ex: Congés payés, RTT, Maladie...',
+                        'maxlength': 100,
+                        'data-counter': 'name-counter'
+                    }
+                }) }}
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>
+                    Nom affiché dans l'application
+                </div>
+                <div id="name-counter" class="character-counter">0/100</div>
+                <div class="invalid-feedback">
+                    {% if form.name.vars.errors|length > 0 %}
+                        {{ form.name.vars.errors[0].message }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(form.code, null, {
+                    'label_attr': {'class': 'form-label'},
+                    'label': 'Code du type'
+                }) }}
+                <span class="required-indicator">*</span>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-hashtag"></i>
+                    </span>
+                    {{ form_widget(form.code, {
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'CP, RTT, CM...',
+                            'maxlength': 10,
+                            'style': 'text-transform: uppercase;',
+                            'pattern': '[A-Z0-9]+',
+                            'data-counter': 'code-counter'
+                        }
+                    }) }}
+                </div>
+                <div class="form-text">
+                    <i class="fas fa-key"></i>
+                    Code unique (2-10 caractères, lettres et chiffres uniquement)
+                </div>
+                <div id="code-counter" class="character-counter">0/10</div>
+                <div class="invalid-feedback">
+                    {% if form.code.vars.errors|length > 0 %}
+                        {{ form.code.vars.errors[0].message }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        {{ form_label(form.description, null, {
+            'label_attr': {'class': 'form-label'},
+            'label': 'Description'
+        }) }}
+        {{ form_widget(form.description, {
+            'attr': {
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Description détaillée du type de congé, conditions d\'attribution, etc.',
+                'maxlength': 500,
+                'data-counter': 'description-counter'
+            }
+        }) }}
+        <div class="form-text">
+            <i class="fas fa-align-left"></i>
+            Description détaillée (optionnel)
+        </div>
+        <div id="description-counter" class="character-counter">0/500</div>
+        <div class="invalid-feedback">
+            {% if form.description.vars.errors|length > 0 %}
+                {{ form.description.vars.errors[0].message }}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# Section Paramètres #}
+<div class="form-section">
+    <div class="section-title">
+        <i class="fas fa-cogs"></i>
+        Paramètres du congé
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(form.maxDaysPerYear, null, {
+                    'label_attr': {'class': 'form-label'},
+                    'label': 'Nombre maximum de jours par an'
+                }) }}
+                <span class="required-indicator">*</span>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-calendar-day"></i>
+                    </span>
+                    {{ form_widget(form.maxDaysPerYear, {
+                        'attr': {
+                            'class': 'form-control',
+                            'min': 0,
+                            'max': 365,
+                            'placeholder': '25'
+                        }
+                    }) }}
+                    <span class="input-group-text">jours</span>
+                </div>
+                <div class="form-text">
+                    <i class="fas fa-calculator"></i>
+                    Quota annuel pour ce type de congé (0 = illimité)
+                </div>
+                <div class="invalid-feedback">
+                    {% if form.maxDaysPerYear.vars.errors|length > 0 %}
+                        {{ form.maxDaysPerYear.vars.errors[0].message }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(form.color, null, {
+                    'label_attr': {'class': 'form-label'},
+                    'label': 'Couleur d\'affichage'
+                }) }}
+                <div class="color-picker-group">
+                    <div class="color-input-wrapper">
+                        {{ form_widget(form.color, {
+                            'attr': {
+                                'class': 'color-input',
+                                'type': 'color'
+                            }
+                        }) }}
+                        <div class="color-preview" id="colorPreview"></div>
+                    </div>
+                    <div class="form-text">
+                        <i class="fas fa-palette"></i>
+                        Couleur dans les calendriers
+                    </div>
+                </div>
+                
+                {# Couleurs prédéfinies #}
+                <div class="color-presets">
+                    <div class="color-preset" style="background-color: #3498db;" data-color="#3498db" title="Bleu"></div>
+                    <div class="color-preset" style="background-color: #2ecc71;" data-color="#2ecc71" title="Vert"></div>
+                    <div class="color-preset" style="background-color: #e74c3c;" data-color="#e74c3c" title="Rouge"></div>
+                    <div class="color-preset" style="background-color: #f39c12;" data-color="#f39c12" title="Orange"></div>
+                    <div class="color-preset" style="background-color: #9b59b6;" data-color="#9b59b6" title="Violet"></div>
+                    <div class="color-preset" style="background-color: #1abc9c;" data-color="#1abc9c" title="Turquoise"></div>
+                    <div class="color-preset" style="background-color: #34495e;" data-color="#34495e" title="Gris foncé"></div>
+                    <div class="color-preset" style="background-color: #e67e22;" data-color="#e67e22" title="Carotte"></div>
+                </div>
+                
+                <div class="invalid-feedback">
+                    {% if form.color.vars.errors|length > 0 %}
+                        {{ form.color.vars.errors[0].message }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Section Options #}
+<div class="form-section">
+    <div class="section-title">
+        <i class="fas fa-toggle-on"></i>
+        Options du type de congé
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-check">
+                {{ form_widget(form.requiresApproval, {'attr': {'class': 'form-check-input'}}) }}
+                {{ form_label(form.requiresApproval, null, {
+                    'label_attr': {'class': 'form-check-label'},
+                    'label': 'Approbation requise'
+                }) }}
+                <i class="fas fa-user-check"></i>
+                <div class="form-text">
+                    Les demandes nécessitent l'approbation du manager
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="form-check">
+                {{ form_widget(form.isPaid, {'attr': {'class': 'form-check-input'}}) }}
+                {{ form_label(form.isPaid, null, {
+                    'label_attr': {'class': 'form-check-label'},
+                    'label': 'Congé payé'
+                }) }}
+                <i class="fas fa-euro-sign"></i>
+                <div class="form-text">
+                    Ce type de congé est-il rémunéré ?
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="form-check">
+                {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                {{ form_label(form.isActive, null, {
+                    'label_attr': {'class': 'form-check-label'},
+                    'label': 'Type actif'
+                }) }}
+                <i class="fas fa-power-off"></i>
+                <div class="form-text">
+                    Type de congé disponible pour les demandes
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ form_end(form) }}
+
+{# JavaScript pour les fonctionnalités interactives #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des compteurs de caractères
+    function setupCharacterCounter(inputSelector, counterSelector, maxLength) {
+        const input = document.querySelector(inputSelector);
+        const counter = document.querySelector(counterSelector);
+        
+        if (input && counter) {
+            function updateCounter() {
+                const length = input.value.length;
+                counter.textContent = length + '/' + maxLength;
+                
+                // Changer la couleur selon le pourcentage
+                const percentage = (length / maxLength) * 100;
+                if (percentage >= 90) {
+                    counter.className = 'character-counter danger';
+                } else if (percentage >= 75) {
+                    counter.className = 'character-counter warning';
+                } else {
+                    counter.className = 'character-counter';
+                }
+            }
+            
+            // Initialiser le compteur
+            updateCounter();
+            
+            // Écouter les changements
+            input.addEventListener('input', updateCounter);
+        }
+    }
+    
+    // Initialiser les compteurs
+    setupCharacterCounter('input[name*="[name]"]', '#name-counter', 100);
+    setupCharacterCounter('input[name*="[code]"]', '#code-counter', 10);
+    setupCharacterCounter('textarea[name*="[description]"]', '#description-counter', 500);
+    
+    // Gestion de la couleur
+    const colorInput = document.querySelector('input[type="color"]');
+    const colorPreview = document.getElementById('colorPreview');
+    const colorPresets = document.querySelectorAll('.color-preset');
+    
+    if (colorInput && colorPreview) {
+        function updateColorPreview() {
+            colorPreview.style.backgroundColor = colorInput.value;
+        }
+        
+        // Initialiser la prévisualisation
+        updateColorPreview();
+        
+        // Mettre à jour lors du changement
+        colorInput.addEventListener('input', updateColorPreview);
+        
+        // Gestion des couleurs prédéfinies
+        colorPresets.forEach(preset => {
+            preset.addEventListener('click', function() {
+                const color = this.getAttribute('data-color');
+                colorInput.value = color;
+                updateColorPreview();
+                
+                // Effet visuel de sélection
+                colorPresets.forEach(p => p.style.transform = 'scale(1)');
+                this.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 200);
+            });
+        });
+    }
+    
+    // Auto-formatage du code en majuscules
+    const codeInput = document.querySelector('input[name*="[code]"]');
+    if (codeInput) {
+        codeInput.addEventListener('input', function() {
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+    }
+    
+    // Validation en temps réel
+    const form = document.getElementById('leaveTypeForm');
+    if (form) {
+        const inputs = form.querySelectorAll('input, textarea, select');
+        
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                this.classList.add('was-validated');
+            });
+            
+            input.addEventListener('input', function() {
+                if (this.classList.contains('was-validated')) {
+                    this.classList.remove('was-validated');
+                    setTimeout(() => {
+                        this.classList.add('was-validated');
+                    }, 300);
+                }
+            });
+        });
+    }
+    
+    // Gestion du nombre maximum de jours
+    const maxDaysInput = document.querySelector('input[name*="[maxDaysPerYear]"]');
+    if (maxDaysInput) {
+        maxDaysInput.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            if (value < 0) this.value = 0;
+            if (value > 365) this.value = 365;
+        });
+    }
+    
+    // Amélioration UX : focus sur le premier champ en erreur
+    const firstError = form.querySelector('.is-invalid');
+    if (firstError) {
+        firstError.focus();
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+});
+</script>

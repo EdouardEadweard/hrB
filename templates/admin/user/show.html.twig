@@ -1,0 +1,565 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de l'utilisateur - {{ user.firstName }} {{ user.lastName }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .user-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-right: 1.5rem;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .info-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+        
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .info-content {
+            flex: 1;
+        }
+        
+        .info-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .roles-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .role-badge {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: #495057;
+        }
+        
+        .section-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .breadcrumb-item a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .user-header {
+                text-align: center;
+            }
+            
+            .user-header .d-flex {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .user-avatar {
+                margin: 0 0 1rem 0;
+            }
+            
+            .action-buttons {
+                justify-content: center;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <!-- Fil d'Ariane -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('admin_dashboard') }}">
+                    <i class="fas fa-home"></i> Tableau de bord
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ path('admin_user_index') }}">
+                    <i class="fas fa-users"></i> Utilisateurs
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ user.firstName }} {{ user.lastName }}
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Messages Flash -->
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                <i class="fas fa-{{ label == 'success' ? 'check-circle' : (label == 'error' ? 'exclamation-triangle' : 'info-circle') }}"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- En-tête utilisateur -->
+    <div class="user-header">
+        <div class="d-flex align-items-center">
+            <div class="user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div>
+                <h1 class="mb-2">{{ user.firstName }} {{ user.lastName }}</h1>
+                <p class="mb-1">
+                    <i class="fas fa-briefcase me-2"></i>{{ user.position ?? 'Poste non défini' }}
+                </p>
+                <p class="mb-0">
+                    <i class="fas fa-building me-2"></i>
+                    {% if user.department %}
+                        {{ user.department.name }}
+                    {% else %}
+                        <span class="text-light">Département non assigné</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informations personnelles -->
+        <div class="col-lg-8">
+            <div class="info-card">
+                <h3 class="section-title">
+                    <div class="section-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    Informations personnelles
+                </h3>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Email</div>
+                            <div class="info-value">{{ user.email }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Téléphone</div>
+                            <div class="info-value">{{ user.phone ?? 'Non renseigné' }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Date d'embauche</div>
+                            <div class="info-value">
+                                {% if user.hireDate %}
+                                    {{ user.hireDate|date('d/m/Y') }}
+                                {% else %}
+                                    Non renseignée
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Manager</div>
+                            <div class="info-value">
+                                {% if user.manager %}
+                                    <a href="{{ path('admin_user_show', {id: user.manager.id}) }}" class="text-decoration-none">
+                                        {{ user.manager.firstName }} {{ user.manager.lastName }}
+                                    </a>
+                                {% else %}
+                                    Aucun manager assigné
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations système -->
+            <div class="info-card">
+                <h3 class="section-title">
+                    <div class="section-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    Informations système
+                </h3>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-calendar-plus"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Créé le</div>
+                            <div class="info-value">{{ user.createdAt|date('d/m/Y à H:i') }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Modifié le</div>
+                            <div class="info-value">{{ user.updatedAt|date('d/m/Y à H:i') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations complémentaires -->
+        <div class="col-lg-4">
+            <!-- Statut -->
+            <div class="info-card">
+                <h3 class="section-title">
+                    <div class="section-icon">
+                        <i class="fas fa-toggle-on"></i>
+                    </div>
+                    Statut
+                </h3>
+                
+                <div class="text-center">
+                    {% if user.isActive %}
+                        <span class="status-badge status-active">
+                            <i class="fas fa-check-circle me-1"></i>Actif
+                        </span>
+                    {% else %}
+                        <span class="status-badge status-inactive">
+                            <i class="fas fa-times-circle me-1"></i>Inactif
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Rôles -->
+            <div class="info-card">
+                <h3 class="section-title">
+                    <div class="section-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    Rôles
+                </h3>
+                
+                <div class="roles-container">
+                    {% if user.roles %}
+                        {% for role in user.roles %}
+                            <span class="role-badge">
+                                {% if role == 'ROLE_ADMIN' %}
+                                    <i class="fas fa-crown me-1"></i>Administrateur
+                                {% elseif role == 'ROLE_MANAGER' %}
+                                    <i class="fas fa-users me-1"></i>Manager
+                                {% elseif role == 'ROLE_HR' %}
+                                    <i class="fas fa-heart me-1"></i>RH
+                                {% else %}
+                                    <i class="fas fa-user me-1"></i>{{ role|replace({'ROLE_': ''}) }}
+                                {% endif %}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">Aucun rôle assigné</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Statistiques rapides -->
+            {% if user.leaveRequests is defined %}
+            <div class="info-card">
+                <h3 class="section-title">
+                    <div class="section-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    Statistiques
+                </h3>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Demandes de congés</div>
+                            <div class="info-value">{{ user.leaveRequests|length }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Boutons d'action -->
+    <div class="action-buttons">
+        <a href="{{ path('admin_user_edit', {id: user.id}) }}" class="btn-primary">
+            <i class="fas fa-edit"></i>
+            Modifier
+        </a>
+        
+        <a href="{{ path('admin_user_index') }}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i>
+            Retour à la liste
+        </a>
+        
+        {% if user.isActive %}
+            <form method="post" action="{{ path('admin_user_deactivate', {id: user.id}) }}" style="display: inline-block;" 
+                  onsubmit="return confirm('Êtes-vous sûr de vouloir désactiver cet utilisateur ?')">
+                <input type="hidden" name="_token" value="{{ csrf_token('deactivate' ~ user.id) }}">
+                <button type="submit" class="btn-danger">
+                    <i class="fas fa-user-slash"></i>
+                    Désactiver
+                </button>
+            </form>
+        {% else %}
+            <form method="post" action="{{ path('admin_user_activate', {id: user.id}) }}" style="display: inline-block;">
+                <input type="hidden" name="_token" value="{{ csrf_token('activate' ~ user.id) }}">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-user-check"></i>
+                    Activer
+                </button>
+            </form>
+        {% endif %}
+        
+        <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" style="display: inline-block;" 
+              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cet utilisateur ? Cette action est irréversible.')">
+            <input type="hidden" name="_method" value="DELETE">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+            <button type="submit" class="btn-danger">
+                <i class="fas fa-trash"></i>
+                Supprimer
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Animation d'apparition des cartes
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.info-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+
+        // Confirmation améliorée pour les actions dangereuses
+        function confirmDangerousAction(message, actionType) {
+            return new Promise((resolve) => {
+                const confirmed = confirm(message);
+                if (confirmed && actionType === 'delete') {
+                    const doubleConfirm = confirm('Dernière confirmation : Cette action supprimera définitivement toutes les données associées à cet utilisateur. Continuer ?');
+                    resolve(doubleConfirm);
+                } else {
+                    resolve(confirmed);
+                }
+            });
+        }
+    </script>
+{% endblock %}

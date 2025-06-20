@@ -1,0 +1,727 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rapports et Statistiques - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .reports-header {
+            background: linear-gradient(135deg, #6f42c1, #5a32a3);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+        }
+        
+        .reports-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .reports-header .subtitle {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .filter-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: end;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .filter-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-control:focus {
+            outline: none;
+            border-color: #6f42c1;
+            box-shadow: 0 0 0 3px rgba(111, 66, 193, 0.1);
+        }
+        
+        .filter-btn {
+            padding: 0.75rem 1.5rem;
+            background: #6f42c1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover {
+            background: #5a32a3;
+            transform: translateY(-2px);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+        
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .report-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .report-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .report-header {
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .report-title {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #495057;
+            display: flex;
+            align-items: center;
+        }
+        
+        .report-title .icon {
+            margin-right: 0.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .report-body {
+            padding: 1.5rem;
+        }
+        
+        .report-summary {
+            margin-bottom: 1rem;
+            color: #6c757d;
+        }
+        
+        .report-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .report-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .report-item:last-child {
+            border-bottom: none;
+        }
+        
+        .report-item-label {
+            font-weight: 500;
+        }
+        
+        .report-item-value {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .quick-actions {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .actions-title {
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: #495057;
+            display: flex;
+            align-items: center;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #495057;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background: #6f42c1;
+            border-color: #6f42c1;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .action-btn .icon {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .breadcrumb {
+            background: transparent;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+        }
+        
+        .breadcrumb-item {
+            color: #6c757d;
+        }
+        
+        .breadcrumb-item a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-item.active {
+            color: #6f42c1;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .reports-header h1 {
+                font-size: 2rem;
+            }
+            
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                min-width: auto;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .reports-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Couleurs spécifiques pour les statistiques */
+        .stat-card.leave-requests .stat-number { color: #007bff; }
+        .stat-card.approved .stat-number { color: #28a745; }
+        .stat-card.pending .stat-number { color: #ffc107; }
+        .stat-card.rejected .stat-number { color: #dc3545; }
+        .stat-card.attendance .stat-number { color: #6f42c1; }
+        .stat-card.team-size .stat-number { color: #17a2b8; }
+        
+        /* Barres de progression colorées */
+        .progress-fill.approved { background: #28a745; }
+        .progress-fill.pending { background: #ffc107; }
+        .progress-fill.rejected { background: #dc3545; }
+        .progress-fill.attendance { background: #6f42c1; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('manager_dashboard') }}">Tableau de bord</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Rapports</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="reports-header">
+        <h1>📊 Rapports et Statistiques</h1>
+        <p class="subtitle">Vue d'ensemble des performances de votre équipe</p>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filter-section">
+        <div class="filter-title">
+            <span>🔍 Filtres de recherche</span>
+        </div>
+        <form class="filter-form" method="GET">
+            <div class="filter-group">
+                <label class="filter-label">Période</label>
+                <select name="period" class="filter-control">
+                    <option value="current_month" {{ app.request.get('period') == 'current_month' ? 'selected' : '' }}>Mois actuel</option>
+                    <option value="last_month" {{ app.request.get('period') == 'last_month' ? 'selected' : '' }}>Mois dernier</option>
+                    <option value="current_quarter" {{ app.request.get('period') == 'current_quarter' ? 'selected' : '' }}>Trimestre actuel</option>
+                    <option value="current_year" {{ app.request.get('period') == 'current_year' ? 'selected' : '' }}>Année actuelle</option>
+                    <option value="custom" {{ app.request.get('period') == 'custom' ? 'selected' : '' }}>Personnalisée</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Équipe</label>
+                <select name="team" class="filter-control">
+                    <option value="">Toutes les équipes</option>
+                    {% for team in teams|default([]) %}
+                        <option value="{{ team.id }}" {{ app.request.get('team') == team.id ? 'selected' : '' }}>
+                            {{ team.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Département</label>
+                <select name="department" class="filter-control">
+                    <option value="">Tous les départements</option>
+                    {% for department in departments|default([]) %}
+                        <option value="{{ department.id }}" {{ app.request.get('department') == department.id ? 'selected' : '' }}>
+                            {{ department.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <button type="submit" class="filter-btn">
+                    🔍 Filtrer
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statistiques principales -->
+    <div class="stats-grid">
+        <div class="stat-card leave-requests">
+            <div class="stat-icon">📋</div>
+            <div class="stat-number">{{ stats.totalRequests|default(0) }}</div>
+            <div class="stat-label">Demandes totales</div>
+        </div>
+        
+        <div class="stat-card approved">
+            <div class="stat-icon">✅</div>
+            <div class="stat-number">{{ stats.approvedRequests|default(0) }}</div>
+            <div class="stat-label">Demandes approuvées</div>
+        </div>
+        
+        <div class="stat-card pending">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-number">{{ stats.pendingRequests|default(0) }}</div>
+            <div class="stat-label">En attente</div>
+        </div>
+        
+        <div class="stat-card rejected">
+            <div class="stat-icon">❌</div>
+            <div class="stat-number">{{ stats.rejectedRequests|default(0) }}</div>
+            <div class="stat-label">Demandes rejetées</div>
+        </div>
+        
+        <div class="stat-card attendance">
+            <div class="stat-icon">👥</div>
+            <div class="stat-number">{{ stats.averageAttendance|default(0)|round(1) }}%</div>
+            <div class="stat-label">Taux de présence</div>
+        </div>
+        
+        <div class="stat-card team-size">
+            <div class="stat-icon">🏢</div>
+            <div class="stat-number">{{ stats.teamSize|default(0) }}</div>
+            <div class="stat-label">Membres d'équipe</div>
+        </div>
+    </div>
+
+    <!-- Rapports détaillés -->
+    <div class="reports-grid">
+        <!-- Rapport des congés par type -->
+        <div class="report-card">
+            <div class="report-header">
+                <h3 class="report-title">
+                    <span class="icon">🏖️</span>
+                    Congés par type
+                </h3>
+            </div>
+            <div class="report-body">
+                <p class="report-summary">
+                    Répartition des demandes de congés par type sur la période sélectionnée
+                </p>
+                {% if leavesByType is defined and leavesByType|length > 0 %}
+                    <ul class="report-list">
+                        {% for leaveType in leavesByType %}
+                            <li class="report-item">
+                                <span class="report-item-label">{{ leaveType.name }}</span>
+                                <span class="report-item-value">{{ leaveType.count }} demande(s)</span>
+                            </li>
+                            <div class="progress-bar">
+                                <div class="progress-fill approved" style="width: {{ (leaveType.count / stats.totalRequests * 100)|round }}%"></div>
+                            </div>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="icon">📊</div>
+                        <p>Aucune donnée disponible pour cette période</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Rapport des employés les plus absents -->
+        <div class="report-card">
+            <div class="report-header">
+                <h3 class="report-title">
+                    <span class="icon">👤</span>
+                    Top absences
+                </h3>
+            </div>
+            <div class="report-body">
+                <p class="report-summary">
+                    Employés avec le plus de jours de congés pris
+                </p>
+                {% if topAbsentees is defined and topAbsentees|length > 0 %}
+                    <ul class="report-list">
+                        {% for employee in topAbsentees %}
+                            <li class="report-item">
+                                <span class="report-item-label">
+                                    {{ employee.firstName }} {{ employee.lastName }}
+                                </span>
+                                <span class="report-item-value">{{ employee.totalDays }} jour(s)</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="icon">👥</div>
+                        <p>Aucune donnée d'absence disponible</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Rapport de présence mensuelle -->
+        <div class="report-card">
+            <div class="report-header">
+                <h3 class="report-title">
+                    <span class="icon">📅</span>
+                    Présence mensuelle
+                </h3>
+            </div>
+            <div class="report-body">
+                <p class="report-summary">
+                    Évolution du taux de présence sur les derniers mois
+                </p>
+                {% if monthlyAttendance is defined and monthlyAttendance|length > 0 %}
+                    <ul class="report-list">
+                        {% for month in monthlyAttendance %}
+                            <li class="report-item">
+                                <span class="report-item-label">{{ month.month }}</span>
+                                <span class="report-item-value">{{ month.rate }}%</span>
+                            </li>
+                            <div class="progress-bar">
+                                <div class="progress-fill attendance" style="width: {{ month.rate }}%"></div>
+                            </div>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="icon">📈</div>
+                        <p>Aucune donnée de présence disponible</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Rapport des demandes urgentes -->
+        <div class="report-card">
+            <div class="report-header">
+                <h3 class="report-title">
+                    <span class="icon">🚨</span>
+                    Demandes urgentes
+                </h3>
+            </div>
+            <div class="report-body">
+                <p class="report-summary">
+                    Demandes nécessitant une attention immédiate
+                </p>
+                {% if urgentRequests is defined and urgentRequests|length > 0 %}
+                    <ul class="report-list">
+                        {% for request in urgentRequests %}
+                            <li class="report-item">
+                                <span class="report-item-label">
+                                    {{ request.employee.firstName }} {{ request.employee.lastName }}
+                                    <small>({{ request.leaveType.name }})</small>
+                                </span>
+                                <span class="report-item-value">
+                                    {{ request.startDate|date('d/m') }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="icon">✅</div>
+                        <p>Aucune demande urgente</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="quick-actions">
+        <h3 class="actions-title">
+            <span>⚡ Actions rapides</span>
+        </h3>
+        <div class="actions-grid">
+            <a href="{{ path('manager_approval_index') }}" class="action-btn">
+                <span class="icon">📋</span>
+                Voir les demandes
+            </a>
+            <a href="{{ path('manager_team_member_index') }}" class="action-btn">
+                <span class="icon">👥</span>
+                Gérer l'équipe
+            </a>
+            <a href="{{ path('app_manager_report_show', {'type': 'detailed'}) }}" class="action-btn">
+                <span class="icon">📊</span>
+                Rapport détaillé
+            </a>
+            <a href="#" onclick="exportReport()" class="action-btn">
+                <span class="icon">📄</span>
+                Exporter PDF
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes statistiques
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Animation des barres de progression
+    setTimeout(() => {
+        const progressBars = document.querySelectorAll('.progress-fill');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            bar.style.transition = 'width 1s ease';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 200);
+        });
+    }, 1000);
+    
+    // Gestion des filtres
+    const filterForm = document.querySelector('.filter-form');
+    const periodSelect = filterForm.querySelector('select[name="period"]');
+    
+    periodSelect.addEventListener('change', function() {
+        if (this.value === 'custom') {
+            // Ajouter des champs de date personnalisés
+            const customFields = document.createElement('div');
+            customFields.className = 'filter-group';
+            customFields.innerHTML = `
+                <label class="filter-label">Du</label>
+                <input type="date" name="start_date" class="filter-control" value="${new Date().toISOString().split('T')[0]}">
+            `;
+            this.parentNode.insertAdjacentElement('afterend', customFields);
+            
+            const customFields2 = document.createElement('div');
+            customFields2.className = 'filter-group';
+            customFields2.innerHTML = `
+                <label class="filter-label">Au</label>
+                <input type="date" name="end_date" class="filter-control" value="${new Date().toISOString().split('T')[0]}">
+            `;
+            customFields.insertAdjacentElement('afterend', customFields2);
+        } else {
+            // Supprimer les champs de date personnalisés
+            const customFields = filterForm.querySelectorAll('input[type="date"]');
+            customFields.forEach(field => {
+                field.parentNode.remove();
+            });
+        }
+    });
+    
+    // Actualisation automatique des données
+    setInterval(function() {
+        const lastUpdate = document.createElement('div');
+        lastUpdate.style.position = 'fixed';
+        lastUpdate.style.bottom = '20px';
+        lastUpdate.style.right = '20px';
+        lastUpdate.style.background = '#28a745';
+        lastUpdate.style.color = 'white';
+        lastUpdate.style.padding = '0.5rem 1rem';
+        lastUpdate.style.borderRadius = '5px';
+        lastUpdate.style.fontSize = '0.8rem';
+        lastUpdate.textContent = `Mis à jour: ${new Date().toLocaleTimeString()}`;
+        
+        const existing = document.querySelector('[style*="position: fixed"][style*="bottom: 20px"]');
+        if (existing) existing.remove();
+        
+        document.body.appendChild(lastUpdate);
+        
+        setTimeout(() => {
+            lastUpdate.remove();
+        }, 3000);
+    }, 300000); // Toutes les 5 minutes
+});
+
+function exportReport() {
+    // Simulation d'export PDF
+    const loading = document.createElement('div');
+    loading.style.position = 'fixed';
+    loading.style.top = '50%';
+    loading.style.left = '50%';
+    loading.style.transform = 'translate(-50%, -50%)';
+    loading.style.background = 'rgba(0,0,0,0.8)';
+    loading.style.color = 'white';
+    loading.style.padding = '2rem';
+    loading.style.borderRadius = '10px';
+    loading.style.zIndex = '9999';
+    loading.innerHTML = '📄 Génération du rapport PDF...<br><small>Veuillez patienter</small>';
+    
+    document.body.appendChild(loading);
+    
+    setTimeout(() => {
+        loading.innerHTML = '✅ Rapport généré avec succès !<br><small>Téléchargement en cours...</small>';
+        setTimeout(() => {
+            loading.remove();
+            // Ici, vous pourriez déclencher un vrai téléchargement
+            // window.location.href = '/manager/report/export';
+        }, 1500);
+    }, 2000);
+}
+</script>
+{% endblock %}

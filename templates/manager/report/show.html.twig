@@ -1,0 +1,1198 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ reportData.title ?? 'Rapport' }} - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #06b6d4;
+            --light-bg: #f8fafc;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+
+        .report-container {
+            background: var(--light-bg);
+            min-height: calc(100vh - 80px);
+            padding: 2rem 0;
+        }
+
+        .report-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+        }
+
+        .report-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .report-subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .filters-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-export {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card.success { border-left-color: var(--success-color); }
+        .stat-card.warning { border-left-color: var(--warning-color); }
+        .stat-card.danger { border-left-color: var(--danger-color); }
+        .stat-card.info { border-left-color: var(--info-color); }
+
+        .stat-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            opacity: 0.2;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--secondary-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.05em;
+        }
+
+        .report-content {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .data-table-wrapper {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            gap: 1rem;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .data-table th {
+            background: #f1f5f9;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--secondary-color);
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-info {
+            background: #e0f2fe;
+            color: #0c4a6e;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.5s ease;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 2rem;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--secondary-color);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            opacity: 0.3;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+        }
+
+        .export-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .employee-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 0.75rem;
+        }
+
+        .employee-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-info {
+            background: #e0f2fe;
+            color: #0c4a6e;
+            border-left: 4px solid var(--info-color);
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid var(--warning-color);
+        }
+
+        @media (max-width: 768px) {
+            .report-title {
+                font-size: 1.75rem;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-table {
+                font-size: 0.875rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="report-container">
+    <div class="container">
+        <!-- En-tête du rapport -->
+        <div class="report-header fade-in">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="report-title">
+                            {% if type == 'general' %}
+                                <i class="fas fa-chart-pie"></i>
+                            {% elseif type == 'leave' %}
+                                <i class="fas fa-calendar-times"></i>
+                            {% elseif type == 'attendance' %}
+                                <i class="fas fa-clock"></i>
+                            {% elseif type == 'productivity' %}
+                                <i class="fas fa-chart-line"></i>
+                            {% elseif type == 'department' %}
+                                <i class="fas fa-building"></i>
+                            {% elseif type == 'detailed' %}
+                                <i class="fas fa-file-alt"></i>
+                            {% else %}
+                                <i class="fas fa-chart-bar"></i>
+                            {% endif %}
+                            {{ reportData.title ?? 'Rapport' }}
+                        </h1>
+                        <p class="report-subtitle">
+                            Période : {{ filters.start_date|date('d/m/Y') }} - {{ filters.end_date|date('d/m/Y') }}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="export-actions">
+                            <a href="{{ path('app_manager_report_show', {type: type, start_date: filters.start_date, end_date: filters.end_date, department_id: filters.department_id, team_id: filters.team_id, export_format: 'pdf'}) }}" 
+                               class="btn btn-export">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </a>
+                            <a href="{{ path('app_manager_report_show', {type: type, start_date: filters.start_date, end_date: filters.end_date, department_id: filters.department_id, team_id: filters.team_id, export_format: 'excel'}) }}" 
+                               class="btn btn-export">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section des filtres -->
+        <div class="filters-section fade-in">
+            <form method="GET" id="filtersForm">
+                <input type="hidden" name="type" value="{{ type }}">
+                <div class="filters-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="start_date">
+                            <i class="fas fa-calendar-alt"></i> Date de début
+                        </label>
+                        <input type="date" id="start_date" name="start_date" 
+                               value="{{ filters.start_date }}" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="end_date">
+                            <i class="fas fa-calendar-alt"></i> Date de fin
+                        </label>
+                        <input type="date" id="end_date" name="end_date" 
+                               value="{{ filters.end_date }}" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="department_id">
+                            <i class="fas fa-building"></i> Département
+                        </label>
+                        <select id="department_id" name="department_id" class="form-control">
+                            <option value="">Tous les départements</option>
+                            {% for department in departments %}
+                                <option value="{{ department.id }}" 
+                                        {{ filters.department_id == department.id ? 'selected' : '' }}>
+                                    {{ department.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="team_id">
+                            <i class="fas fa-users"></i> Équipe
+                        </label>
+                        <select id="team_id" name="team_id" class="form-control">
+                            <option value="">Toutes les équipes</option>
+                            {% for team in teams %}
+                                <option value="{{ team.id }}" 
+                                        {{ filters.team_id == team.id ? 'selected' : '' }}>
+                                    {{ team.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    {% if type == 'leave' %}
+                    <div class="form-group">
+                        <label class="form-label" for="status">
+                            <i class="fas fa-filter"></i> Statut
+                        </label>
+                        <select id="status" name="status" class="form-control">
+                            <option value="">Tous les statuts</option>
+                            <option value="pending" {{ filters.status == 'pending' ? 'selected' : '' }}>En attente</option>
+                            <option value="approved" {{ filters.status == 'approved' ? 'selected' : '' }}>Approuvé</option>
+                            <option value="rejected" {{ filters.status == 'rejected' ? 'selected' : '' }}>Rejeté</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Filtrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Statistiques générales -->
+        {% if reportData.summary is defined %}
+        <div class="stats-grid fade-in">
+            {% if reportData.summary.totalEmployees is defined %}
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value">{{ reportData.summary.totalEmployees }}</div>
+                <div class="stat-label">Employés</div>
+            </div>
+            {% endif %}
+
+            {% if reportData.summary.totalLeaveRequests is defined %}
+            <div class="stat-card warning">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <div class="stat-value">{{ reportData.summary.totalLeaveRequests }}</div>
+                <div class="stat-label">Demandes de congés</div>
+            </div>
+            {% endif %}
+
+            {% if reportData.summary.totalAttendanceRecords is defined %}
+            <div class="stat-card success">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-value">{{ reportData.summary.totalAttendanceRecords }}</div>
+                <div class="stat-label">Enregistrements de présence</div>
+            </div>
+            {% endif %}
+
+            {% if reportData.summary.totalWorkedHours is defined %}
+            <div class="stat-card info">
+                <div class="stat-icon">
+                    <i class="fas fa-business-time"></i>
+                </div>
+                <div class="stat-value">{{ reportData.summary.totalWorkedHours|number_format(0, ',', ' ') }}h</div>
+                <div class="stat-label">Heures travaillées</div>
+            </div>
+            {% endif %}
+
+            {% if reportData.summary.averageAttendanceRate is defined %}
+            <div class="stat-card {{ reportData.summary.averageAttendanceRate >= 90 ? 'success' : (reportData.summary.averageAttendanceRate >= 75 ? 'warning' : 'danger') }}">
+                <div class="stat-icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-value">{{ reportData.summary.averageAttendanceRate }}%</div>
+                <div class="stat-label">Taux de présence</div>
+            </div>
+            {% endif %}
+
+            {% if reportData.summary.totalLeaveDays is defined %}
+            <div class="stat-card warning">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="stat-value">{{ reportData.summary.totalLeaveDays }}</div>
+                <div class="stat-label">Jours de congés</div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Contenu spécifique selon le type de rapport -->
+        <div class="report-content">
+            {% if type == 'general' and reportData.employees is defined %}
+                <!-- Rapport général - Liste des employés -->
+                <div class="data-table-wrapper fade-in">
+                    <div class="table-header">
+                        <span><i class="fas fa-users"></i> Détails par employé</span>
+                        <span class="badge badge-info">{{ reportData.employees|length }} employés</span>
+                    </div>
+                    {% if reportData.employees|length > 0 %}
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Employé</th>
+                                <th>Département</th>
+                                <th>Congés</th>
+                                <th>Présences</th>
+                                <th>Heures travaillées</th>
+                                <th>Moyenne/jour</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employeeData in reportData.employees %}
+                            <tr>
+                                <td>
+                                    <div class="employee-info">
+                                        <div class="employee-avatar">
+                                            {{ employeeData.employee.firstName|first }}{{ employeeData.employee.lastName|first }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ employeeData.employee.firstName }} {{ employeeData.employee.lastName }}</strong><br>
+                                            <small class="text-muted">{{ employeeData.employee.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if employeeData.employee.department %}
+                                        <span class="badge badge-info">{{ employeeData.employee.department.name }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Non assigné</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>{{ employeeData.totalLeaveDays }} jours</strong><br>
+                                        <small>
+                                            <span class="badge badge-success">{{ employeeData.approvedLeaves }} approuvés</span>
+                                            {% if employeeData.pendingLeaves > 0 %}
+                                                <span class="badge badge-warning">{{ employeeData.pendingLeaves }} en attente</span>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong>{{ employeeData.attendanceDays }} jours</strong>
+                                </td>
+                                <td>
+                                    <strong>{{ employeeData.totalWorkedHours|number_format(1) }}h</strong>
+                                </td>
+                                <td>
+                                    <span class="badge {{ employeeData.averageWorkingHours >= 7 ? 'badge-success' : (employeeData.averageWorkingHours >= 6 ? 'badge-warning' : 'badge-danger') }}">
+                                        {{ employeeData.averageWorkingHours }}h/j
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ path('manager_report_employee_detail', {id: employeeData.employee.id, start_date: filters.start_date, end_date: filters.end_date}) }}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> Détails
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h3>Aucun employé trouvé</h3>
+                        <p>Aucun employé ne correspond aux critères sélectionnés.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+            {% elseif type == 'leave' %}
+                <!-- Rapport des congés -->
+                {% if reportData.byType is defined and reportData.byType|length > 0 %}
+                <div class="data-table-wrapper fade-in">
+                    <div class="table-header">
+                        <span><i class="fas fa-chart-pie"></i> Répartition par type de congé</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Type de congé</th>
+                                <th>Nombre de demandes</th>
+                                <th>Total jours</th>
+                                <th>Pourcentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for typeName, typeData in reportData.byType %}
+                            <tr>
+                                <td><strong>{{ typeName }}</strong></td>
+                                <td>{{ typeData.count }}</td>
+                                <td>{{ typeData.days }} jours</td>
+                                <td>
+                                    {% set percentage = (typeData.count / reportData.summary.totalRequests * 100)|round(1) %}
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {{ percentage }}%"></div>
+                                    </div>
+                                    {{ percentage }}%
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
+                {% if reportData.byEmployee is defined and reportData.byEmployee|length > 0 %}
+                <div class="data-table-wrapper fade-in">
+                    <div class="table-header">
+                        <span><i class="fas fa-users"></i> Détails par employé</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Employé</th>
+                                <th>Total demandes</th>
+                                <th>Total jours</th>
+                                <th>Approuvées</th>
+                                <th>En attente</th>
+                                <th>Rejetées</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employeeLeave in reportData.byEmployee %}
+                            <tr>
+                                <td>
+                                    <div class="employee-info">
+                                        <div class="employee-avatar">
+                                            {{ employeeLeave.employee.firstName|first }}{{ employeeLeave.employee.lastName|first }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ employeeLeave.employee.firstName }} {{ employeeLeave.employee.lastName }}</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ employeeLeave.requests|length }}</td>
+                                <td><strong>{{ employeeLeave.totalDays }} jours</strong></td>
+                                <td>
+                                    {% if employeeLeave.byStatus.approved is defined %}
+                                        <span class="badge badge-success">{{ employeeLeave.byStatus.approved.count }}</span>
+                                    {% else %}
+                                        <span class="badge badge-success">0</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if employeeLeave.byStatus.pending is defined %}
+                                        <span class="badge badge-warning">{{ employeeLeave.byStatus.pending.count }}</span>
+                                    {% else %}
+                                        <span class="badge badge-warning">0</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if employeeLeave.byStatus.rejected is defined %}
+                                        <span class="badge badge-danger">{{ employeeLeave.byStatus.rejected.count }}</span>
+                                    {% else %}
+                                        <span class="badge badge-danger">0</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
+            {% elseif type == 'attendance' %}
+                <!-- Rapport de présence -->
+                {% if reportData.byEmployee is defined and reportData.byEmployee|length > 0 %}
+                <div class="data-table-wrapper fade-in">
+                    <div class="table-header">
+                        <span><i class="fas fa-clock"></i> Présence par employé</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Employé</th>
+                                <th>Jours présents</th>
+                                <th>Heures totales</th>
+                                <th>Moyenne/jour</th>
+                                <th>Taux présence</th>
+                                <th>Retards</th>
+                                <th>Départs anticipés</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employeeAttendance in reportData.byEmployee %}
+                            <tr>
+                                <tr>
+                                <td>
+                                    <div class="employee-info">
+                                        <div class="employee-avatar">
+                                            {{ employeeAttendance.employee.firstName|first }}{{ employeeAttendance.employee.lastName|first }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ employeeAttendance.employee.firstName }} {{ employeeAttendance.employee.lastName }}</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><strong>{{ employeeAttendance.daysPresent }}</strong></td>
+                                <td>{{ employeeAttendance.totalHours|number_format(1) }}h</td>
+                                <td>
+                                    <span class="badge {{ employeeAttendance.averageHours >= 7 ? 'badge-success' : (employeeAttendance.averageHours >= 6 ? 'badge-warning' : 'badge-danger') }}">
+                                        {{ employeeAttendance.averageHours|number_format(1) }}h
+                                    </span>
+                                </td>
+                                <td>
+                                    {% set attendanceRate = employeeAttendance.attendanceRate %}
+                                    <span class="badge {{ attendanceRate >= 90 ? 'badge-success' : (attendanceRate >= 75 ? 'badge-warning' : 'badge-danger') }}">
+                                        {{ attendanceRate }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if employeeAttendance.lateArrivals > 0 %}
+                                        <span class="badge badge-warning">{{ employeeAttendance.lateArrivals }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if employeeAttendance.earlyDepartures > 0 %}
+                                        <span class="badge badge-danger">{{ employeeAttendance.earlyDepartures }}</span>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
+            {% elseif type == 'productivity' %}
+                <!-- Rapport de productivité -->
+                {% if reportData.byEmployee is defined and reportData.byEmployee|length > 0 %}
+                <div class="data-table-wrapper fade-in">
+                    <div class="table-header">
+                        <span><i class="fas fa-chart-line"></i> Productivité par employé</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Employé</th>
+                                <th>Tâches terminées</th>
+                                <th>Projets actifs</th>
+                                <th>Score productivité</th>
+                                <th>Heures facturables</th>
+                                <th>Efficacité</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employeeProductivity in reportData.byEmployee %}
+                            <tr>
+                                <td>
+                                    <div class="employee-info">
+                                        <div class="employee-avatar">
+                                            {{ employeeProductivity.employee.firstName|first }}{{ employeeProductivity.employee.lastName|first }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ employeeProductivity.employee.firstName }} {{ employeeProductivity.employee.lastName }}</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-success">{{ employeeProductivity.completedTasks }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">{{ employeeProductivity.activeProjects }}</span>
+                                </td>
+                                <td>
+                                    {% set score = employeeProductivity.productivityScore %}
+                                    <span class="badge {{ score >= 80 ? 'badge-success' : (score >= 60 ? 'badge-warning' : 'badge-danger') }}">
+                                        {{ score }}%
+                                    </span>
+                                </td>
+                                <td>{{ employeeProductivity.billableHours|number_format(1) }}h</td>
+                                <td>
+                                    {% set efficiency = employeeProductivity.efficiency %}
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {{ efficiency }}%"></div>
+                                    </div>
+                                    {{ efficiency }}%
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
+            {% elseif type == 'department' %}
+                <!-- Rapport par département -->
+                {% if reportData.byDepartment is defined and reportData.byDepartment|length > 0 %}
+                <div class="data-table-wrapper fade-in">
+                    <div class="table-header">
+                        <span><i class="fas fa-building"></i> Analyse par département</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Département</th>
+                                <th>Employés</th>
+                                <th>Présence moyenne</th>
+                                <th>Congés totaux</th>
+                                <th>Heures travaillées</th>
+                                <th>Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for departmentData in reportData.byDepartment %}
+                            <tr>
+                                <td>
+                                    <strong>{{ departmentData.department.name }}</strong><br>
+                                    <small class="text-muted">{{ departmentData.department.description ?? 'Aucune description' }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">{{ departmentData.totalEmployees }}</span>
+                                </td>
+                                <td>
+                                    {% set avgAttendance = departmentData.averageAttendance %}
+                                    <span class="badge {{ avgAttendance >= 90 ? 'badge-success' : (avgAttendance >= 75 ? 'badge-warning' : 'badge-danger') }}">
+                                        {{ avgAttendance }}%
+                                    </span>
+                                </td>
+                                <td>{{ departmentData.totalLeaveDays }} jours</td>
+                                <td>{{ departmentData.totalWorkedHours|number_format(0, ',', ' ') }}h</td>
+                                <td>
+                                    {% set performance = departmentData.performanceScore %}
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {{ performance }}%"></div>
+                                    </div>
+                                    {{ performance }}%
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
+            {% elseif type == 'detailed' %}
+                <!-- Rapport détaillé -->
+                {% if reportData.detailedRecords is defined and reportData.detailedRecords|length > 0 %}
+                <div class="data-table-wrapper fade-in">
+                    <div class="table-header">
+                        <span><i class="fas fa-file-alt"></i> Enregistrements détaillés</span>
+                        <span class="badge badge-info">{{ reportData.detailedRecords|length }} enregistrements</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Employé</th>
+                                <th>Type</th>
+                                <th>Détails</th>
+                                <th>Statut</th>
+                                <th>Durée</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in reportData.detailedRecords %}
+                            <tr>
+                                <td>{{ record.date|date('d/m/Y') }}</td>
+                                <td>
+                                    <div class="employee-info">
+                                        <div class="employee-avatar">
+                                            {{ record.employee.firstName|first }}{{ record.employee.lastName|first }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ record.employee.firstName }} {{ record.employee.lastName }}</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if record.type == 'attendance' %}
+                                        <span class="badge badge-info">
+                                            <i class="fas fa-clock"></i> Présence
+                                        </span>
+                                    {% elseif record.type == 'leave' %}
+                                        <span class="badge badge-warning">
+                                            <i class="fas fa-calendar-times"></i> Congé
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">{{ record.type|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.type == 'attendance' %}
+                                        Arrivée: {{ record.checkIn|date('H:i') }}<br>
+                                        Départ: {{ record.checkOut ? record.checkOut|date('H:i') : 'En cours' }}
+                                    {% elseif record.type == 'leave' %}
+                                        {{ record.leaveType.name }}<br>
+                                        <small class="text-muted">{{ record.reason|slice(0, 50) }}...</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.status == 'approved' %}
+                                        <span class="badge badge-success">Approuvé</span>
+                                    {% elseif record.status == 'pending' %}
+                                        <span class="badge badge-warning">En attente</span>
+                                    {% elseif record.status == 'rejected' %}
+                                        <span class="badge badge-danger">Rejeté</span>
+                                    {% else %}
+                                        <span class="badge badge-info">{{ record.status|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.duration %}
+                                        {{ record.duration }}h
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            {% endif %}
+
+            <!-- Section des graphiques (si des données de graphique sont disponibles) -->
+            {% if reportData.chartData is defined %}
+            <div class="chart-container fade-in">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-bar"></i> Visualisations
+                </h2>
+                <div id="reportChart" style="height: 400px;"></div>
+            </div>
+            {% endif %}
+
+            <!-- Alertes et recommandations -->
+            {% if reportData.alerts is defined and reportData.alerts|length > 0 %}
+            <div class="fade-in">
+                <h2 class="section-title">
+                    <i class="fas fa-exclamation-triangle"></i> Alertes et recommandations
+                </h2>
+                {% for alert in reportData.alerts %}
+                <div class="alert alert-{{ alert.type }}">
+                    <i class="fas fa-{{ alert.icon ?? 'info-circle' }}"></i>
+                    <div>
+                        <strong>{{ alert.title }}</strong><br>
+                        {{ alert.message }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Message d'état vide si aucune donnée -->
+            {% if not reportData.summary is defined and not reportData.employees is defined and not reportData.byEmployee is defined %}
+            <div class="empty-state fade-in">
+                <i class="fas fa-chart-bar"></i>
+                <h3>Aucune donnée disponible</h3>
+                <p>Aucune donnée ne correspond aux critères sélectionnés pour la période du {{ filters.start_date|date('d/m/Y') }} au {{ filters.end_date|date('d/m/Y') }}.</p>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb"></i>
+                    <div>
+                        <strong>Suggestions :</strong><br>
+                        • Vérifiez les dates sélectionnées<br>
+                        • Essayez d'élargir la période de recherche<br>
+                        • Vérifiez les filtres de département/équipe
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation des cartes de statistiques au chargement
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('animate__animated', 'animate__fadeInUp');
+                }, index * 100);
+            });
+
+            // Mise à jour automatique des filtres d'équipe selon le département
+            const departmentSelect = document.getElementById('department_id');
+            const teamSelect = document.getElementById('team_id');
+            
+            if (departmentSelect && teamSelect) {
+                departmentSelect.addEventListener('change', function() {
+                    const departmentId = this.value;
+                    
+                    // Réinitialiser les options d'équipe
+                    teamSelect.innerHTML = '<option value="">Toutes les équipes</option>';
+                    
+                    if (departmentId) {
+                        // Simuler un appel AJAX pour récupérer les équipes du département
+                        // Dans un vrai projet, vous feriez un appel AJAX ici
+                        fetch(`/api/departments/${departmentId}/teams`)
+                            .then(response => response.json())
+                            .then(teams => {
+                                teams.forEach(team => {
+                                    const option = document.createElement('option');
+                                    option.value = team.id;
+                                    option.textContent = team.name;
+                                    teamSelect.appendChild(option);
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Erreur lors du chargement des équipes:', error);
+                            });
+                    }
+                });
+            }
+
+            // Génération des graphiques si des données sont disponibles
+            {% if reportData.chartData is defined %}
+            const chartData = {{ reportData.chartData|json_encode|raw }};
+            const ctx = document.getElementById('reportChart');
+            
+            if (ctx && chartData) {
+                new Chart(ctx, {
+                    type: chartData.type || 'bar',
+                    data: chartData.data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: chartData.title || 'Graphique du rapport'
+                            },
+                            legend: {
+                                display: true
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            {% endif %}
+
+            // Soumission automatique du formulaire lors du changement des filtres
+            const filterForm = document.getElementById('filtersForm');
+            const autoSubmitElements = filterForm.querySelectorAll('select, input[type="date"]');
+            
+            autoSubmitElements.forEach(element => {
+                element.addEventListener('change', function() {
+                    // Ajouter un petit délai pour améliorer l'UX
+                    setTimeout(() => {
+                        filterForm.submit();
+                    }, 300);
+                });
+            });
+
+            // Animation des barres de progression
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 500);
+            });
+
+            // Tooltip pour les badges et éléments interactifs
+            const badges = document.querySelectorAll('.badge, .stat-card');
+            badges.forEach(badge => {
+                badge.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.05)';
+                });
+                
+                badge.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,496 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau jour férié - HR Flow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .holiday-form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .form-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .form-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .form-content {
+            padding: 2rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            flex: 1;
+        }
+        
+        .form-group.full-width {
+            flex: 100%;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .form-label.required::after {
+            content: ' *';
+            color: #ef4444;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background-color: #fff;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-control:invalid {
+            border-color: #ef4444;
+        }
+        
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+        
+        .form-check:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+        
+        .form-check input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+        
+        .form-check-label {
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            margin: 0;
+        }
+        
+        .form-help {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2rem;
+            border-top: 2px solid #e5e7eb;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #d1d5db;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-danger {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            color: #dc2626;
+        }
+        
+        .alert-info {
+            background: #eff6ff;
+            border: 2px solid #bfdbfe;
+            color: #2563eb;
+        }
+        
+        .form-errors {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-errors ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            color: #dc2626;
+        }
+        
+        .breadcrumb {
+            background: transparent;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+        }
+        
+        .breadcrumb-item {
+            color: #6b7280;
+        }
+        
+        .breadcrumb-item.active {
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: '>';
+            margin: 0 0.5rem;
+            color: #9ca3af;
+        }
+        
+        @media (max-width: 768px) {
+            .holiday-form-container {
+                margin: 1rem;
+                border-radius: 8px;
+            }
+            
+            .form-content {
+                padding: 1.5rem;
+            }
+            
+            .form-header {
+                padding: 1.5rem;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .form-actions {
+                flex-direction: column-reverse;
+                gap: 1rem;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <!-- Fil d'Ariane -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Tableau de bord</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('admin_holiday_index') }}">Jours fériés</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Nouveau jour férié</li>
+        </ol>
+    </nav>
+
+    <div class="holiday-form-container">
+        <!-- En-tête du formulaire -->
+        <div class="form-header">
+            <h1>🎉 Nouveau jour férié</h1>
+            <p>Ajoutez un nouveau jour férié au calendrier de l'entreprise</p>
+        </div>
+
+        <!-- Contenu du formulaire -->
+        <div class="form-content">
+            <!-- Affichage des erreurs globales -->
+            {% if form.vars.errors|length > 0 %}
+                <div class="form-errors">
+                    <strong>⚠️ Erreurs détectées :</strong>
+                    <ul>
+                        {% for error in form.vars.errors %}
+                            <li>{{ error.message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <!-- Message d'information -->
+            <div class="alert alert-info">
+                <strong>ℹ️ Information :</strong> Les jours fériés définis ici seront automatiquement pris en compte dans le calcul des congés et l'affichage du calendrier.
+            </div>
+
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+            <!-- Section : Informations principales -->
+            <div class="form-section">
+                <h3 class="form-section-title">📝 Informations principales</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form_label(form.name, 'Nom du jour férié', {'label_attr': {'class': 'form-label required'}}) }}
+                        {{ form_widget(form.name, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Fête du Travail'}}) }}
+                        {% if form.name.vars.errors|length > 0 %}
+                            <div class="form-help text-danger">
+                                {% for error in form.name.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-help">Donnez un nom explicite au jour férié</div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.date, 'Date', {'label_attr': {'class': 'form-label required'}}) }}
+                        {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
+                        {% if form.date.vars.errors|length > 0 %}
+                            <div class="form-help text-danger">
+                                {% for error in form.date.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-help">Sélectionnez la date du jour férié</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 3, 'placeholder': 'Description optionnelle du jour férié...'}}) }}
+                        {% if form.description.vars.errors|length > 0 %}
+                            <div class="form-help text-danger">
+                                {% for error in form.description.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-help">Ajoutez une description optionnelle pour plus de contexte</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section : Paramètres -->
+            <div class="form-section">
+                <h3 class="form-section-title">⚙️ Paramètres</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <div class="form-check">
+                            {{ form_widget(form.isRecurring) }}
+                            {{ form_label(form.isRecurring, 'Jour férié récurrent', {'label_attr': {'class': 'form-check-label'}}) }}
+                        </div>
+                        {% if form.isRecurring.vars.errors|length > 0 %}
+                            <div class="form-help text-danger">
+                                {% for error in form.isRecurring.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-help">Si coché, ce jour férié se répétera chaque année à la même date</div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            {{ form_widget(form.isActive) }}
+                            {{ form_label(form.isActive, 'Actif', {'label_attr': {'class': 'form-check-label'}}) }}
+                        </div>
+                        {% if form.isActive.vars.errors|length > 0 %}
+                            <div class="form-help text-danger">
+                                {% for error in form.isActive.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-help">Décochez pour désactiver temporairement ce jour férié</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions du formulaire -->
+            <div class="form-actions">
+                <a href="{{ path('admin_holiday_index') }}" class="btn btn-secondary">
+                    ← Retour à la liste
+                </a>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" name="save" class="btn btn-primary">
+                        💾 Enregistrer
+                    </button>
+                </div>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation d'entrée
+            const container = document.querySelector('.holiday-form-container');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                container.style.transition = 'all 0.5s ease';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
+
+            // Validation côté client
+            const form = document.querySelector('form');
+            const nameInput = document.querySelector('#{{ form.name.vars.id }}');
+            const dateInput = document.querySelector('#{{ form.date.vars.id }}');
+
+            // Validation du nom
+            if (nameInput) {
+                nameInput.addEventListener('blur', function() {
+                    if (this.value.trim().length < 3) {
+                        this.style.borderColor = '#ef4444';
+                    } else {
+                        this.style.borderColor = '#10b981';
+                    }
+                });
+            }
+
+            // Validation de la date
+            if (dateInput) {
+                dateInput.addEventListener('change', function() {
+                    const selectedDate = new Date(this.value);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    if (selectedDate < today) {
+                        if (confirm('⚠️ Attention : Vous avez sélectionné une date passée. Êtes-vous sûr de vouloir continuer ?')) {
+                            this.style.borderColor = '#f59e0b';
+                        } else {
+                            this.value = '';
+                            this.style.borderColor = '#d1d5db';
+                        }
+                    } else {
+                        this.style.borderColor = '#10b981';
+                    }
+                });
+            }
+
+            // Animation des checkboxes
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const checkContainer = this.closest('.form-check');
+                    if (this.checked) {
+                        checkContainer.style.background = '#ecfdf5';
+                        checkContainer.style.borderColor = '#10b981';
+                    } else {
+                        checkContainer.style.background = '#f9fafb';
+                        checkContainer.style.borderColor = '#e5e7eb';
+                    }
+                });
+            });
+
+            // Confirmation avant soumission
+            form.addEventListener('submit', function(e) {
+                const nameValue = nameInput?.value.trim();
+                const dateValue = dateInput?.value;
+
+                if (!nameValue || !dateValue) {
+                    e.preventDefault();
+                    alert('⚠️ Veuillez remplir tous les champs obligatoires.');
+                    return;
+                }
+
+                // Animation du bouton de soumission
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '⏳ Enregistrement...';
+                submitBtn.disabled = true;
+            });
+
+            // Auto-focus sur le premier champ
+            if (nameInput) {
+                nameInput.focus();
+            }
+        });
+    </script>
+{% endblock %}
